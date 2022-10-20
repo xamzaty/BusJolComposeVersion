@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">BusJol</string>
+    <string name="search_journey_subtitle">Поиск и продажа\nбилетов на автобусы</string>
+    <string name="cities_layout_hint">Выберите город</string>
+    <string name="cities_layout_from_label">Откуда</string>
+    <string name="cities_layout_to_label">Куда</string>
+    <string name="search_button">Искать</string>
+    <string name="date_layout_label">Дата</string>
+    <string name="passenger_layout_label">Пассажиры</string>
+</resources>
