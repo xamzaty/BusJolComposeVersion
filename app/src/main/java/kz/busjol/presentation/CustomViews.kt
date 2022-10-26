@@ -1,37 +1,147 @@
 package kz.busjol.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import kz.busjol.R
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
+import kotlinx.coroutines.launch
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
 
 @Composable
+fun AppBar(
+    title: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(White)
+    ) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.W700,
+                    color = Color.Black
+                )
+            },
+            navigationIcon = {
+                BackButton(modifier = Modifier.padding(start = 15.dp)) {
+                    onClick()
+                }
+            },
+            backgroundColor = Color.Transparent,
+            contentColor = Color.Black,
+            elevation = 0.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp, bottom = 7.dp)
+        )
+
+        Divider(
+            color = GrayBorder,
+            thickness = 1.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .alpha(0.7f)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun BottomSheet(
+    content: (sheetState: ModalBottomSheetState) -> Composable
+) {
+    val sheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded }
+    )
+
+    val coroutineScope = rememberCoroutineScope()
+
+    BackHandler(sheetState.isVisible) {
+        coroutineScope.launch { sheetState.hide() }
+    }
+
+    ModalBottomSheetLayout(sheetContent = {
+
+    }) {
+        content(sheetState)
+    }
+}
+
+@Composable
+fun GrayDivider(modifier: Modifier) {
+    Divider(
+        color = GrayBorder,
+        thickness = 1.dp,
+        modifier = modifier
+            .fillMaxWidth()
+    )
+}
+
+@Composable
+fun CustomCard(
+    modifier: Modifier = Modifier,
+    content: () -> Unit
+) {
+    Card(
+        elevation = 0.dp,
+        border = BorderStroke(1.dp, GrayBorder),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+    ) {
+        content()
+    }
+}
+
+@Composable
 fun Loader(isDialogVisible: Boolean) {
-    var showDialog by remember { mutableStateOf(false) }
+    var showDialog by rememberSaveable { mutableStateOf(isDialogVisible) }
 
     if (showDialog) {
         Dialog(
@@ -53,49 +163,64 @@ fun Loader(isDialogVisible: Boolean) {
 @Composable
 fun BackButton(
     modifier: Modifier,
-    isArrow: Boolean,
     onClick: () -> Unit
-) {
-    Image(
-        painter = painterResource(
-            id = if (isArrow) R.drawable.back_button
-            else R.drawable.cross
-        ),
-        contentDescription = "backButton",
-        modifier = modifier.clickable { onClick() },
-        contentScale = ContentScale.FillWidth
-    )
+    ) {
+    Card(
+        elevation = 0.dp,
+        border = BorderStroke(1.dp, GrayBorder),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+            .size(32.dp)
+            .clickable { onClick() }
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.arrow_back),
+            contentDescription = "arrow",
+            contentScale = ContentScale.Inside,
+            modifier = Modifier
+        )
+    }
 }
 
 @Composable
 fun CustomTextField(
+    modifier: Modifier = Modifier,
     text: String,
-    @DrawableRes iconId: Int,
+    @DrawableRes iconId: Int? = null,
     @StringRes hintId: Int,
     @StringRes labelId: Int,
-    modifier: Modifier
 ) {
+
+    var textValue by rememberSaveable { mutableStateOf(text) }
+
     Card(
         border = BorderStroke(1.dp, GrayBorder),
+        elevation = 0.dp,
+        shape = RoundedCornerShape(8.dp),
         modifier = modifier
+            .fillMaxWidth()
             .height(62.dp)
     ) {
         TextField(
-            value = text,
-            onValueChange = {},
+            value = textValue,
+            onValueChange = {
+               textValue = it
+            },
             trailingIcon = {
-                Icon(
-                    painter = painterResource(id = iconId),
-                    contentDescription = "icon"
-                )
+                iconId?.let { painterResource(id = it) }?.let {
+                    Icon(
+                        painter = it,
+                        contentDescription = "icon"
+                    )
+                }
             },
             shape = RoundedCornerShape(8.dp),
             placeholder = { Text(text = stringResource(id = hintId)) },
             label = { Text(text = stringResource(id = labelId)) },
             colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.Gray,
+                textColor = Color.Black,
                 disabledTextColor = Color.Transparent,
-                backgroundColor = Color.White,
+                backgroundColor = White,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -113,29 +238,35 @@ fun ClickableTextField(
     modifier: Modifier,
     onClick: () -> Unit
 ) {
+
+    val textValue by rememberSaveable { mutableStateOf(text) }
+
     Card(
         border = BorderStroke(1.dp, GrayBorder),
         shape = RoundedCornerShape(8.dp),
+        elevation = 0.dp,
         modifier = modifier
             .height(62.dp)
             .clickable { onClick() }
     ) {
         TextField(
-            value = text,
+            value = textValue,
             onValueChange = {},
             enabled = false,
             trailingIcon = {
-                Icon(
+                Image(
                     painter = painterResource(id = iconId),
-                    contentDescription = "icon"
+                    contentDescription = "icon",
+                    colorFilter = ColorFilter.tint(Color.Black)
                 )
             },
             placeholder = { Text(text = stringResource(id = hintId)) },
             label = { Text(text = stringResource(id = labelId)) },
+            textStyle = MaterialTheme.typography.body1.copy(color = Color.Black),
             colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.Gray,
+                textColor = Color.Black,
                 disabledTextColor = Color.Transparent,
-                backgroundColor = Color.White,
+                backgroundColor = White,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
@@ -146,19 +277,72 @@ fun ClickableTextField(
 }
 
 @Composable
+fun CustomSimpleTextField(
+    modifier: Modifier = Modifier,
+    text: String,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    placeholderText: String = "Placeholder",
+    fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
+) {
+    var textValue by rememberSaveable { mutableStateOf(text) }
+
+    BasicTextField(modifier = modifier
+        .background(
+            MaterialTheme.colors.surface,
+            MaterialTheme.shapes.small,
+        )
+        .fillMaxWidth(),
+        value = text,
+        onValueChange = {
+            textValue = it
+        },
+        singleLine = true,
+        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+        textStyle = LocalTextStyle.current.copy(
+            color = MaterialTheme.colors.onSurface,
+            fontSize = fontSize
+        ),
+        decorationBox = { innerTextField ->
+            Row(
+                modifier,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (leadingIcon != null) leadingIcon()
+                Box(Modifier.weight(1f)) {
+                    if (text.isEmpty()) Text(
+                        placeholderText,
+                        style = LocalTextStyle.current.copy(
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+                            fontSize = fontSize
+                        )
+                    )
+                    innerTextField()
+                }
+                if (trailingIcon != null) trailingIcon()
+            }
+        }
+    )
+}
+
+@Composable
 fun ProgressButton(
-    @StringRes textId: Int, modifier: Modifier,
+    modifier: Modifier = Modifier,
+    @StringRes textId: Int,
     isProgressAvailable: Boolean, isEnabled: Boolean, onClick: () -> Unit
 ) {
+    val isButtonEnabled by rememberSaveable { mutableStateOf(isEnabled) }
+    val isLoadingOn by rememberSaveable { mutableStateOf(isProgressAvailable) }
+
     Button(
         onClick = { onClick() },
         shape = RoundedCornerShape(8.dp),
-        enabled = isEnabled,
+        enabled = isButtonEnabled,
         modifier = modifier
             .fillMaxWidth()
             .height(52.dp)
     ) {
-        if (!isProgressAvailable) {
+        if (!isLoadingOn) {
             Text(
                 text = stringResource(id = textId),
                 fontSize = 16.sp,
@@ -166,120 +350,126 @@ fun ProgressButton(
             )
         } else {
             CircularProgressIndicator(
-                color = Color.White
+                color = White
             )
         }
     }
 }
 
 @Composable
-fun CitiesLayout(
-    fromCityValue: String,
-    toCityValue: String,
-    fromCitiesClick: () -> Unit,
-    toCitiesClick: () -> Unit,
-    swapButtonOnClick: () -> Unit,
-    modifier: Modifier
+fun CustomOutlinedButton(
+    modifier: Modifier = Modifier,
+    @StringRes textId: Int,
+    onClick: () -> Unit
 ) {
-    ConstraintLayout(
+    OutlinedButton(
+        onClick = { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Blue500),
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .border(BorderStroke(1.9.dp, GrayBorder))
-            .border(BorderStroke(1.9.dp, GrayBorder))
+            .height(52.dp)
     ) {
-        val (fromCityEt, toCityEt, swapButton, divider) = createRefs()
-
-        CitiesTextField(
-            value = fromCityValue,
-            labelId = R.string.cities_layout_from_label,
-            onClick = fromCitiesClick,
-            modifier = Modifier.constrainAs(fromCityEt) {
-                top.linkTo(parent.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                bottom.linkTo(divider.top)
-                width = Dimension.fillToConstraints
-            })
-
-        Divider(
-            color = GrayBorder,
-            thickness = 1.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .constrainAs(divider) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
+        Text(
+            text = stringResource(id = textId),
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            color = Blue500
         )
-
-        CitiesTextField(
-            value = toCityValue,
-            labelId = R.string.cities_layout_to_label,
-            onClick = toCitiesClick,
-            modifier = Modifier.constrainAs(toCityEt) {
-                top.linkTo(divider.bottom)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                bottom.linkTo(parent.bottom)
-                width = Dimension.fillToConstraints
-            })
-
-        SwapCitiesButton(
-            onClick = swapButtonOnClick,
-            modifier = Modifier.constrainAs(swapButton) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                end.linkTo(parent.end, 16.dp)
-            })
     }
 }
 
 @Composable
-private fun CitiesTextField(
-    value: String,
-    @StringRes labelId: Int,
-    modifier: Modifier,
-    onClick: () -> Unit
+fun MultiStyleTextRow(
+    text1: String,
+    color1: Color,
+    text2: String,
+    color2: Color,
+    fontSize: Int,
+    modifier: Modifier = Modifier
 ) {
-    TextField(
-        value = value,
-        onValueChange = {},
-        enabled = false,
-        colors = TextFieldDefaults.textFieldColors(
-            textColor = Color.Gray,
-            disabledTextColor = Color.Transparent,
-            backgroundColor = Color.White,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent
-        ),
-        textStyle = TextStyle.Default.copy(fontSize = 16.sp, fontWeight = FontWeight.W500, color = Color.Black),
-        placeholder = { Text(text = stringResource(id = R.string.cities_layout_hint)) },
-        label = { Text(text = stringResource(id = labelId)) },
-        modifier = modifier
-            .clickable { onClick() }
-            .height(62.dp)
-    )
+    Row {
+        Text(
+            text = text1,
+            color = color1,
+            fontSize = fontSize.sp,
+            modifier = Modifier.padding(end = 2.dp)
+        )
+
+        Text(
+            text = text2,
+            color = color2,
+            fontSize = fontSize.sp,
+            modifier = Modifier.padding(end = 2.dp)
+        )
+    }
 }
 
 @Composable
-private fun SwapCitiesButton(
-    modifier: Modifier,
-    onClick: () -> Unit
+fun NestedLazyList(
+    modifier: Modifier = Modifier,
+    outerState: LazyListState = rememberLazyListState(),
+    innerState: LazyListState = rememberLazyListState(),
+    outerContent: LazyListScope.() -> Unit,
+    innerContent: LazyListScope.() -> Unit,
 ) {
-    OutlinedButton(
-        onClick = onClick,
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = GrayBorder),
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier.size(52.dp)
+    val scope = rememberCoroutineScope()
+    val innerFirstVisibleItemIndex by remember {
+        derivedStateOf {
+            innerState.firstVisibleItemIndex
+        }
+    }
+    SideEffect {
+        if (outerState.layoutInfo.visibleItemsInfo.size == 2 && innerState.layoutInfo.totalItemsCount == 0)
+            scope.launch { outerState.scrollToItem(outerState.layoutInfo.totalItemsCount) }
+        println("outer ${outerState.layoutInfo.visibleItemsInfo.map { it.index }}")
+        println("inner ${innerState.layoutInfo.visibleItemsInfo.map { it.index }}")
+    }
+
+    BoxWithConstraints(
+        modifier = modifier
+            .scrollable(
+                state = rememberScrollableState {
+                    scope.launch {
+                        val toDown = it <= 0
+                        if (toDown) {
+                            if (outerState.run { firstVisibleItemIndex == layoutInfo.totalItemsCount - 1 }) {
+                                innerState.scrollBy(-it)
+                            } else {
+                                outerState.scrollBy(-it)
+                            }
+                        } else {
+                            if (innerFirstVisibleItemIndex == 0 && innerState.firstVisibleItemScrollOffset == 0) {
+                                outerState.scrollBy(-it)
+                            } else {
+                                innerState.scrollBy(-it)
+                            }
+                        }
+                    }
+                    it
+                },
+                Orientation.Vertical,
+            )
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.swap_cities),
-            contentDescription = "swapCities",
-            modifier = Modifier.fillMaxSize()
-        )
+        LazyColumn(
+            userScrollEnabled = false,
+            state = outerState,
+            modifier = Modifier
+                .heightIn(maxHeight)
+        ) {
+            outerContent()
+            item {
+                LazyColumn(
+                    state = innerState,
+                    userScrollEnabled = false,
+                    modifier = Modifier
+                        .height(maxHeight)
+
+                ) {
+                    innerContent()
+                }
+            }
+        }
+
     }
 }

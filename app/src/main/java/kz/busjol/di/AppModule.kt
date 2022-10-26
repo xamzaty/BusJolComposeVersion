@@ -4,7 +4,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kz.busjol.Consts.BASE_URL
 import kz.busjol.data.remote.CityListApi
+import kz.busjol.data.remote.SearchJourneyApi
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -14,8 +16,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.create
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-
-const val BASE_URL = "https://daneek.xyz/api/"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -60,5 +60,11 @@ class AppModule {
     @Singleton
     fun provideCityListApi(): CityListApi {
         return getRetrofit().create(CityListApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideJourneyListApi(): SearchJourneyApi {
+        return getRetrofit().create(SearchJourneyApi::class.java)
     }
 }

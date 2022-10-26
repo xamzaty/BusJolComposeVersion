@@ -13,6 +13,14 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.spec.NavGraphSpec
 import dagger.hilt.android.AndroidEntryPoint
+import kz.busjol.presentation.passenger.booking.BookingScreen
+import kz.busjol.presentation.passenger.choose_seats.ChooseSeatsScreen
+import kz.busjol.presentation.passenger.contacts.ContactsScreen
+import kz.busjol.presentation.passenger.journey.JourneyScreen
+import kz.busjol.presentation.passenger.my_tickets.MyTicketsScreen
+import kz.busjol.presentation.passenger.passenger_data.PassengerDataScreen
+import kz.busjol.presentation.passenger.payment_order.PaymentOrderScreen
+import kz.busjol.presentation.passenger.payment_order_result.PaymentOrderResultScreen
 import kz.busjol.presentation.passenger.search_journey.SearchJourneyScreen
 import kz.busjol.presentation.theme.BusJolComposeTheme
 

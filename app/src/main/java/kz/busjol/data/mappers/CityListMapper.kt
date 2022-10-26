@@ -4,10 +4,10 @@ import kz.busjol.data.remote.CityDto
 import kz.busjol.domain.models.City
 
 fun List<CityDto>.toCityList(): List<City> {
-    return this.map {
+    return this.map { from ->
         City(
-            id = it.id,
-            name = it.name
+            id = from.id,
+            name = from.name
         )
     }
 }

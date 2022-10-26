@@ -6,7 +6,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kz.busjol.data.repository.CityPickerRepositoryImpl
+import kz.busjol.data.repository.JourneyRepositoryImpl
 import kz.busjol.domain.repository.CityListRepository
+import kz.busjol.domain.repository.JourneyListRepository
 import javax.inject.Singleton
 
 @ExperimentalCoroutinesApi
@@ -19,4 +21,10 @@ abstract class RepositoryModule {
     abstract fun cityListRepository(
         cityPickerRepositoryImpl: CityPickerRepositoryImpl
     ): CityListRepository
+
+    @Binds
+    @Singleton
+    abstract fun journeyListRepository(
+        cityPickerRepositoryImpl: JourneyRepositoryImpl
+    ): JourneyListRepository
 }

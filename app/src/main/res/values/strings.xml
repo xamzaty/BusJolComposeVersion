@@ -1,5 +1,25 @@
 <resources>
+    // App
     <string name="app_name">BusJol</string>
+
+    <string name="choose_button">Выбрать</string>
+    <string name="continue_button">Продолжить</string>
+    <string name="enter_button">Войти</string>
+    <string name="exit_button">Выйти</string>
+    <string name="save_button">Сохранить</string>
+    <string name="send_button">Отправить</string>
+
+    <string name="fill_in_all_the_fields_error">Заполните все поля!</string>
+
+    // Categories
+    <string name="search_category">Поиск</string>
+    <string name="my_tickets_category">Мои билеты</string>
+    <string name="contacts_category">Контакты</string>
+    <string name="profile_category">Профиль</string>
+    <string name="driver_main_category">Главная</string>
+    <string name="scan_category">Скан</string>
+
+    // SearchJourneyScreen
     <string name="search_journey_subtitle">Поиск и продажа\nбилетов на автобусы</string>
     <string name="cities_layout_hint">Выберите город</string>
     <string name="cities_layout_from_label">Откуда</string>
@@ -7,4 +27,149 @@
     <string name="search_button">Искать</string>
     <string name="date_layout_label">Дата</string>
     <string name="passenger_layout_label">Пассажиры</string>
+
+    // PassengerQuantityScreen
+    <string name="passenger_quantity_screen_title">Пассажиры</string>
+    <string name="adult_passenger">Взрослый</string>
+    <string name="adult_passenger_description">От полных 15 лет</string>
+    <string name="child_passenger">Детский</string>
+    <string name="child_passenger_description">От полных 15 лет</string>
+    <string name="disabled_person">Инвалидный</string>
+    <string name="disabled_person_passenger_description">Наличие документа</string>
+
+    // JourneyScreen
+    <string name="journey_screen_title">%1$s - %2$s</string>
+    <string name="radio_group_title">Тип места:</string>
+    <string name="radio_button_all">Все</string>
+    <string name="radio_button_seat">Сидячий</string>
+    <string name="radio_button_lying">Лежачий</string>
+    <string name="journey_number">Рейс №%1$s</string>
+    <string name="time_left">%1$sч %2$sмин</string>
+    <string name="seat_type">Тип места: %1$s</string>
+    <string name="free_seats">Свободно мест:</string>
+    <string name="free_seats_of">%1$s из %2$s</string>
+
+    // ChooseSeats
+    <string name="choose_seats_title">Выбор места</string>
+    <string name="free_seat">Свободное</string>
+    <string name="occupied_seat">Занятое</string>
+    <string name="chosen_seats">Выбранные места</string>
+
+    // PassengerData
+    <string name="passenger_data_title">Данные пассажира</string>
+    <string name="passenger_data_details">Детали</string>
+    <string name="passenger_number">Пассажир %1$d</string>
+    <string name="passenger_type_men">Мужской</string>
+    <string name="passenger_type_women">Женский</string>
+    <string name="iin_label">ИИН</string>
+    <string name="iin_hint">Введите ИИН</string>
+    <string name="surname_label">Фамилия</string>
+    <string name="surname_hint">Введите фамилию</string>
+    <string name="first_name_label">Имя</string>
+    <string name="first_name_hint">Введите имя</string>
+    <string name="date_of_birth_label">Дата рождения</string>
+    <string name="date_of_birth_hint">xx.xx.xxxx</string>
+    <string name="email_label">Email</string>
+    <string name="email_hint">Введите эл. почту</string>
+    <string name="phone_label">Телефон</string>
+    <string name="contact_information_title">Контактная информация</string>
+    <string name="contact_information_description">Для регистрации клиента, а также мы отправим\nбилет на этот эл. адрес.\nНомер телефона необходим для связи в случае\nизменений</string>
+    <string name="tariff_rules_and_offer_title">Правила тарифа и оферта</string>
+    <string name="tariff_rules_and_offer_description">Ознакомьтесь <a href="google.com">с правилами обмена и возврата</a> и\n<a href="google.com">публичной оферты</a></string>
+    <string name="tariff_rules_and_offer_agreement">Я принимаю правила тарифа и оферту</string>
+    <string name="this_field_is_required">Это поле обязательное</string>
+
+    // JourneyDetails
+    <string name="journey_details_title">Детали рейса</string>
+    <string name="time_on_the_way">%1$sч %2$sмин в пути</string>
+    <string name="carrier">Перевозчик: %1$s</string>
+
+    // Booking
+    <string name="booking_title">Бронирование</string>
+    <string name="pay_for_the_reservation">Оплатите бронь в течение</string>
+    <string name="with_bank_cards">Банковскими картами</string>
+    <string name="with_kaspi">Kaspi.kz</string>
+    <string name="payment_button">Перейти к оплате</string>
+
+    // PaymentOrder
+    <string name="payment_order_title">Оплата заказа</string>
+
+    // PaymentOrderResult
+    <string name="payment_order_result_title">Ваш заказ №%1$s</string>
+    <string name="client_data">Дата клиента</string>
+    <string name="seats">Места</string>
+    <string name="back_to_main_menu_button">Вернуться на главное</string>
+
+    // MyTickets
+    <string name="my_tickets_title">Мои билеты</string>
+    <string name="my_tickets_description_title">Список ваших билетов</string>
+    <string name="my_tickets_description_text">Здесь будет сохранятся\nсписок всех ваших билетов.\nАвторизуйтесь для того, чтобы\nвидеть ваши билеты!</string>
+    <string name="my_tickets_description_text_no_tickets">Билетов нет</string>
+
+    // Contacts
+    <string name="contacts_title">Контакты</string>
+    <string name="contacts_description_title">Задавайте вопросы - мы\nпоможем!</string>
+    <string name="contacts_description_text">Возникли вопросы?\nПроверьте в списке вопроов и\nответов или позвоните нам.</string>
+    <string name="faq_button">Вопросы и ответы</string>
+    <string name="call_button">Позвонить</string>
+
+    // Profile
+    <string name="profile_title">Профиль</string>
+    <string name="we_did_not_recognise_you_title">Мы вас не узнали</string>
+    <string name="we_did_not_recognise_you_text">Войдите, чтобы просмотреть личные\nданные и использовать данные о\nпассажирах</string>
+    <string name="settings_subtitle">Настройки</string>
+    <string name="change_language">Сменить язык</string>
+    <string name="notifications">Уведомления</string>
+    <string name="additionally_subtitle">Дополнительно</string>
+    <string name="rate_the_app">Оценить приложение</string>
+    <string name="app_version">Версия %1$s</string>
+    <string name="my_data_subtitle">Мои данные</string>
+    <string name="passengers_subtitle">Пассажиры</string>
+    <string name="my_trips_subtitle">Мои поездки</string>
+
+    // ChangeLanguage
+    <string name="app_language_title">Язык приложения</string>
+    <string name="kazakh_language">Казакша</string>
+    <string name="russian_language">Русский</string>
+
+    // RateTheApp
+    <string name="rate_the_app_title">Оцените приложение</string>
+    <string name="i_like_the_app">Нравится</string>
+    <string name="i_do_not_like_the_app">Не особо</string>
+
+    // Login
+    <string name="enter_title">Вход</string>
+    <string name="enter_description_title">Войдите, чтобы видеть свои\nбилеты и пассажиров</string>
+    <string name="enter_description_text">Используйте эл. почту, которую указывали при\nпокупке или регистрации на BusJol</string>
+    <string name="password_label">Пароль</string>
+    <string name="password_hint">Введите пароль</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="register">Зарегистрироваться</string>
+    
+    <string name="password_recovery_title">Восстановление пароля</string>
+    <string name="password_recovery_description_text">Укажите эл. почту, которую использовали при\nрегистрации на сайте или в приложении BusJol.\nНа эту эл. почту мы вышлем ссылку для восстановления пароля</string>
+
+    <string name="register_title">Регистрация</string>
+    <string name="register_description_text">Укажите эл. почту, мы вышлем письмо с\nвременным паролем</string>
+    <string name="personal_data_collection_consent">Я даю <a href="">согласие на обработку моих\nперсональных данных</a></string>
+    <string name="personal_data_collection_error">Чтобы зарегистрироваться, необходимо дать согласие на\nобработку персональных данных</string>
+    <string name="register_button">Зарегистрироваться</string>
+
+    // DriverMain
+    <string name="driver_main_title">BusJol</string>
+    <string name="placed_filled">Заполнено: %1$s из %2$s</string>
+    <string name="expects">Ожидает</string>
+    <string name="completed">Выполнен</string>
+    <string name="canceled">Отменен</string>
+
+    // Scan
+    <string name="scan_title">Сканирование билета</string>
+    <string name="point_the_camera">Наведите камеру на\nQR код</string>
+    
+    // TicketVerification
+    <string name="ticket_is_valid">Билет действителен</string>
+    <string name="ticket_is_invalid">Билет недействителен</string>
+    <string name="fio">ФИО</string>
+    <string name="route">Маршрут</string>
+
 </resources>

@@ -1,4 +1,4 @@
-package kz.busjol.presentation.passenger.city_picker
+package kz.busjol.presentation.passenger.search_journey.city_picker
 
 import kz.busjol.domain.models.City
 
