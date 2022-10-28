@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kz.busjol.BuildConfig
 import kz.busjol.Consts.BASE_URL
 import kz.busjol.data.remote.CityListApi
 import kz.busjol.data.remote.SearchJourneyApi
@@ -26,7 +27,6 @@ class AppModule {
     fun getInterceptor(): Interceptor {
         return Interceptor {
             val request = it.request().newBuilder()
-//            request.addHeader("Authorization", "<Your token here>")
             val actualRequest = request.build()
             it.proceed(actualRequest)
         }
@@ -51,7 +51,9 @@ class AppModule {
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
         val interceptor = HttpLoggingInterceptor()
 
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
+        if (BuildConfig.DEBUG) {
+            interceptor.level = HttpLoggingInterceptor.Level.BODY
+        }
 
         return interceptor
     }

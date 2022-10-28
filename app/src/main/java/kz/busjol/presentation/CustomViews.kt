@@ -304,8 +304,6 @@ fun ClickableTextField(
     onClick: () -> Unit
 ) {
 
-    val textValue by rememberSaveable { mutableStateOf(text) }
-
     Card(
         border = BorderStroke(1.dp, GrayBorder),
         shape = RoundedCornerShape(8.dp),
@@ -315,7 +313,7 @@ fun ClickableTextField(
             .height(62.dp)
     ) {
         TextField(
-            value = textValue,
+            value = text,
             onValueChange = {},
             enabled = false,
             trailingIcon = {
