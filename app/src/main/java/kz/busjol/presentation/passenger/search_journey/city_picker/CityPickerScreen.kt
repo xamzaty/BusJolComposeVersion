@@ -1,5 +1,6 @@
 package kz.busjol.presentation.passenger.search_journey.city_picker
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,16 +10,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kz.busjol.R
 import kz.busjol.domain.models.City
 import kz.busjol.ext.filterValueFromList
 import kz.busjol.presentation.BackButton
-import kz.busjol.presentation.Loader
-import kz.busjol.presentation.passenger.search_journey.SearchJourneyAction
+import kz.busjol.presentation.NotFoundView
+import kz.busjol.presentation.passenger.search_journey.SearchJourneyEvent
 import kz.busjol.presentation.passenger.search_journey.SearchJourneyViewModel
 import kz.busjol.presentation.theme.GrayBorder
 
@@ -71,16 +74,19 @@ fun CityPickerScreen(
 
             LazyColumn {
                 item {
-                    data.cityList?.filterValueFromList(
-                        text.text,
-                        data.cityList.filter { it.name?.lowercase()!!.contains(text.text.lowercase()) }
-                    )?.forEach { city ->
-                        CityItem(city as City, cityList = data.cityList) {
-                            if (fromOrToCity == "from") viewModel.onAction(SearchJourneyAction.UpdateFromCityValue(city))
-                            else viewModel.onAction(SearchJourneyAction.UpdateToCityValue(city))
+                    if (data.cityList?.isNotEmpty() == true) {
+                        data.cityList.filter {
+                            it.name?.lowercase()!!.contains(text.text.lowercase())
+                        }.forEach { city ->
+                            CityItem(city, cityList = data.cityList) {
+                                if (fromOrToCity == "from") viewModel.onEvent(SearchJourneyEvent.UpdateFromCityValue(city))
+                                else viewModel.onEvent(SearchJourneyEvent.UpdateToCityValue(city))
 
-                            onCloseBottomSheet()
+                                onCloseBottomSheet()
+                            }
                         }
+                    } else {
+                        NotFoundView(modifier = Modifier.padding(25.dp))
                     }
                 }
             }

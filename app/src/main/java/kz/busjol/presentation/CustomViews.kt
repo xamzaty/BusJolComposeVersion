@@ -23,19 +23,28 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,20 +54,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.launch
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(
     title: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     Column(
         modifier = modifier
             .fillMaxWidth()
             .background(White)
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         TopAppBar(
             title = {
@@ -87,6 +102,45 @@ fun AppBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .alpha(0.7f)
+        )
+    }
+}
+
+@Composable
+fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) -> Unit) {
+    val eventHandler = rememberUpdatedState(onEvent)
+    val lifecycleOwner = rememberUpdatedState(LocalLifecycleOwner.current)
+
+    DisposableEffect(lifecycleOwner.value) {
+        val lifecycle = lifecycleOwner.value.lifecycle
+        val observer = LifecycleEventObserver { owner, event ->
+            eventHandler.value(owner, event)
+        }
+
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+        }
+    }
+}
+
+@Composable
+fun NotFoundView(modifier: Modifier = Modifier) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .fillMaxWidth()
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.bus_with_city_image),
+            contentDescription = "notFound"
+        )
+
+        Text(
+            text = stringResource(id = R.string.not_found),
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -182,6 +236,17 @@ fun BackButton(
     }
 }
 
+fun Modifier.scrollEnabled(
+    enabled: Boolean,
+) = nestedScroll(
+    connection = object : NestedScrollConnection {
+        override fun onPreScroll(
+            available: Offset,
+            source: NestedScrollSource
+        ): Offset = if(enabled) Offset.Zero else available
+    }
+)
+
 @Composable
 fun CustomTextField(
     modifier: Modifier = Modifier,
@@ -246,8 +311,8 @@ fun ClickableTextField(
         shape = RoundedCornerShape(8.dp),
         elevation = 0.dp,
         modifier = modifier
-            .height(62.dp)
             .clickable { onClick() }
+            .height(62.dp)
     ) {
         TextField(
             value = textValue,
@@ -262,14 +327,18 @@ fun ClickableTextField(
             },
             placeholder = { Text(text = stringResource(id = hintId)) },
             label = { Text(text = stringResource(id = labelId)) },
-            textStyle = MaterialTheme.typography.body1.copy(color = Color.Black),
             colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.Black,
+                textColor = Color(0xFF444444),
                 disabledTextColor = Color.Transparent,
                 backgroundColor = White,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
+            ),
+            textStyle = TextStyle.Default.copy(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W500,
+                color = Color(0xFF444444)
             ),
             modifier = Modifier.fillMaxSize()
         )

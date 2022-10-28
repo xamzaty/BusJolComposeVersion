@@ -9,6 +9,8 @@
     <string name="save_button">Сохранить</string>
     <string name="send_button">Отправить</string>
 
+    <string name="not_found">Не найдено!</string>
+
     <string name="fill_in_all_the_fields_error">Заполните все поля!</string>
 
     // Categories
@@ -36,6 +38,9 @@
     <string name="child_passenger_description">От полных 15 лет</string>
     <string name="disabled_person">Инвалидный</string>
     <string name="disabled_person_passenger_description">Наличие документа</string>
+
+    // CalendarScreen
+    <string name="calendar_date_title">Выберите дату</string>
 
     // JourneyScreen
     <string name="journey_screen_title">%1$s - %2$s</string>

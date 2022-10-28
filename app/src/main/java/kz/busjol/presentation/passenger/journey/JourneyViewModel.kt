@@ -12,8 +12,16 @@ class JourneyViewModel @Inject constructor(
 
 ): ViewModel() {
 
-    var state by mutableStateOf(JourneyState())
+    var state by mutableStateOf(JourneyState().mock())
         private set
 
-
+    fun onEvent(event: JourneyEvent) {
+        when (event) {
+            is JourneyEvent.SelectedOption -> {
+                state = state.copy(
+                    selectedOption = state.selectedOption
+                )
+            }
+        }
+    }
 }

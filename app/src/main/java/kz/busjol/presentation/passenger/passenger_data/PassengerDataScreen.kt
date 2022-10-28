@@ -16,17 +16,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.CustomTextField
 import kz.busjol.presentation.passenger.journey_details.JourneyDetailsScreen
+import kz.busjol.presentation.passenger.search_journey.Ticket
 import kz.busjol.presentation.theme.*
 
 @OptIn(ExperimentalMaterialApi::class)
+@Destination
 @Composable
-fun PassengerDataScreen() {
+fun PassengerDataScreen(
+    ticket: Ticket,
+    navigator: DestinationsNavigator
+) {
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded }
@@ -44,13 +51,14 @@ fun PassengerDataScreen() {
         {
             JourneyDetailsScreen(sheetState, coroutineScope)
     }) {
-        MainContent(sheetState, coroutineScope)
+        MainContent(navigator, sheetState, coroutineScope)
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun MainContent(
+    navigator: DestinationsNavigator,
     sheetState: ModalBottomSheetState,
     coroutineScope: CoroutineScope
 ) {
@@ -69,7 +77,7 @@ private fun MainContent(
         AppBar(title = stringResource(
             id = R.string.passenger_data_title)
         ) {
-
+            navigator.popBackStack()
         }
 
         Card(

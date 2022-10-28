@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,26 +25,29 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.vanpra.composematerialdialogs.MaterialDialog
-import com.vanpra.composematerialdialogs.datetime.date.datepicker
-import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import androidx.lifecycle.Lifecycle
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
 import kz.busjol.presentation.*
+import kz.busjol.presentation.destinations.JourneyScreenDestination
+import kz.busjol.presentation.passenger.search_journey.calendar.CalendarScreen
 import kz.busjol.presentation.passenger.search_journey.city_picker.CityPickerScreen
 import kz.busjol.presentation.passenger.search_journey.passenger_quantity.PassengerQuantityScreen
 import kz.busjol.presentation.theme.GrayBorder
-import java.text.SimpleDateFormat
-import java.util.*
 
+@Destination(start = true)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SearchJourneyScreen() {
+fun SearchJourneyScreen(
+    navigator: DestinationsNavigator
+) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
-    var currentBottomSheet: SearchJourneyBottomSheetScreen? by remember{
+    var currentBottomSheet: SearchJourneyBottomSheetScreen? by remember {
         mutableStateOf(null)
     }
 
@@ -64,70 +66,60 @@ fun SearchJourneyScreen() {
         scope.launch { scaffoldState.bottomSheetState.expand() }
 
     }
-    if(scaffoldState.bottomSheetState.isCollapsed)
+
+    if (scaffoldState.bottomSheetState.isCollapsed)
         currentBottomSheet = null
 
     BottomSheetScaffold(sheetPeekHeight = 0.dp, scaffoldState = scaffoldState,
         sheetContent = {
             currentBottomSheet?.let { currentSheet ->
-                SheetLayout(currentSheet,closeSheet)
+                SheetLayout(currentSheet, closeSheet)
             }
         }) { paddingValues ->
-        Box(Modifier.padding(paddingValues)){
-            MainContent(openSheet)
+        Box(Modifier.padding(paddingValues)) {
+            MainContent(openSheet, navigator)
         }
     }
 }
 
 @Composable
 fun SheetLayout(currentScreen: SearchJourneyBottomSheetScreen, onCloseBottomSheet: () -> Unit) {
-        when(currentScreen){
-            SearchJourneyBottomSheetScreen.PassengersScreen -> PassengerQuantityScreen(onCloseBottomSheet)
-            is SearchJourneyBottomSheetScreen.CityPickerScreen -> CityPickerScreen(currentScreen.argument, onCloseBottomSheet)
-        }
+    when (currentScreen) {
+        is SearchJourneyBottomSheetScreen.PassengersScreen -> PassengerQuantityScreen(
+            onCloseBottomSheet
+        )
+        is SearchJourneyBottomSheetScreen.CalendarScreen -> CalendarScreen(
+            onCloseBottomSheet
+        )
+        is SearchJourneyBottomSheetScreen.CityPickerScreen -> CityPickerScreen(
+            currentScreen.argument,
+            onCloseBottomSheet
+        )
+    }
 }
 
 @Composable
 private fun MainContent(
     openSheet: (SearchJourneyBottomSheetScreen) -> Unit,
+    navigator: DestinationsNavigator,
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
-    viewModel.state.let { data ->
-        
-//        Loader(isDialogVisible = data.isLoading)
-
-        println("journeyList: ${data.journeyList}")
-
-        val sdf = SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH)
-        val currentDate = sdf.format(Date())
-
-        var dateValue = remember { currentDate }
-
-        val dialogState = rememberMaterialDialogState()
-        MaterialDialog(
-            dialogState = dialogState,
-            buttons = {
-                positiveButton("Ok")
-                negativeButton("Отмена")
-            }
-        ) {
-            datepicker { date ->
-                dateValue = date.toString()
+        OnLifecycleEvent { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_DESTROY -> {
+                    viewModel.onEvent(SearchJourneyEvent.NewDestinationStatus(false))
+                }
+                else -> Unit
             }
         }
 
-        val fromCity = viewModel.state.fromCity ?: City(0, "")
-        val toCity = viewModel.state.toCity ?: City(0, "")
+    val state = viewModel.state
 
-        val isAllFieldsNotEmpty = remember {
-            fromCity.name?.isEmpty() == true && toCity.name?.isEmpty() == true
-        }
-
-        Column(
+    Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 23.dp, start = 15.dp, end = 15.dp)
-                .background(Color.White)
+                .background(White)
         ) {
             Text(
                 text = stringResource(id = R.string.app_name),
@@ -155,7 +147,7 @@ private fun MainContent(
                 Text(
                     text = stringResource(id = R.string.search_journey_subtitle),
                     fontSize = 16.sp,
-                    color = Color.White,
+                    color = White,
                     fontWeight = FontWeight.W500,
                     textAlign = TextAlign.Start,
                     modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
@@ -163,18 +155,29 @@ private fun MainContent(
             }
 
             CitiesLayout(
-                fromCityValue = fromCity.name ?: "",
-                toCityValue = toCity.name ?: "",
+                fromCityValue = state.fromCity?.name ?: "",
+                toCityValue = state.toCity?.name ?: "",
                 fromCitiesClick = {
-                    viewModel.onAction(SearchJourneyAction.CityListClicked)
-                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from")) },
+                    viewModel.onEvent(
+                        SearchJourneyEvent.CityListClicked
+                    )
+                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from"))
+                },
+
                 toCitiesClick = {
-                    viewModel.onAction(SearchJourneyAction.CityListClicked)
-                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to")) },
+                    viewModel.onEvent(
+                        SearchJourneyEvent.CityListClicked
+                    )
+                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to"))
+                },
+
                 swapButtonOnClick = {
-                    viewModel.onAction(
-                        SearchJourneyAction.SwapCities(fromCity, toCity)
-                    ) },
+                    viewModel.onEvent(
+                        SearchJourneyEvent.SwapCities(
+                            state.fromCity ?: City(), state.toCity ?: City()
+                        )
+                    )
+                },
                 modifier = Modifier.padding(top = 32.dp)
             )
 
@@ -185,7 +188,7 @@ private fun MainContent(
                     .padding(top = 24.dp)
             ) {
                 ClickableTextField(
-                    text = dateValue,
+                    text = state.departureDate ?: "",
                     iconId = R.drawable.calendar,
                     hintId = R.string.date_layout_label,
                     labelId = R.string.date_layout_label,
@@ -193,7 +196,7 @@ private fun MainContent(
                         .weight(1f)
                         .padding(end = 2.5.dp)
                 ) {
-                    dialogState.show()
+                    openSheet(SearchJourneyBottomSheetScreen.CalendarScreen)
                 }
 
                 ClickableTextField(
@@ -212,25 +215,37 @@ private fun MainContent(
             ProgressButton(
                 textId = R.string.search_button,
                 modifier = Modifier.padding(top = 32.dp),
-                isProgressAvailable = data.isButtonLoading,
-                isEnabled = isAllFieldsNotEmpty
+                isProgressAvailable = state.isButtonLoading,
+                isEnabled = true
             ) {
-                viewModel.onAction(
-                    SearchJourneyAction.JourneyListSearch(
+
+                navigator.navigate(
+                    JourneyScreenDestination(
+                        ticket = Ticket(
+                            departureCity = state.fromCity,
+                            arrivalCity = state.toCity,
+                            date = state.arrivalDate,
+                            passengerList = state.passengerQuantityList,
+                            journeyList = state.journeyList
+                        )
+                    )
+                )
+
+                viewModel.onEvent(
+                    SearchJourneyEvent.JourneyListSearch(
                         JourneyPost(
-                            cityFrom = 0,
-                            cityTo = 1,
-                            dateFrom = "2022-11-24T07:34:07.300Z",
-                            dateTo = "2022-11-24T07:34:07.300Z",
-                            childrenAmount = 0,
-                            adultAmount = 1,
-                            disabledAmount = 0
+                            cityFrom = state.fromCity?.id ?: 0,
+                            cityTo = state.toCity?.id ?: 1,
+                            dateFrom = "${state.departureDate}T07:34:07.300Z",
+                            dateTo = "${state.arrivalDate}T07:34:07.300Z",
+                            childrenAmount = state.passengerQuantity?.childValue ?: 0,
+                            adultAmount = state.passengerQuantity?.adultValue ?: 1,
+                            disabledAmount = state.passengerQuantity?.disabledValue ?: 0
                         )
                     )
                 )
             }
         }
-    }
 }
 
 @Composable
@@ -318,7 +333,11 @@ private fun CitiesTextField(
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent
         ),
-        textStyle = TextStyle.Default.copy(fontSize = 16.sp, fontWeight = FontWeight.W500, color = Color.Black),
+        textStyle = TextStyle.Default.copy(
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = Color(0xFF444444)
+        ),
         placeholder = { Text(text = stringResource(id = R.string.cities_layout_hint)) },
         label = { Text(text = stringResource(id = labelId)) },
         modifier = modifier

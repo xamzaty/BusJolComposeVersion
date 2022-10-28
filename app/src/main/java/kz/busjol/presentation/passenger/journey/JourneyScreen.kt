@@ -29,29 +29,44 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.R
 import kz.busjol.domain.models.City
 import kz.busjol.domain.models.Journey
 import kz.busjol.domain.models.JourneyItem
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.MultiStyleTextRow
+import kz.busjol.presentation.destinations.ChooseSeatsScreenDestination
+import kz.busjol.presentation.passenger.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.BlueText
 import kz.busjol.presentation.theme.GrayBackground
 import kz.busjol.presentation.theme.GrayBorder
 
+@Destination
 @Composable
-fun JourneyScreen() {
+fun JourneyScreen(
+    ticket: Ticket,
+    navigator: DestinationsNavigator,
+    viewModel: JourneyViewModel = hiltViewModel()
+) {
 
-    val selectedOption by rememberSaveable { mutableStateOf(0) }
+    val state = viewModel.state
+
+    val selectedOption by rememberSaveable { mutableStateOf(state.selectedOption) }
+
+    println("selected: $selectedOption")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(GrayBackground)
     ) {
-        AppBar(title = "Алматы - Балхаш", modifier = Modifier) {
-
+        AppBar(title = "${ticket.departureCity?.name} - ${ticket.arrivalCity?.name}") {
+            navigator.popBackStack()
         }
 
         RadioGroup(
@@ -61,7 +76,7 @@ fun JourneyScreen() {
                 stringResource(id = R.string.radio_button_lying)
             ),
             seatTypeText = R.string.radio_group_title,
-            selectedOptionValue = selectedOption
+            selectedOptionValue = selectedOption ?: 0
         )
 
         val journeyList = listOf(
@@ -170,7 +185,7 @@ fun JourneyScreen() {
                 amount = 2000,
                 numberOfPlaces = 20,
                 numberOfFreePlaces = 13,
-                stopName = "",
+                stopName = "Сидячий",
                 cityFrom = City(id = 0, name = "Алматы"),
                 cityTo = City(id = 0, name = "Балхаш")
             ),
@@ -192,7 +207,7 @@ fun JourneyScreen() {
                 amount = 2000,
                 numberOfPlaces = 20,
                 numberOfFreePlaces = 13,
-                stopName = "",
+                stopName = "Лежачий",
                 cityFrom = City(id = 0, name = "Алматы"),
                 cityTo = City(id = 0, name = "Балхаш")
             ),
@@ -211,9 +226,17 @@ fun JourneyScreen() {
                 .padding(top = 8.dp),
             content = {
                 item {
-                    journeyList.forEach { 
-                        JourneyItemView(journey = it) {
+                    journeyList.forEach { journey ->
+                        JourneyItemView(journey) {
 
+                            navigator.navigate(ChooseSeatsScreenDestination(
+                                ticket = Ticket(
+                                    departureCity = ticket.departureCity,
+                                    arrivalCity = ticket.arrivalCity,
+                                    date = ticket.date,
+                                    journey = journey
+                                )
+                            ))
                         }
                     }
                 }
@@ -343,7 +366,7 @@ private fun JourneyItemView(
                 }
             ) {
                 Text(
-                    text = stringResource(id = R.string.seat_type, "Сидячий"),
+                    text = stringResource(id = R.string.seat_type, journey.stopName.toString()),
                     color = BlueText,
                     fontSize = 12.sp
                 )
@@ -396,7 +419,8 @@ private fun Int.seatType() = when(this) {
 fun RadioGroup(
     listOfOptions: List<String>,
     @StringRes seatTypeText: Int,
-    selectedOptionValue: Int
+    selectedOptionValue: Int,
+    viewModel: JourneyViewModel = hiltViewModel()
 ) {
     var selectedOption by rememberSaveable {
         mutableStateOf(selectedOptionValue)
@@ -435,6 +459,7 @@ fun RadioGroup(
                         modifier = Modifier
                             .clickable {
                                 onSelectionChange(index)
+                                viewModel.onEvent(JourneyEvent.SelectedOption(index))
                             }
                             .background(
                                 if (index == selectedOption) {

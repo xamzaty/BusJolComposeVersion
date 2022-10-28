@@ -26,13 +26,20 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
+import kz.busjol.presentation.passenger.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBackground
 
+@Destination
 @Composable
-fun PaymentOrderResultScreen() {
+fun PaymentOrderResultScreen(
+    ticket: Ticket,
+    navigator: DestinationsNavigator
+) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

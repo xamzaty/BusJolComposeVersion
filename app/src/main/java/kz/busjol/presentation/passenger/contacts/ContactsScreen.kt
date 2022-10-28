@@ -15,11 +15,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ramcosta.composedestinations.annotation.Destination
 import kz.busjol.R
 import kz.busjol.presentation.CustomOutlinedButton
 import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.theme.GrayText
 
+@Destination
 @Composable
 fun ContactsScreen() {
     Column(

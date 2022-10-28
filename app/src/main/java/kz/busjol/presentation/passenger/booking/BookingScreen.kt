@@ -29,15 +29,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.ext.formatWithCurrency
 import kz.busjol.presentation.ProgressButton
+import kz.busjol.presentation.passenger.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
 
+@Destination
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun BookingScreen() {
+fun BookingScreen(
+    ticket: Ticket,
+    navigator: DestinationsNavigator
+) {
     val sheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
         confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded }

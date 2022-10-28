@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kz.busjol.R
 import kz.busjol.presentation.ProgressButton
+import kz.busjol.presentation.passenger.search_journey.SearchJourneyEvent
 import kz.busjol.presentation.passenger.search_journey.SearchJourneyViewModel
 import kz.busjol.presentation.theme.GrayBorder
 
@@ -29,11 +30,13 @@ fun PassengerQuantityScreen(
     onCloseBottomSheet: () -> Unit,
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
-    viewModel.state.let {
+    viewModel.state.let { data ->
 
-        val adultQuantity = remember { 1 }
-        val childQuantity = remember { 0 }
-        val disabledPersonQuantity = remember { 0 }
+        val passengersQuantity = remember { data.passengerQuantity }
+
+        val adultQuantity = remember { passengersQuantity?.adultValue ?: 1 }
+        val childQuantity = remember { passengersQuantity?.childValue ?: 0 }
+        val disabledQuantity = remember { passengersQuantity?.disabledValue ?: 0 }
 
         Column(
             modifier = Modifier.fillMaxWidth()
@@ -88,7 +91,7 @@ fun PassengerQuantityScreen(
                 passengerType = stringResource(id = R.string.disabled_person),
                 description = stringResource(id = R.string.disabled_person_passenger_description),
                 modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
-                quantity = disabledPersonQuantity
+                quantity = disabledQuantity
             )
 
             ProgressButton(
@@ -97,6 +100,14 @@ fun PassengerQuantityScreen(
                 isProgressAvailable = false,
                 isEnabled = true
             ) {
+                val adultList = List(adultQuantity) { listOf(Passenger(Passenger.PassengerType.ADULT)) }.flatten()
+                val childList = List(childQuantity) { listOf(Passenger(Passenger.PassengerType.CHILD)) }.flatten()
+                val disabledList = List(disabledQuantity) { listOf(Passenger(Passenger.PassengerType.DISABLED)) }.flatten()
+
+                val listOfAllPassengers : List<Passenger> = merge(adultList, childList, disabledList)
+
+                viewModel.onEvent(SearchJourneyEvent.UpdatePassengersQuantityValue(listOfAllPassengers))
+                println(listOfAllPassengers)
                 onCloseBottomSheet()
             }
         }
@@ -175,4 +186,8 @@ private fun PassengerLayout(
             }
         }
     }
+}
+
+private fun <T> merge(first: List<T>, second: List<T>, third: List<T>): List<T> {
+    return first + second + third
 }

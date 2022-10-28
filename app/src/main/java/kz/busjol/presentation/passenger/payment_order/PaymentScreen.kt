@@ -11,10 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
+import com.ramcosta.composedestinations.annotation.Destination
 import kz.busjol.Consts.BANK_PAYMENT_URL
 import kz.busjol.presentation.AppBar
 import kz.busjol.R
 
+@Destination
 @Composable
 fun PaymentOrderScreen() {
 
@@ -38,7 +40,6 @@ fun PaymentOrderScreen() {
                             backEnabled = view.canGoBack()
                         }
                     }
-                    settings.javaScriptEnabled = true
 
                     loadUrl(BANK_PAYMENT_URL)
                     webView = this

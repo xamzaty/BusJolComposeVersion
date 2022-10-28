@@ -4,4 +4,9 @@
     <style name="Theme.BusJolCompose" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@color/purple_700</item>
     </style>
+
+    <style name="Widget.CalendarView.Custom" parent="android:Widget.CalendarView">
+        <item name="android:firstDayOfWeek">1</item>
+        <item name="android:colorActivatedHighlight">#FF2196F3</item>
+    </style>
 </resources>

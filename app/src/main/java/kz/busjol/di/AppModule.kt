@@ -40,10 +40,20 @@ class AppModule {
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(50, TimeUnit.SECONDS)
+            .addInterceptor(provideHttpLoggingInterceptor())
 
         return httpBuilder
             .protocols(mutableListOf(Protocol.HTTP_1_1))
             .build()
+    }
+
+    @Provides
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
+        val interceptor = HttpLoggingInterceptor()
+
+        interceptor.level = HttpLoggingInterceptor.Level.BODY
+
+        return interceptor
     }
 
     @Provides
