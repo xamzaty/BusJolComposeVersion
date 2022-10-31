@@ -24,6 +24,7 @@ import androidx.constraintlayout.compose.Dimension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
+import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
 import java.util.*
@@ -32,7 +33,8 @@ import java.util.*
 @Composable
 fun JourneyDetailsScreen(
     sheetState: ModalBottomSheetState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    ticket: Ticket
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -86,7 +88,7 @@ fun JourneyDetailsScreen(
                 }
             ) {
                 Text(
-                    text = "Алматы - Балхаш",
+                    text = "${ticket.departureCity?.name} - ${ticket.arrivalCity?.name}",
                     color = Color.Black,
                     fontWeight = FontWeight.W500,
                     fontSize = 16.sp
@@ -109,13 +111,13 @@ fun JourneyDetailsScreen(
             ) {
 
                 Text(
-                    text = stringResource(id = R.string.journey_number, "23"),
+                    text = stringResource(id = R.string.journey_number, ticket.journey?.journey?.routeId ?: ""),
                     color = Color(0xFF698CA5),
                     fontSize = 12.sp
                 )
 
                 Text(
-                    text = stringResource(id = R.string.carrier, "Автовокзал Алматы"),
+                    text = stringResource(id = R.string.carrier, ticket.journey?.stopName ?: ""),
                     fontSize = 14.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.W500
@@ -203,7 +205,7 @@ fun JourneyDetailsScreen(
             )
 
             Text(
-                text = "Алматы".uppercase(Locale.ROOT),
+                text = ticket.departureCity?.name?.uppercase(Locale.ROOT) ?: "",
                 color = Color.Black,
                 fontWeight = FontWeight.W500,
                 modifier = Modifier.constrainAs(fromCity) {
@@ -214,7 +216,7 @@ fun JourneyDetailsScreen(
             )
 
             Text(
-                text = "Балхаш".uppercase(Locale.ROOT),
+                text = ticket.arrivalCity?.name?.uppercase(Locale.ROOT) ?: "",
                 color = Color.Black,
                 fontWeight = FontWeight.W500,
                 modifier = Modifier.constrainAs(toCity) {

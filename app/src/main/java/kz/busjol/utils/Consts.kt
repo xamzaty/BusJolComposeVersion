@@ -1,4 +1,4 @@
-package kz.busjol
+package kz.busjol.utils
 
 object Consts {
 

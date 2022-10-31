@@ -5,7 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kz.busjol.BuildConfig
-import kz.busjol.Consts.BASE_URL
+import kz.busjol.utils.Consts.BASE_URL
 import kz.busjol.data.remote.CityListApi
 import kz.busjol.data.remote.SearchJourneyApi
 import okhttp3.Interceptor
@@ -14,7 +14,6 @@ import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.create
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 

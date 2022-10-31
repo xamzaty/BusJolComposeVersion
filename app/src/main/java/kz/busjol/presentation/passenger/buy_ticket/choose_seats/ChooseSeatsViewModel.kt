@@ -64,11 +64,13 @@ class ChooseSeatsViewModel @Inject constructor(
 
         state = if (seatsSet.value.lastOrNull() == seatsSet.value.size - 1) {
             state.copy(
-                list = itemWithoutSeparator
+                list = itemWithoutSeparator,
+                seatsQuantity = seatsSet.value.size
             )
         } else {
             state.copy(
-                list = itemWithSeparator
+                list = itemWithSeparator,
+                seatsQuantity = seatsSet.value.size
             )
         }
     }

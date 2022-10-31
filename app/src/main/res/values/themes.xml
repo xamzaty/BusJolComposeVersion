@@ -8,5 +8,7 @@
     <style name="Widget.CalendarView.Custom" parent="android:Widget.CalendarView">
         <item name="android:firstDayOfWeek">1</item>
         <item name="android:colorActivatedHighlight">#FF2196F3</item>
+        <item name="android:selectedWeekBackgroundColor">#FF2196F3</item>
+        <item name="android:weekNumberColor">#FF2196F3</item>
     </style>
 </resources>

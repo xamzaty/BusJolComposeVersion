@@ -1,10 +1,11 @@
 package kz.busjol.presentation.passenger.buy_ticket.passenger_data
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -12,10 +13,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
@@ -23,9 +28,15 @@ import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.CustomTextField
+import kz.busjol.presentation.CustomTextFieldWithMask
+import kz.busjol.presentation.ProgressButton
+import kz.busjol.presentation.destinations.BookingScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.journey_details.JourneyDetailsScreen
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
+import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.theme.*
+import kz.busjol.utils.MaskVisualTransformation
+import kz.busjol.utils.Regex.isValidEmail
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination
@@ -49,35 +60,50 @@ fun PassengerDataScreen(
         sheetState = sheetState,
         sheetContent =
         {
-            JourneyDetailsScreen(sheetState, coroutineScope)
-    }) {
-        MainContent(navigator, sheetState, coroutineScope)
+            JourneyDetailsScreen(sheetState, coroutineScope, ticket)
+        })
+    {
+        MainContent(ticket, navigator, sheetState, coroutineScope)
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun MainContent(
+    ticket: Ticket,
     navigator: DestinationsNavigator,
     sheetState: ModalBottomSheetState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
 ) {
+
+    val context = LocalContext.current
+
+    val scrollState = rememberScrollState()
 
     var checkboxState by rememberSaveable { mutableStateOf(true) }
     val emailValue by rememberSaveable { mutableStateOf("") }
     val phoneValue by rememberSaveable { mutableStateOf("") }
+
+    var isEmailValid = remember { isValidEmail(emailValue) }
+
+    if (!isEmailValid) {
+        Toast.makeText(context, stringResource(id = R.string.invalid_email), Toast.LENGTH_SHORT).show()
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
             .background(GrayBackground)
+            .verticalScroll(scrollState)
     ) {
 
-        AppBar(title = stringResource(
-            id = R.string.passenger_data_title)
+        AppBar(
+            title = stringResource(
+                id = R.string.passenger_data_title
+            )
         ) {
-            navigator.popBackStack()
+            navigator.navigateUp()
         }
 
         Card(
@@ -108,7 +134,7 @@ private fun MainContent(
                 ) {
 
                     Text(
-                        text = "Алматы - Балхаш",
+                        text = "${ticket.departureCity?.name} - ${ticket.arrivalCity?.name}",
                         fontSize = 17.sp,
                         fontWeight = FontWeight.W700,
                         color = Color.Black
@@ -135,6 +161,21 @@ private fun MainContent(
                 )
             }
         }
+
+        val passengerList = listOf(
+            Passenger(Passenger.PassengerType.ADULT,
+                Passenger.PassengerGender.FEMALE
+            ),
+            Passenger(Passenger.PassengerType.ADULT,
+                Passenger.PassengerGender.FEMALE
+            ),
+            Passenger(Passenger.PassengerType.ADULT,
+                Passenger.PassengerGender.FEMALE
+            ),
+            Passenger(Passenger.PassengerType.ADULT,
+                Passenger.PassengerGender.FEMALE
+            )
+        )
 
         Card(
             elevation = 0.dp,
@@ -168,15 +209,19 @@ private fun MainContent(
                     iconId = null,
                     hintId = R.string.email_hint,
                     labelId = R.string.email_label,
+                    keyboardType = KeyboardType.Email,
                     modifier = Modifier.padding(top = 12.dp)
                 )
 
-                CustomTextField(
+                CustomTextFieldWithMask(
                     text = phoneValue,
                     iconId = null,
                     hintId = R.string.email_hint,
                     labelId = R.string.phone_label,
-                    modifier = Modifier.padding(top = 12.dp)
+                    keyboardType = KeyboardType.Phone,
+                    maxChar = 10,
+                    modifier = Modifier.padding(top = 12.dp),
+                    maskVisualTransformation = MaskVisualTransformation("+7 ### ### ## ##")
                 )
             }
         }
@@ -215,7 +260,7 @@ private fun MainContent(
                         .padding(start = 2.dp)
                         .fillMaxWidth()
                 ) {
-                    
+
                     Checkbox(
                         checked = checkboxState,
                         onCheckedChange = {
@@ -225,7 +270,7 @@ private fun MainContent(
                             checkedColor = Blue500
                         )
                     )
-                    
+
                     Text(
                         text = stringResource(id = R.string.tariff_rules_and_offer_agreement),
                         fontSize = 12.sp,
@@ -245,17 +290,48 @@ private fun MainContent(
             }
         }
 
-        Spacer(modifier = Modifier
-            .padding(top = 28.dp)
-            .weight(1f)
+        Spacer(
+            modifier = Modifier
+                .padding(top = 28.dp)
+                .weight(1f)
         )
 
-
+        Card(
+            elevation = 10.dp,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 31.dp)
+                .offset(y = 6.dp)
+        ) {
+            ProgressButton(
+                textId = R.string.continue_button,
+                isProgressAvailable = false,
+                isEnabled = true,
+                modifier = Modifier
+                    .padding(vertical = 16.dp, horizontal = 15.dp)
+            ) {
+                navigator.navigate(
+                    BookingScreenDestination(
+                        ticket = Ticket(
+                            departureCity = ticket.departureCity,
+                            arrivalCity = ticket.arrivalCity,
+                            date = ticket.date,
+                            passengerList = ticket.passengerList,
+                            journey = ticket.journey
+                        )
+                    )
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun PassengerRegistrationLayout(count: Int) {
+private fun PassengerRegistrationLayout(
+    count: Int,
+    viewModel: PassengerViewModel = hiltViewModel()
+) {
     Card(
         elevation = 0.dp,
         shape = RoundedCornerShape(12.dp),
@@ -264,10 +340,106 @@ private fun PassengerRegistrationLayout(count: Int) {
             .fillMaxWidth()
             .padding(top = 16.dp, start = 15.dp, end = 15.dp)
     ) {
+
         Column(
-            modifier = Modifier.padding(vertical = 12.dp, )
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 12.dp, horizontal = 16.dp)
         ) {
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    text = stringResource(id = R.string.passenger_number, count),
+                    fontWeight = FontWeight.W500,
+                    fontSize = 17.sp
+                )
+
+                Text(
+                    text = "Взрослый",
+                    color = GrayText,
+                    fontSize = 11.sp,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+
+            RadioGroup(
+                listOfOptions = listOf(
+                    stringResource(id = R.string.passenger_type_men),
+                    stringResource(id = R.string.passenger_type_women)
+                ),
+                selectedOptionValue = 0,
+                modifier = Modifier.padding(top = 12.dp)
+            )
+
+            CustomTextFieldWithMask(
+                text = "",
+                hintId = R.string.iin_hint,
+                labelId = R.string.iin_label,
+                keyboardType = KeyboardType.Number,
+                maxChar = 12,
+                modifier = Modifier.padding(top = 12.dp),
+                maskVisualTransformation = MaskVisualTransformation("### ### ### ###")
+            )
+
+            CustomTextField(
+                text = "",
+                hintId = R.string.surname_hint,
+                labelId = R.string.surname_label,
+                modifier = Modifier.padding(top = 12.dp)
+            )
+
+            CustomTextField(
+                text = "",
+                hintId = R.string.first_name_hint,
+                labelId = R.string.first_name_label,
+                modifier = Modifier.padding(top = 12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun RadioGroup(
+    modifier: Modifier = Modifier,
+    listOfOptions: List<String>,
+    selectedOptionValue: Int
+) {
+    var selectedOption by rememberSaveable {
+        mutableStateOf(selectedOptionValue)
+    }
+
+    val onSelectionChange = { position: Int ->
+        selectedOption = position
+    }
+
+    LazyRow(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        itemsIndexed(listOfOptions) { index, text ->
+            Card(
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, GrayBorder),
+                elevation = 0.dp,
+                modifier = Modifier
+                    .width(147.dp)
+                    .height(40.dp)
+                    .clickable { onSelectionChange(index) }
+            ) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.body1.merge(),
+                    textAlign = TextAlign.Center,
+                    color = if (index == selectedOption) Color.White else Color.Black,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(if (index == selectedOption) Blue500 else Color.White)
+                        .wrapContentHeight()
+                )
+            }
         }
     }
 }

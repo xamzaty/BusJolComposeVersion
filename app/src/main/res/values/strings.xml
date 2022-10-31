@@ -13,6 +13,13 @@
 
     <string name="fill_in_all_the_fields_error">Заполните все поля!</string>
 
+    <string name="invalid_email">Не верный адрес электронной почты!</string>
+
+    <string name="alert_exit_title">Выход</string>
+    <string name="alert_exit_description">Вы уверены, что хотите выйти?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
     // Categories
     <string name="search_category">Поиск</string>
     <string name="my_tickets_category">Мои билеты</string>
@@ -38,6 +45,9 @@
     <string name="child_passenger_description">От полных 15 лет</string>
     <string name="disabled_person">Инвалидный</string>
     <string name="disabled_person_passenger_description">Наличие документа</string>
+    <string name="passenger_type_one">%1$d пассажир</string>
+    <string name="passenger_type_two">%1$d пассажира</string>
+    <string name="passenger_type_three">%1$d пассажиров</string>
 
     // CalendarScreen
     <string name="calendar_date_title">Выберите дату</string>

@@ -30,96 +30,104 @@ fun PassengerQuantityScreen(
     onCloseBottomSheet: () -> Unit,
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
-    viewModel.state.let { data ->
 
-        val passengersQuantity = remember { data.passengerQuantity }
+    val state = viewModel.state
 
-        val adultQuantity = remember { passengersQuantity?.adultValue ?: 1 }
-        val childQuantity = remember { passengersQuantity?.childValue ?: 0 }
-        val disabledQuantity = remember { passengersQuantity?.disabledValue ?: 0 }
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
         ) {
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            Image(
+                painter = painterResource(id = R.drawable.cross),
+                contentDescription = "close",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.cross),
-                    contentDescription = "close",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .padding(start = 15.dp)
-                        .clickable { onCloseBottomSheet() }
-                )
-
-                Text(text = stringResource(id = R.string.passenger_quantity_screen_title),
-                    fontSize = 20.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.W500,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            }
-
-            Divider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                color = GrayBorder,
-                thickness = 1.dp
+                    .size(30.dp)
+                    .padding(start = 15.dp)
+                    .clickable { onCloseBottomSheet() }
             )
 
-            PassengerLayout(
-                passengerType = stringResource(id = R.string.adult_passenger),
-                description = stringResource(id = R.string.adult_passenger_description),
-                modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
-                quantity = adultQuantity
+            Text(
+                text = stringResource(id = R.string.passenger_quantity_screen_title),
+                fontSize = 20.sp,
+                color = Color.Black,
+                fontWeight = FontWeight.W500,
+                modifier = Modifier.padding(start = 16.dp)
             )
+        }
 
-            PassengerLayout(
-                passengerType = stringResource(id = R.string.child_passenger),
-                description = stringResource(id = R.string.child_passenger_description),
-                modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
-                quantity = childQuantity
-            )
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            color = GrayBorder,
+            thickness = 1.dp
+        )
 
-            PassengerLayout(
-                passengerType = stringResource(id = R.string.disabled_person),
-                description = stringResource(id = R.string.disabled_person_passenger_description),
-                modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
-                quantity = disabledQuantity
-            )
+        PassengerLayout(
+            passengerType = Passenger.PassengerType.ADULT,
+            passengerTypeValue = stringResource(id = R.string.adult_passenger),
+            description = stringResource(id = R.string.adult_passenger_description),
+            modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
+            quantity = state.passengerQuantity?.adultValue ?: 1
+        )
 
-            ProgressButton(
-                textId = R.string.choose_button,
-                modifier = Modifier.padding(top = 24.dp, start = 15.dp, end = 15.dp, bottom = 24.dp),
-                isProgressAvailable = false,
-                isEnabled = true
-            ) {
-                val adultList = List(adultQuantity) { listOf(Passenger(Passenger.PassengerType.ADULT)) }.flatten()
-                val childList = List(childQuantity) { listOf(Passenger(Passenger.PassengerType.CHILD)) }.flatten()
-                val disabledList = List(disabledQuantity) { listOf(Passenger(Passenger.PassengerType.DISABLED)) }.flatten()
+        PassengerLayout(
+            passengerType = Passenger.PassengerType.CHILD,
+            passengerTypeValue = stringResource(id = R.string.child_passenger),
+            description = stringResource(id = R.string.child_passenger_description),
+            modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
+            quantity = state.passengerQuantity?.childValue ?: 0
+        )
 
-                val listOfAllPassengers : List<Passenger> = merge(adultList, childList, disabledList)
+        PassengerLayout(
+            passengerType = Passenger.PassengerType.DISABLED,
+            passengerTypeValue = stringResource(id = R.string.disabled_person),
+            description = stringResource(id = R.string.disabled_person_passenger_description),
+            modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
+            quantity = state.passengerQuantity?.disabledValue ?: 0
+        )
 
-                viewModel.onEvent(SearchJourneyEvent.UpdatePassengersQuantityValue(listOfAllPassengers))
-                println(listOfAllPassengers)
-                onCloseBottomSheet()
-            }
+        ProgressButton(
+            textId = R.string.choose_button,
+            modifier = Modifier.padding(top = 24.dp, start = 15.dp, end = 15.dp, bottom = 24.dp),
+            isProgressAvailable = false,
+            isEnabled = true
+        ) {
+            val adultList =
+                List(state.passengerQuantity!!.adultValue) {
+                    listOf(Passenger(Passenger.PassengerType.ADULT))
+                }.flatten()
+            val childList =
+                List(state.passengerQuantity.childValue) {
+                    listOf(Passenger(Passenger.PassengerType.CHILD))
+                }.flatten()
+            val disabledList =
+                List(state.passengerQuantity.disabledValue) {
+                    listOf(Passenger(Passenger.PassengerType.DISABLED))
+                }.flatten()
+
+            val listOfAllPassengers: List<Passenger> = merge(adultList, childList, disabledList)
+
+            viewModel.onEvent(SearchJourneyEvent.UpdatePassengersQuantityValue(listOfAllPassengers))
+            onCloseBottomSheet()
         }
     }
 }
 
 @Composable
 private fun PassengerLayout(
-    passengerType: String,
+    passengerType: Passenger.PassengerType,
+    passengerTypeValue: String,
     description: String,
     quantity: Int,
-    modifier: Modifier
+    modifier: Modifier,
+    viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
 
     var quantityValue by rememberSaveable { mutableStateOf(quantity) }
@@ -138,7 +146,7 @@ private fun PassengerLayout(
 
             Column {
                 Text(
-                    text = passengerType,
+                    text = passengerTypeValue,
                     color = Color.Black,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W500
@@ -167,7 +175,27 @@ private fun PassengerLayout(
                     painter = painterResource(id = R.drawable.minus_button),
                     contentDescription = "minus",
                     modifier = Modifier.clickable {
-                        if (quantityValue > 0) quantityValue--
+                        if (quantityValue > 0) {
+                            quantityValue--
+                        } else if (passengerType == Passenger.PassengerType.ADULT) {
+                            viewModel.onEvent(
+                                SearchJourneyEvent.AdultPassengerQuantity(
+                                    quantityValue
+                                )
+                            )
+                        } else if (passengerType == Passenger.PassengerType.CHILD) {
+                            viewModel.onEvent(
+                                SearchJourneyEvent.ChildPassengerQuantity(
+                                    quantityValue
+                                )
+                            )
+                        } else {
+                            viewModel.onEvent(
+                                SearchJourneyEvent.DisabledPassengerQuantity(
+                                    quantityValue
+                                )
+                            )
+                        }
                     }
                 )
 
@@ -181,7 +209,33 @@ private fun PassengerLayout(
                 Image(
                     painter = painterResource(id = R.drawable.plus_button),
                     contentDescription = "plus",
-                    modifier = Modifier.clickable { quantityValue++ }
+                    modifier = Modifier.clickable {
+                        quantityValue++
+
+                        when (passengerType) {
+                            Passenger.PassengerType.ADULT -> {
+                                viewModel.onEvent(
+                                    SearchJourneyEvent.AdultPassengerQuantity(
+                                        quantityValue
+                                    )
+                                )
+                            }
+                            Passenger.PassengerType.CHILD -> {
+                                viewModel.onEvent(
+                                    SearchJourneyEvent.ChildPassengerQuantity(
+                                        quantityValue
+                                    )
+                                )
+                            }
+                            else -> {
+                                viewModel.onEvent(
+                                    SearchJourneyEvent.DisabledPassengerQuantity(
+                                        quantityValue
+                                    )
+                                )
+                            }
+                        }
+                    }
                 )
             }
         }

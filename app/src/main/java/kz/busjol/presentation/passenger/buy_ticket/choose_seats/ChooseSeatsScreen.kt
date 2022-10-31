@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +27,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.presentation.AppBar
 import kz.busjol.R
 import kz.busjol.presentation.ProgressButton
+import kz.busjol.presentation.destinations.BookingScreenDestination
+import kz.busjol.presentation.destinations.PassengerDataScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.*
 import kz.busjol.utils.rememberViewInteropNestedScrollConnection
@@ -40,6 +43,7 @@ fun ChooseSeatsScreen(
     viewModel: ChooseSeatsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
+    val isButtonAvailable = remember { state.seatsQuantity == ticket.passengerList?.size }
 
     LazyColumn(horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -50,7 +54,7 @@ fun ChooseSeatsScreen(
                 AppBar(
                     title = stringResource(id = R.string.choose_seats_title)
                 ) {
-                    navigator.popBackStack()
+                    navigator.navigateUp()
                 }
             }
             item {
@@ -161,10 +165,20 @@ fun ChooseSeatsScreen(
                         ProgressButton(
                             textId = R.string.continue_button,
                             isProgressAvailable = false,
-                            isEnabled = true,
+                            isEnabled = isButtonAvailable,
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
-
+                            navigator.navigate(
+                                PassengerDataScreenDestination(
+                                    ticket = Ticket(
+                                        departureCity = ticket.departureCity,
+                                        arrivalCity = ticket.arrivalCity,
+                                        date = ticket.date,
+                                        passengerList = ticket.passengerList,
+                                        journey = ticket.journey
+                                    )
+                                )
+                            )
                         }
                     }
                 }

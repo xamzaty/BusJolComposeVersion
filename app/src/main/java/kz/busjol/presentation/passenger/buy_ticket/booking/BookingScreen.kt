@@ -8,20 +8,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.passenger.buy_ticket.journey_details.JourneyDetailsScreen
 import kz.busjol.presentation.theme.GrayBackground
 import kz.busjol.R
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -29,10 +25,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.popUpTo
+import com.ramcosta.composedestinations.spec.Route
 import kz.busjol.ext.formatWithCurrency
-import kz.busjol.presentation.ProgressButton
+import kz.busjol.presentation.*
+import kz.busjol.presentation.destinations.DirectionDestination
+import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
@@ -60,9 +61,9 @@ fun BookingScreen(
         sheetState = sheetState,
         sheetContent =
         {
-            JourneyDetailsScreen(sheetState, coroutineScope)
+            JourneyDetailsScreen(sheetState, coroutineScope, ticket)
         }) {
-        MainContent(sheetState, coroutineScope)
+            MainContent(sheetState, coroutineScope, ticket, navigator)
     }
 }
 
@@ -70,10 +71,15 @@ fun BookingScreen(
 @Composable
 private fun MainContent(
     sheetState: ModalBottomSheetState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    ticket: Ticket,
+    navigator: DestinationsNavigator,
+    viewModel: BookingViewModel = hiltViewModel()
 ) {
 
-    val timerValue by rememberSaveable { mutableStateOf("") }
+    val state = viewModel.state
+
+    val openDialog = remember { mutableStateOf(false)  }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -82,12 +88,25 @@ private fun MainContent(
             .background(GrayBackground)
     ) {
 
-        AppBar(
-            title = stringResource(
-                id = R.string.booking_title
-            )
-        ) {
+        BackHandler {
+            openDialog.value = true
+        }
 
+        AppBar(title = stringResource(id = R.string.booking_title)) {
+            openDialog.value = true
+        }
+
+        if (openDialog.value) {
+            CustomAlertDialog(
+                openDialog = openDialog.value,
+                title = stringResource(id = R.string.alert_exit_title),
+                description = stringResource(id = R.string.alert_exit_description),
+                confirmButtonText = stringResource(id = R.string.yes),
+                dismissButtonText = stringResource(id = R.string.no),
+                onConfirmButtonClicked = {
+                    navigator.backToMainScreen()
+                }
+            )
         }
 
         Row(
@@ -105,7 +124,7 @@ private fun MainContent(
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = "10:00",
+                text = state.countdownTimerValue ?: "10:00",
                 fontSize = 17.sp,
                 color = Color.Black,
                 fontWeight = FontWeight.W700
@@ -269,3 +288,10 @@ private fun PaymentTypeLayout(
         }
     }
 }
+
+fun DestinationsNavigator.backToMainScreen() =
+    this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
+        popUpTo(SearchJourneyScreenDestination) {
+            inclusive = true
+        }
+    }

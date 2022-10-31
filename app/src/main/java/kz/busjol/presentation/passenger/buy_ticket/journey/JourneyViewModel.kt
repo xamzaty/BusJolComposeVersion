@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,9 +17,9 @@ class JourneyViewModel @Inject constructor(
         private set
 
     fun onEvent(event: JourneyEvent) {
-        when (event) {
+        state = when (event) {
             is JourneyEvent.SelectedOption -> {
-                state = state.copy(
+                state.copy(
                     selectedOption = state.selectedOption
                 )
             }

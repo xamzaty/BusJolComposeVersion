@@ -28,10 +28,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.spec.Route
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
+import kz.busjol.ext.reformatDateToBackend
 import kz.busjol.presentation.*
 import kz.busjol.presentation.destinations.JourneyScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.calendar.CalendarScreen
@@ -104,22 +106,36 @@ private fun MainContent(
     navigator: DestinationsNavigator,
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
-        OnLifecycleEvent { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_DESTROY -> {
-                    viewModel.onEvent(SearchJourneyEvent.NewDestinationStatus(false))
-                }
-                else -> Unit
+
+    OnLifecycleEvent { _, event ->
+        when (event) {
+            Lifecycle.Event.ON_STOP -> {
+                viewModel.onEvent(SearchJourneyEvent.NewDestinationStatus(false))
             }
+            else -> Unit
         }
+    }
 
     val state = viewModel.state
 
+    if (state.startNewDestination == true) {
+        navigator.navigate(
+            JourneyScreenDestination(
+                ticket = Ticket(
+                    departureCity = state.fromCity,
+                    arrivalCity = state.toCity,
+                    passengerList = state.passengerQuantityList,
+                    journeyList = state.journeyList
+                )
+            )
+        )
+    }
+
     Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 23.dp, start = 15.dp, end = 15.dp)
-                .background(White)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 23.dp, start = 15.dp, end = 15.dp)
+            .background(White)
         ) {
             Text(
                 text = stringResource(id = R.string.app_name),
@@ -188,7 +204,7 @@ private fun MainContent(
                     .padding(top = 24.dp)
             ) {
                 ClickableTextField(
-                    text = state.departureDate ?: "",
+                    text = state.arrivalDate ?: "",
                     iconId = R.drawable.calendar,
                     hintId = R.string.date_layout_label,
                     labelId = R.string.date_layout_label,
@@ -200,7 +216,8 @@ private fun MainContent(
                 }
 
                 ClickableTextField(
-                    text = "1 пассажир",
+                    text = state.passengerQuantity?.allPassengers()?.passengerText()
+                        ?: stringResource(id = R.string.passenger_type_one, 1),
                     iconId = R.drawable.passenger,
                     hintId = R.string.passenger_layout_label,
                     labelId = R.string.passenger_layout_label,
@@ -218,26 +235,13 @@ private fun MainContent(
                 isProgressAvailable = state.isButtonLoading,
                 isEnabled = true
             ) {
-
-                navigator.navigate(
-                    JourneyScreenDestination(
-                        ticket = Ticket(
-                            departureCity = state.fromCity,
-                            arrivalCity = state.toCity,
-                            date = state.arrivalDate,
-                            passengerList = state.passengerQuantityList,
-                            journeyList = state.journeyList
-                        )
-                    )
-                )
-
                 viewModel.onEvent(
                     SearchJourneyEvent.JourneyListSearch(
                         JourneyPost(
-                            cityFrom = state.fromCity?.id ?: 0,
-                            cityTo = state.toCity?.id ?: 1,
-                            dateFrom = "${state.departureDate}T07:34:07.300Z",
-                            dateTo = "${state.arrivalDate}T07:34:07.300Z",
+                            cityFrom = state.fromCity?.id ?: 1,
+                            cityTo = state.toCity?.id ?: 2,
+                            dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
+                            dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
                             childrenAmount = state.passengerQuantity?.childValue ?: 0,
                             adultAmount = state.passengerQuantity?.adultValue ?: 1,
                             disabledAmount = state.passengerQuantity?.disabledValue ?: 0
@@ -363,4 +367,18 @@ private fun SwapCitiesButton(
             modifier = Modifier.fillMaxSize()
         )
     }
+}
+
+@Composable
+private fun Int.passengerText() = when (this) {
+        1, 21, 31, 41, 51, 61, 71, 81, 91, 101 ->
+            stringResource(id = R.string.passenger_type_one, this)
+        in 2..4, in 22..24, in 32..34, in 42..44, in 52..54,
+        in 62..64, in 72..74, in 82..84, in 92..94->
+            stringResource(id = R.string.passenger_type_two, this)
+        in 5..20, in 25..30, in 35..40, in 45..50, in 55..60,
+        in 65..70, in 75..80, in 85..90, in 95..100 ->
+            stringResource(id = R.string.passenger_type_three, this)
+        else ->
+            stringResource(id = R.string.passenger_type_one, this)
 }

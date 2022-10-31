@@ -13,6 +13,7 @@ import kz.busjol.domain.repository.CityListRepository
 import kz.busjol.domain.repository.JourneyListRepository
 import kz.busjol.domain.util.Resource
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
+import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengersQuantity
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -43,6 +44,27 @@ class SearchJourneyViewModel @Inject constructor(
             is SearchJourneyEvent.UpdateDateValue -> updateDateValue(event.date)
             is SearchJourneyEvent.UpdatePassengersQuantityValue -> updatePassengersQuantityValue(event.passengersQuantity)
             is SearchJourneyEvent.NewDestinationStatus -> newDestinationStatus(event.isStarted)
+            is SearchJourneyEvent.AdultPassengerQuantity -> {
+                state = state.copy(
+                    passengerQuantity = PassengersQuantity(
+                        adultValue = event.quantity
+                    )
+                )
+            }
+            is SearchJourneyEvent.ChildPassengerQuantity -> {
+                state = state.copy(
+                    passengerQuantity = PassengersQuantity(
+                        childValue = event.quantity
+                    )
+                )
+            }
+            is SearchJourneyEvent.DisabledPassengerQuantity -> {
+                state = state.copy(
+                    passengerQuantity = PassengersQuantity(
+                        disabledValue = event.quantity
+                    )
+                )
+            }
         }
     }
 
@@ -122,9 +144,9 @@ class SearchJourneyViewModel @Inject constructor(
         )
     }
 
-    private fun updateDateValue(departureDateValue: String) {
+    private fun updateDateValue(arrivalDateValue: String) {
         state = state.copy(
-            departureDate = departureDateValue
+            arrivalDate = arrivalDateValue
         )
     }
 
@@ -150,6 +172,7 @@ class SearchJourneyViewModel @Inject constructor(
                             state = state.copy(
                                 journeyList = result.data.orEmpty(),
                                 isButtonLoading = false,
+                                startNewDestination = true,
                                 error = null
                             )
                         }
@@ -158,12 +181,15 @@ class SearchJourneyViewModel @Inject constructor(
                             state = state.copy(
                                 journeyList = null,
                                 isButtonLoading = false,
+                                startNewDestination = false,
                                 error = result.message
                             )
                         }
 
                         is Resource.Loading -> {
-                            state = state.copy(isButtonLoading = result.isLoading)
+                            state = state.copy(
+                                isButtonLoading = result.isLoading
+                            )
                         }
                     }
                 }

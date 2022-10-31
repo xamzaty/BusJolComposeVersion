@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -34,9 +36,13 @@ import kz.busjol.R
 import kz.busjol.domain.models.City
 import kz.busjol.domain.models.Journey
 import kz.busjol.domain.models.JourneyItem
+import kz.busjol.ext.reformatDateFromBackend
+import kz.busjol.ext.reformatDateFromBackendOnlyTime
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.MultiStyleTextRow
+import kz.busjol.presentation.OnLifecycleEvent
 import kz.busjol.presentation.destinations.ChooseSeatsScreenDestination
+import kz.busjol.presentation.passenger.buy_ticket.search_journey.SearchJourneyEvent
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.BlueText
@@ -50,11 +56,10 @@ fun JourneyScreen(
     navigator: DestinationsNavigator,
     viewModel: JourneyViewModel = hiltViewModel()
 ) {
+
     val state = viewModel.state
 
     val selectedOption = remember { state.selectedOption }
-
-    println("selected: $selectedOption")
 
     Column(
         modifier = Modifier
@@ -62,7 +67,7 @@ fun JourneyScreen(
             .background(GrayBackground)
     ) {
         AppBar(title = "${ticket.departureCity?.name} - ${ticket.arrivalCity?.name}") {
-            navigator.popBackStack()
+            navigator.navigateUp()
         }
 
         RadioGroup(
@@ -73,140 +78,6 @@ fun JourneyScreen(
             ),
             seatTypeText = R.string.radio_group_title,
             selectedOptionValue = selectedOption ?: 0
-        )
-
-        val journeyList = listOf(
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "Сидячий",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "Лежачий",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
         )
 
         LazyColumn(
@@ -222,21 +93,22 @@ fun JourneyScreen(
                 .padding(top = 8.dp),
             content = {
                 item {
-                    journeyList
-                        .filteredList(seatTypeIndex = selectedOption)
-                        .forEach { journey ->
+                    ticket.journeyList
+                        ?.filteredList(seatTypeIndex = selectedOption)
+                        ?.forEach { journey ->
                             JourneyItemView(journey) {
-
-                            navigator.navigate(ChooseSeatsScreenDestination(
-                                ticket = Ticket(
-                                    departureCity = ticket.departureCity,
-                                    arrivalCity = ticket.arrivalCity,
-                                    date = ticket.date,
-                                    journey = journey
+                                navigator.navigate(
+                                    ChooseSeatsScreenDestination(
+                                        ticket = Ticket(
+                                            departureCity = ticket.departureCity,
+                                            arrivalCity = ticket.arrivalCity,
+                                            date = ticket.date,
+                                            journey = journey
+                                        )
+                                    )
                                 )
-                            ))
+                            }
                         }
-                    }
                 }
             }
         )
@@ -281,7 +153,10 @@ private fun JourneyItemView(
                 }
             ) {
                 Text(
-                    text = stringResource(id = R.string.journey_number, journey.journey?.code ?: ""),
+                    text = stringResource(
+                        id = R.string.journey_number,
+                        journey.journey?.code ?: ""
+                    ),
                     color = BlueText,
                     fontSize = 10.sp
                 )
@@ -305,7 +180,7 @@ private fun JourneyItemView(
                     contentDescription = "timeLeft",
                     modifier = Modifier.padding(end = 4.dp)
                 )
-                
+
                 Text(
                     text = stringResource(id = R.string.time_left, "13", "20"),
                     color = BlueText,
@@ -320,7 +195,7 @@ private fun JourneyItemView(
                 }
             ) {
                 Text(
-                    text = journey.departureTime ?: "",
+                    text = journey.departureTime?.reformatDateFromBackendOnlyTime() ?: "",
                     fontSize = 16.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.W500
@@ -342,7 +217,7 @@ private fun JourneyItemView(
                 }
             ) {
                 Text(
-                    text = journey.arrivalTime ?: "",
+                    text = journey.arrivalTime?.reformatDateFromBackendOnlyTime() ?: "",
                     fontSize = 16.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.W500
@@ -356,7 +231,7 @@ private fun JourneyItemView(
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
-            
+
             Column(
                 modifier = Modifier.constrainAs(bottomColumn) {
                     top.linkTo(fromDetails.bottom, 14.dp)
@@ -416,9 +291,9 @@ private fun List<Journey>.filteredList(seatTypeIndex: Int?): List<Journey> {
 }
 
 @Composable
-private fun Int.seatType() = when(this) {
+private fun Int.seatType() = when (this) {
     0 -> stringResource(id = R.string.radio_button_all)
-    1 ->  stringResource(id = R.string.radio_button_seat)
+    1 -> stringResource(id = R.string.radio_button_seat)
     2 -> stringResource(id = R.string.radio_button_lying)
     else -> ""
 }
@@ -448,10 +323,10 @@ fun RadioGroup(
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier
-                .padding(start = 25.dp, top = 8.dp)
+                .padding(start = 15.dp, top = 8.dp)
         )
         LazyRow(
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 15.dp)
                 .fillMaxWidth(),
@@ -461,39 +336,24 @@ fun RadioGroup(
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, GrayBorder),
                     elevation = 0.dp,
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(40.dp)
+                        .clickable {
+                            onSelectionChange(index)
+                            viewModel.onEvent(JourneyEvent.SelectedOption(index))
+                        }
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Text(
+                        text = text,
+                        style = typography.body1.merge(),
+                        textAlign = TextAlign.Center,
+                        color = if (index == selectedOption) White else Color.Black,
                         modifier = Modifier
-                            .clickable {
-                                onSelectionChange(index)
-                                viewModel.onEvent(JourneyEvent.SelectedOption(index))
-                            }
-                            .background(
-                                if (index == selectedOption) {
-                                    Blue500
-                                } else {
-                                    White
-                                }
-                            )
-                            .width(111.dp)
-                            .height(35.dp)
-                    ) {
-                        Text(
-                            text = text,
-                            style = typography.body1.merge(),
-                            textAlign = TextAlign.Center,
-                            color = if (index == selectedOption) {
-                                White
-                            } else {
-                                Color.Black
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .align(Alignment.CenterVertically)
-                                .wrapContentHeight()
-                        )
-                    }
+                            .fillMaxSize()
+                            .background(if (index == selectedOption) Blue500 else White)
+                            .wrapContentHeight()
+                    )
                 }
             }
         }

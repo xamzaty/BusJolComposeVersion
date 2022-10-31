@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import kz.busjol.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
@@ -60,6 +62,7 @@ import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.launch
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.utils.MaskVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,6 +124,50 @@ fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) ->
         onDispose {
             lifecycle.removeObserver(observer)
         }
+    }
+}
+
+@Composable
+fun CustomAlertDialog(
+    openDialog: Boolean,
+    title: String,
+    description: String,
+    confirmButtonText: String = "OK",
+    dismissButtonText: String = "Cancel",
+    onConfirmButtonClicked: () -> Unit
+) {
+    var showDialog by rememberSaveable { mutableStateOf(openDialog) }
+
+    if (showDialog) {
+
+        AlertDialog(
+            onDismissRequest = {
+                showDialog = false
+            },
+            title = {
+                Text(text = title)
+            },
+            text = {
+                Text(text = description)
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                        onConfirmButtonClicked()
+                    }) {
+                    Text(text = confirmButtonText)
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDialog = false
+                    }) {
+                    Text(dismissButtonText)
+                }
+            }
+        )
     }
 }
 
@@ -254,6 +301,9 @@ fun CustomTextField(
     @DrawableRes iconId: Int? = null,
     @StringRes hintId: Int,
     @StringRes labelId: Int,
+    keyboardType: KeyboardType? = null,
+    maxChar: Int? = null,
+    maskVisualTransformation: MaskVisualTransformation? = null
 ) {
 
     var textValue by rememberSaveable { mutableStateOf(text) }
@@ -269,8 +319,10 @@ fun CustomTextField(
         TextField(
             value = textValue,
             onValueChange = {
-               textValue = it
+                if (it.length <= (maxChar ?: 1000)) textValue = it
             },
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType ?: KeyboardType.Text),
             trailingIcon = {
                 iconId?.let { painterResource(id = it) }?.let {
                     Icon(
@@ -279,6 +331,59 @@ fun CustomTextField(
                     )
                 }
             },
+            shape = RoundedCornerShape(8.dp),
+            placeholder = { Text(text = stringResource(id = hintId)) },
+            label = { Text(text = stringResource(id = labelId)) },
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = Color.Black,
+                disabledTextColor = Color.Transparent,
+                backgroundColor = White,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            )
+        )
+    }
+}
+
+@Composable
+fun CustomTextFieldWithMask(
+    modifier: Modifier = Modifier,
+    text: String,
+    @DrawableRes iconId: Int? = null,
+    @StringRes hintId: Int,
+    @StringRes labelId: Int,
+    keyboardType: KeyboardType? = null,
+    maxChar: Int? = null,
+    maskVisualTransformation: MaskVisualTransformation
+) {
+
+    var textValue by rememberSaveable { mutableStateOf(text) }
+
+    Card(
+        border = BorderStroke(1.dp, GrayBorder),
+        elevation = 0.dp,
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(62.dp)
+    ) {
+        TextField(
+            value = textValue,
+            onValueChange = {
+                if (it.length <= (maxChar ?: 1000)) textValue = it
+            },
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType ?: KeyboardType.Text),
+            trailingIcon = {
+                iconId?.let { painterResource(id = it) }?.let {
+                    Icon(
+                        painter = it,
+                        contentDescription = "icon"
+                    )
+                }
+            },
+            visualTransformation = maskVisualTransformation,
             shape = RoundedCornerShape(8.dp),
             placeholder = { Text(text = stringResource(id = hintId)) },
             label = { Text(text = stringResource(id = labelId)) },

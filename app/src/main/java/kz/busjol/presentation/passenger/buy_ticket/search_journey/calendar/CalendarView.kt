@@ -91,6 +91,6 @@ private fun Int.dayDateValue() = when (this.toString().length) {
 }
 
 private fun Int.monthDateValue() = when (this.toString().length) {
-    1 -> "0${this+1}"
+    1 -> "0${this+1}".replace("010", "10")
     else -> "${this+1}"
 }
