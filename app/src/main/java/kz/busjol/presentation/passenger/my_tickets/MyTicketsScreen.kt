@@ -147,140 +147,6 @@ private fun RegisteredSection(isUserHaveTickets: Boolean) {
             .padding(top = 22.dp, start = 15.dp, end = 15.dp, bottom = 16.dp)
     ) {
 
-        val journeyList = listOf(
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-
-            Journey(
-                journey = JourneyItem(
-                    id = 1,
-                    created = "",
-                    status = 3,
-                    name = "",
-                    departsOn = "09:00",
-                    routeId = 2,
-                    carrierId = 2,
-                    transportId = 3,
-                    code = "3"
-                ),
-                departureTime = "09:00",
-                arrivalTime = "14:20",
-                amount = 2000,
-                numberOfPlaces = 20,
-                numberOfFreePlaces = 13,
-                stopName = "",
-                cityFrom = City(id = 0, name = "Алматы"),
-                cityTo = City(id = 0, name = "Балхаш")
-            ),
-        )
-
         Text(
             text = stringResource(id = R.string.my_tickets_title),
             fontWeight = FontWeight.W700,
@@ -321,11 +187,11 @@ private fun RegisteredSection(isUserHaveTickets: Boolean) {
                     .padding(top = 8.dp),
                 content = {
                     item {
-                        journeyList.forEach {
-                            TicketItemView(journey = it) {
-
-                            }
-                        }
+//                        journeyList.forEach {
+//                            TicketItemView(journey = it) {
+//
+//                            }
+//                        }
                     }
                 }
             )

@@ -1,6 +1,5 @@
 package kz.busjol.presentation.passenger.buy_ticket.choose_seats
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -62,7 +61,7 @@ class ChooseSeatsViewModel @Inject constructor(
             .replace("[", "")
             .replace("]", "")
 
-        state = if (seatsSet.value.lastOrNull() == seatsSet.value.size - 1) {
+        state = if (seatsSet.value.lastOrNull() == seatsSet.value.size) {
             state.copy(
                 list = itemWithoutSeparator,
                 seatsQuantity = seatsSet.value.size

@@ -3,12 +3,12 @@ package kz.busjol.presentation.passenger.buy_ticket.choose_seats
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,24 +17,26 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.flowlayout.FlowMainAxisAlignment
+import com.google.accompanist.flowlayout.FlowRow
+import com.google.accompanist.flowlayout.SizeMode
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.presentation.AppBar
 import kz.busjol.R
 import kz.busjol.presentation.ProgressButton
-import kz.busjol.presentation.destinations.BookingScreenDestination
 import kz.busjol.presentation.destinations.PassengerDataScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.*
 import kz.busjol.utils.rememberViewInteropNestedScrollConnection
 
-private const val CELL_COUNT = 4
-
+@OptIn(ExperimentalFoundationApi::class)
 @Destination
 @Composable
 fun ChooseSeatsScreen(
@@ -50,7 +52,7 @@ fun ChooseSeatsScreen(
             .fillMaxSize()
             .background(GrayBackground),
         content = {
-            item {
+            stickyHeader {
                 AppBar(
                     title = stringResource(id = R.string.choose_seats_title)
                 ) {
@@ -93,9 +95,9 @@ fun ChooseSeatsScreen(
                     border = BorderStroke(1.dp, GrayBorder),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
-                        .height(506.dp)
                         .nestedScroll(rememberViewInteropNestedScrollConnection())
                         .fillMaxWidth()
+                        .defaultMinSize(minHeight = 400.dp)
                         .padding(top = 16.dp, start = 42.dp, end = 42.dp)
                 ) {
 
@@ -113,28 +115,28 @@ fun ChooseSeatsScreen(
                                 .size(38.dp)
                         )
 
-                        LazyVerticalGrid(
+                        FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 24.dp),
-                            columns = GridCells.Fixed(CELL_COUNT),
-                            content = {
-                                items(100) { index ->
-                                    SeatItem(
-                                        text = "${index + 1}",
-                                        index = index
-                                    ) {
-                                        viewModel.onEvent(ChooseSeatsEvent.AddItemToList(index + 1))
-                                    }
-                                }
-                            })
+                            mainAxisSize = SizeMode.Expand,
+                            mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween
+                        ) {
+                            ticket.seatList?.forEachIndexed { index, seats ->
+                                SeatItem(
+                                    text = seats.seatNumber,
+                                    index = index,
+                                    isEmpty = true
+                                )
+                            }
+                        }
                     }
                 }
             }
             item {
                 Card(
                     elevation = 10.dp,
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 31.dp)
@@ -191,42 +193,69 @@ fun SeatItem(
     modifier: Modifier = Modifier,
     text: String,
     index: Int,
-    onClick: () -> Unit
+    isEmpty: Boolean,
+    viewModel: ChooseSeatsViewModel = hiltViewModel()
 ) {
-    Card(shape = RoundedCornerShape(4.dp),
-        elevation = 1.dp,
-        border = BorderStroke(2.dp, Blue500),
+    val isChecked = remember { mutableStateOf(false) }
+    val border = remember { mutableStateOf(BorderStroke(2.dp, Blue500)) }
+    val backgroundColor = remember { mutableStateOf(Color.White) }
+    val textColor = remember { mutableStateOf(Color.Black) }
+
+    Card(
+        shape = RoundedCornerShape(4.dp),
+        elevation = 0.dp,
+        backgroundColor = if (isEmpty) backgroundColor.value else GrayBackground,
+        border = if (isEmpty) border.value else BorderStroke(2.dp, GrayBackground),
         modifier = modifier
             .padding(horizontal = 15.dp, vertical = 10.dp)
             .size(40.dp)
-            .clickable { onClick() }) {
-        Text(
-            text = text,
-            textAlign = TextAlign.Center,
-            fontSize = 18.sp,
-            modifier = Modifier
-                .fillMaxSize()
-                .wrapContentHeight()
-        )
-    }
+            .toggleable(value = isChecked.value, role = Role.Checkbox) {
+                if (isEmpty) {
+                    isChecked.value = it
+
+                    if (isChecked.value) {
+                        viewModel.onEvent(ChooseSeatsEvent.AddItemToList(text.toInt()))
+                        border.value = BorderStroke(2.dp, Blue500)
+                        backgroundColor.value = Blue500
+                        textColor.value = Color.White
+                    } else {
+                        viewModel.onEvent(ChooseSeatsEvent.RemoveItem(text.toInt()))
+                        border.value = BorderStroke(2.dp, Blue500)
+                        backgroundColor.value = Color.White
+                        textColor.value = Color.Black
+                    }
+                }
+            },
+
+        content = {
+            Text(
+                text = text,
+                textAlign = TextAlign.Center,
+                fontSize = 12.sp,
+                color = if (isEmpty) textColor.value else Color.Black,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentHeight()
+            )
+        }
+    )
 }
 
 @Composable
 private fun SmallDescriptionBox(
-    isFreeSeat: Boolean, modifier: Modifier = Modifier
+    isFreeSeat: Boolean,
+    modifier: Modifier = Modifier
 ) {
     Card(shape = RoundedCornerShape(4.dp),
         elevation = 0.dp,
-        border = if (isFreeSeat) BorderStroke(1.dp, Blue500) else BorderStroke(
-            0.dp, DarkGrayBackground
-        ),
+        backgroundColor = if (isFreeSeat) Color.White else GrayBackground,
+        border = if (isFreeSeat) BorderStroke(1.dp, Blue500) else BorderStroke(0.dp, DarkGrayBackground),
         modifier = modifier
-            .size(16.dp)
-            .background(if (isFreeSeat) Color.White else DarkGrayBackground),
+            .size(16.dp),
         content = { })
 }
 
-private fun Modifier.returnSeatModifier(index: Int) = when (index) {
+private fun Modifier.seatModifier(index: Int) = when (index) {
     0 -> this.padding(top = 24.dp)
     1 -> this.padding(start = 8.dp, top = 24.dp, end = 15.dp)
     2 -> this.padding(start = 15.dp, top = 24.dp)

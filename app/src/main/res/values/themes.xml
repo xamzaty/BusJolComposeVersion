@@ -2,11 +2,12 @@
 <resources>
 
     <style name="Theme.BusJolCompose" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
+        <item name="android:statusBarColor">@color/white</item>
     </style>
 
     <style name="Widget.CalendarView.Custom" parent="android:Widget.CalendarView">
-        <item name="android:firstDayOfWeek">1</item>
+        <item name="android:firstDayOfWeek">2</item>
+        <item name="android:colorAccent">#FF2196F3</item>
         <item name="android:colorActivatedHighlight">#FF2196F3</item>
         <item name="android:selectedWeekBackgroundColor">#FF2196F3</item>
         <item name="android:weekNumberColor">#FF2196F3</item>

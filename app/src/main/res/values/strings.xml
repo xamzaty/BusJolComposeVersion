@@ -13,7 +13,7 @@
 
     <string name="fill_in_all_the_fields_error">Заполните все поля!</string>
 
-    <string name="invalid_email">Не верный адрес электронной почты!</string>
+    <string name="invalid_email">Неверный адрес электронной почты!</string>
 
     <string name="alert_exit_title">Выход</string>
     <string name="alert_exit_description">Вы уверены, что хотите выйти?</string>

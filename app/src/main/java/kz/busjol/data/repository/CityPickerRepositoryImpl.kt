@@ -3,7 +3,7 @@ package kz.busjol.data.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kz.busjol.data.mappers.toCityList
-import kz.busjol.data.remote.CityListApi
+import kz.busjol.data.remote.api.CityListApi
 import kz.busjol.domain.models.City
 import kz.busjol.domain.repository.CityListRepository
 import kz.busjol.domain.util.Resource

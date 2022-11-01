@@ -6,8 +6,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kz.busjol.BuildConfig
 import kz.busjol.utils.Consts.BASE_URL
-import kz.busjol.data.remote.CityListApi
-import kz.busjol.data.remote.SearchJourneyApi
+import kz.busjol.data.remote.api.CityListApi
+import kz.busjol.data.remote.api.SearchJourneyApi
+import kz.busjol.data.remote.api.SeatsListApi
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -77,5 +78,11 @@ class AppModule {
     @Singleton
     fun provideJourneyListApi(): SearchJourneyApi {
         return getRetrofit().create(SearchJourneyApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSeatsListApi(): SeatsListApi {
+        return getRetrofit().create(SeatsListApi::class.java)
     }
 }

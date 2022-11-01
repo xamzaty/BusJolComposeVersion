@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import kz.busjol.R
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
@@ -32,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -44,6 +47,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -62,6 +66,7 @@ import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.launch
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.presentation.theme.GrayText
 import kz.busjol.utils.MaskVisualTransformation
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -176,18 +181,22 @@ fun NotFoundView(modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Image(
             painter = painterResource(id = R.drawable.bus_with_city_image),
-            contentDescription = "notFound"
+            contentDescription = "notFound",
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.Center,
+            modifier = Modifier.size(128.dp)
         )
 
         Text(
             text = stringResource(id = R.string.not_found),
             fontSize = 14.sp,
-            textAlign = TextAlign.Center
+            color = GrayText,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 16.dp)
         )
     }
 }

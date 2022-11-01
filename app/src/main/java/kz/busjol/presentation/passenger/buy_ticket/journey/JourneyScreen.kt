@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -29,20 +28,16 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.R
-import kz.busjol.domain.models.City
 import kz.busjol.domain.models.Journey
-import kz.busjol.domain.models.JourneyItem
-import kz.busjol.ext.reformatDateFromBackend
 import kz.busjol.ext.reformatDateFromBackendOnlyTime
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.MultiStyleTextRow
+import kz.busjol.presentation.NotFoundView
 import kz.busjol.presentation.OnLifecycleEvent
 import kz.busjol.presentation.destinations.ChooseSeatsScreenDestination
-import kz.busjol.presentation.passenger.buy_ticket.search_journey.SearchJourneyEvent
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.BlueText
@@ -57,9 +52,32 @@ fun JourneyScreen(
     viewModel: JourneyViewModel = hiltViewModel()
 ) {
 
+    OnLifecycleEvent { _, event ->
+        when (event) {
+            Lifecycle.Event.ON_STOP -> {
+                viewModel.onEvent(JourneyEvent.NewDestinationStatus(false))
+            }
+            else -> Unit
+        }
+    }
+
     val state = viewModel.state
 
     val selectedOption = remember { state.selectedOption }
+
+    if (state.startNewDestination) {
+        navigator.navigate(
+            ChooseSeatsScreenDestination(
+                ticket = Ticket(
+                    departureCity = ticket.departureCity,
+                    arrivalCity = ticket.arrivalCity,
+                    date = ticket.date,
+                    journey = state.selectedJourney,
+                    seatList = state.seatsList
+                )
+            )
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -70,48 +88,55 @@ fun JourneyScreen(
             navigator.navigateUp()
         }
 
-        RadioGroup(
-            listOfOptions = listOf(
-                stringResource(id = R.string.radio_button_all),
-                stringResource(id = R.string.radio_button_seat),
-                stringResource(id = R.string.radio_button_lying)
-            ),
-            seatTypeText = R.string.radio_group_title,
-            selectedOptionValue = selectedOption ?: 0
-        )
+        if (ticket.journeyList.isNullOrEmpty()) {
 
-        LazyColumn(
-            contentPadding = PaddingValues(
-                top = 6.dp,
-                start = 15.dp,
-                end = 15.dp,
-                bottom = 38.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            content = {
-                item {
-                    ticket.journeyList
-                        ?.filteredList(seatTypeIndex = selectedOption)
-                        ?.forEach { journey ->
-                            JourneyItemView(journey) {
-                                navigator.navigate(
-                                    ChooseSeatsScreenDestination(
-                                        ticket = Ticket(
-                                            departureCity = ticket.departureCity,
-                                            arrivalCity = ticket.arrivalCity,
-                                            date = ticket.date,
-                                            journey = journey
+            NotFoundView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 86.dp)
+            )
+        } else {
+
+            RadioGroup(
+                listOfOptions = listOf(
+                    stringResource(id = R.string.radio_button_all),
+                    stringResource(id = R.string.radio_button_seat),
+                    stringResource(id = R.string.radio_button_lying)
+                ),
+                seatTypeText = R.string.radio_group_title,
+                selectedOptionValue = selectedOption ?: 0
+            )
+
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    top = 6.dp,
+                    start = 15.dp,
+                    end = 15.dp,
+                    bottom = 38.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                content = {
+                    item {
+                        ticket.journeyList
+                            ?.filteredList(seatTypeIndex = selectedOption)
+                            ?.forEach { journey ->
+
+                                JourneyItemView(journey) {
+                                    viewModel.onEvent(
+                                        JourneyEvent.OnJourneyClicked(
+                                            id = journey.journey?.id.toString(),
+                                            selectedJourney = journey
                                         )
                                     )
-                                )
+                                }
                             }
-                        }
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }
 
