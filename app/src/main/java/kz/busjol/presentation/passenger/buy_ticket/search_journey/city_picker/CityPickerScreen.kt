@@ -70,15 +70,13 @@ fun CityPickerScreen(
 
         LazyColumn {
             item {
-                if (state.cityList?.isNotEmpty() == true) {
-                    state.cityList.filter {
-                        it.name?.lowercase()!!.contains(text.text.lowercase())
-                    }.forEach { city ->
+                if (state.cityList?.isNotEmpty() == true || !state.isCityLoading) {
+                    state.cityList
+                        ?.filter { it.name?.lowercase()!!.contains(text.text.lowercase()) }
+                        ?.forEach { city ->
+
                         CityItem(city, cityList = state.cityList) {
-                            if (fromOrToCity == "from") viewModel.onEvent(SearchJourneyEvent.UpdateFromCityValue(
-                                    city
-                                )
-                            )
+                            if (fromOrToCity == "from") viewModel.onEvent(SearchJourneyEvent.UpdateFromCityValue(city))
                             else viewModel.onEvent(SearchJourneyEvent.UpdateToCityValue(city))
 
                             onCloseBottomSheet()

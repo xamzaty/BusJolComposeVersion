@@ -1,14 +1,13 @@
 package kz.busjol.presentation.passenger.buy_ticket.payment_order_result
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,13 +23,20 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
-import com.google.zxing.qrcode.QRCodeWriter
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.popUpTo
+import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
+import kz.busjol.presentation.NavGraphs
+import kz.busjol.presentation.ProgressButton
+import kz.busjol.presentation.destinations.BookingScreenDestination
+import kz.busjol.presentation.destinations.DirectionDestination
+import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
+import kz.busjol.presentation.startAppDestination
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBackground
 
@@ -41,11 +47,15 @@ fun PaymentOrderResultScreen(
     navigator: DestinationsNavigator
 ) {
 
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
             .background(GrayBackground)
+            .verticalScroll(scrollState)
     ) {
 
         val clientName = remember { "Khamzat Yerzhanov" }
@@ -57,20 +67,17 @@ fun PaymentOrderResultScreen(
         val arrivalStation = remember { "Автовокзал Балхаш" }
         val qrUrlList = remember { "https://stackoverflow.com/questions/28232116/android-using-zxing-generate-qr-code" }
 
-        val seatList = remember { mutableListOf(11) }
-
-        seatList.add(12)
-        seatList.add(13)
+        val seatList = remember { mutableListOf(11, 12, 13) }
 
         AppBar(title = stringResource(id = R.string.payment_order_result_title, "123123")) {
 
         }
-        
+
         Card(
             elevation = 0.dp,
             border = BorderStroke(15.dp, Blue500),
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.padding(start = 15.dp, top = 16.dp, end = 15.dp)
+            modifier = Modifier.padding(start = 45.dp, top = 16.dp, end = 45.dp)
         ) {
             ConstraintLayout(
                 modifier = Modifier
@@ -85,7 +92,7 @@ fun PaymentOrderResultScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 25.dp)
                         .constrainAs(clientDataRow) {
-                            top.linkTo(parent.top)
+                            top.linkTo(parent.top, 16.dp)
                             start.linkTo(parent.start, 16.dp)
                             end.linkTo(parent.end, 16.dp)
                         }
@@ -248,14 +255,39 @@ fun PaymentOrderResultScreen(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Card(
+            elevation = 10.dp,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 29.dp)
+                .offset(y = 6.dp)
+        ) {
+            ProgressButton(
+                textId = R.string.back_to_main_menu_button,
+                isProgressAvailable = false,
+                isEnabled = true,
+                modifier = Modifier
+                    .padding(vertical = 16.dp, horizontal = 15.dp)
+            ) {
+                scope.launch {
+                    navigator.backToMainScreen()
+                }
+            }
+        }
     }
-
-
-
 }
 
 @Throws(WriterException::class)
-fun encodeAsBitmap(str: String?): ImageBitmap {
-    val qrCodeBitmap = BarcodeEncoder().encodeBitmap(str, BarcodeFormat.QR_CODE, 450, 450)
-    return qrCodeBitmap.asImageBitmap()
-}
+fun encodeAsBitmap(str: String?) =
+    BarcodeEncoder().encodeBitmap(str, BarcodeFormat.QR_CODE, 450, 450).asImageBitmap()
+
+private fun DestinationsNavigator.backToMainScreen() =
+    this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
+        popUpTo(SearchJourneyScreenDestination) {
+            inclusive = true
+        }
+    }

@@ -1,13 +1,14 @@
 package kz.busjol.presentation.passenger.buy_ticket.booking
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,9 +20,11 @@ import kz.busjol.presentation.passenger.buy_ticket.journey_details.JourneyDetail
 import kz.busjol.presentation.theme.GrayBackground
 import kz.busjol.R
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
@@ -33,6 +36,7 @@ import com.ramcosta.composedestinations.spec.Route
 import kz.busjol.ext.formatWithCurrency
 import kz.busjol.presentation.*
 import kz.busjol.presentation.destinations.DirectionDestination
+import kz.busjol.presentation.destinations.PaymentOrderResultScreenDestination
 import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
@@ -63,7 +67,7 @@ fun BookingScreen(
         {
             JourneyDetailsScreen(sheetState, coroutineScope, ticket)
         }) {
-            MainContent(sheetState, coroutineScope, ticket, navigator)
+        MainContent(sheetState, coroutineScope, ticket, navigator)
     }
 }
 
@@ -79,7 +83,7 @@ private fun MainContent(
 
     val state = viewModel.state
 
-    val openDialog = remember { mutableStateOf(false)  }
+    val openDialog = remember { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -149,13 +153,13 @@ private fun MainContent(
                     text = stringResource(id = R.string.journey_number, "23"),
                     fontSize = 11.sp,
                     color = Color.Black,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp ),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                 )
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(top = 4.dp, start = 16.dp, end = 16.dp,)
+                        .padding(top = 4.dp, start = 16.dp, end = 16.dp)
                         .fillMaxWidth()
                 ) {
 
@@ -181,7 +185,12 @@ private fun MainContent(
                 Text(
                     text = "24.12.2022 09:00",
                     color = GrayText,
-                    modifier = Modifier.padding(top = 4.dp, start = 16.dp, end = 16.dp, bottom = 8.dp),
+                    modifier = Modifier.padding(
+                        top = 4.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 8.dp
+                    ),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.W500
                 )
@@ -212,18 +221,28 @@ private fun MainContent(
 
         PaymentTypeLayout(
             isBankCardsPayment = true,
-            checkboxState = true,
             modifier = Modifier.padding(top = 16.dp)
         ) {
-
+            coroutineScope.launch {
+                navigator.navigate(
+                    PaymentOrderResultScreenDestination(
+                        ticket
+                    )
+                )
+            }
         }
 
         PaymentTypeLayout(
             isBankCardsPayment = false,
-            checkboxState = false,
             modifier = Modifier.padding(top = 12.dp)
         ) {
-
+            coroutineScope.launch {
+                navigator.navigate(
+                    PaymentOrderResultScreenDestination(
+                        ticket
+                    )
+                )
+            }
         }
     }
 }
@@ -232,9 +251,9 @@ private fun MainContent(
 private fun PaymentTypeLayout(
     modifier: Modifier = Modifier,
     isBankCardsPayment: Boolean,
-    checkboxState: Boolean,
     onClick: () -> Unit
 ) {
+
     Card(
         elevation = 0.dp,
         shape = RoundedCornerShape(12.dp),
@@ -260,8 +279,6 @@ private fun PaymentTypeLayout(
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier.size(24.dp)
                 )
-
-                Spacer(modifier = Modifier.weight(1f))
             }
 
             Text(
@@ -273,23 +290,56 @@ private fun PaymentTypeLayout(
 
             Spacer(modifier = Modifier.padding(top = 12.dp))
 
-            if (checkboxState) {
-                ProgressButton(
-                    textId = R.string.payment_button,
-                    isProgressAvailable = false,
-                    isEnabled = true,
-                    modifier = Modifier
-                        .padding(bottom = 12.dp)
-                        .height(42.dp)
-                ) {
-                    onClick()
-                }
+            ProgressButton(
+                textId = R.string.payment_button,
+                isProgressAvailable = false,
+                isEnabled = true,
+                modifier = Modifier
+                    .padding(bottom = 12.dp)
+                    .height(42.dp)
+            ) {
+                onClick()
             }
         }
     }
 }
 
-fun DestinationsNavigator.backToMainScreen() =
+@Composable
+private fun RoundedCheckView(
+    modifier: Modifier = Modifier,
+    isCheckedValue: Boolean,
+) {
+    val isChecked = remember { mutableStateOf(isCheckedValue) }
+    val backgroundColor = remember { mutableStateOf(Color.White) }
+
+    Card(
+        elevation = 0.dp,
+        shape = CircleShape,
+        border = BorderStroke(1.dp, Blue500),
+        backgroundColor = backgroundColor.value,
+        modifier = modifier
+            .size(20.dp)
+            .toggleable(value = isChecked.value, role = Role.Checkbox) {
+                isChecked.value = it
+
+                if (isChecked.value) {
+                    backgroundColor.value = Blue500
+                } else {
+                    backgroundColor.value = Color.White
+                }
+            }
+    ) {
+        if (isChecked.value) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "",
+                tint = Color.White
+            )
+        }
+    }
+}
+
+private fun DestinationsNavigator.backToMainScreen() =
     this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
         popUpTo(SearchJourneyScreenDestination) {
             inclusive = true

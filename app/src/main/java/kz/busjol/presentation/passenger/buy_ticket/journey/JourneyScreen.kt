@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.domain.models.Journey
 import kz.busjol.ext.reformatDateFromBackendOnlyTime
@@ -51,32 +52,32 @@ fun JourneyScreen(
     navigator: DestinationsNavigator,
     viewModel: JourneyViewModel = hiltViewModel()
 ) {
-
-    OnLifecycleEvent { _, event ->
-        when (event) {
-            Lifecycle.Event.ON_STOP -> {
-                viewModel.onEvent(JourneyEvent.NewDestinationStatus(false))
-            }
-            else -> Unit
-        }
-    }
-
     val state = viewModel.state
+    val scope = rememberCoroutineScope()
 
     val selectedOption = remember { state.selectedOption }
 
-    if (state.startNewDestination) {
-        navigator.navigate(
-            ChooseSeatsScreenDestination(
-                ticket = Ticket(
-                    departureCity = ticket.departureCity,
-                    arrivalCity = ticket.arrivalCity,
-                    date = ticket.date,
-                    journey = state.selectedJourney,
-                    seatList = state.seatsList
+    LaunchedEffect(state.startNewDestination) {
+        if (state.startNewDestination) {
+            navigator.navigate(
+                ChooseSeatsScreenDestination(
+                    ticket = Ticket(
+                        departureCity = ticket.departureCity,
+                        arrivalCity = ticket.arrivalCity,
+                        date = ticket.date,
+                        journey = state.selectedJourney,
+                        seatList = state.seatsList,
+                        passengerList = ticket.passengerList
+                    )
                 )
             )
-        )
+        }
+    }
+
+    DisposableEffect(state.startNewDestination) {
+        onDispose {
+            viewModel.onEvent(JourneyEvent.NewDestinationStatus(false))
+        }
     }
 
     Column(
@@ -85,7 +86,9 @@ fun JourneyScreen(
             .background(GrayBackground)
     ) {
         AppBar(title = "${ticket.departureCity?.name} - ${ticket.arrivalCity?.name}") {
-            navigator.navigateUp()
+            scope.launch {
+                navigator.navigateUp()
+            }
         }
 
         if (ticket.journeyList.isNullOrEmpty()) {
@@ -121,16 +124,17 @@ fun JourneyScreen(
                 content = {
                     item {
                         ticket.journeyList
-                            ?.filteredList(seatTypeIndex = selectedOption)
-                            ?.forEach { journey ->
-
+                            .filteredList(seatTypeIndex = selectedOption)
+                            .forEach { journey ->
                                 JourneyItemView(journey) {
-                                    viewModel.onEvent(
-                                        JourneyEvent.OnJourneyClicked(
-                                            id = journey.journey?.id.toString(),
-                                            selectedJourney = journey
+                                    scope.launch {
+                                        viewModel.onEvent(
+                                            JourneyEvent.OnJourneyClicked(
+                                                id = journey.journey?.id.toString(),
+                                                selectedJourney = journey
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                             }
                     }

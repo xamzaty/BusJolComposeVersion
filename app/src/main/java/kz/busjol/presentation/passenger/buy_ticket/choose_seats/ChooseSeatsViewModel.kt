@@ -15,7 +15,7 @@ class ChooseSeatsViewModel @Inject constructor(
     var state by mutableStateOf(ChooseSeatsState().mock())
         private set
 
-    private var seatsSet = mutableStateOf(mutableSetOf<Int>())
+    private var seatsSet = mutableSetOf<Int>()
 
     fun onEvent(event: ChooseSeatsEvent) {
         when (event) {
@@ -31,15 +31,15 @@ class ChooseSeatsViewModel @Inject constructor(
     }
 
     private fun addItemToSet(item: Int) {
-        val set = seatsSet.value
+        val set = seatsSet
         set.add(item)
 
-        seatsSet.value = set
+        seatsSet = set
     }
 
     private fun removeItemFromSet(item: Int) {
-        val set = seatsSet.value
-        val iterator = seatsSet.value.iterator()
+        val set = seatsSet
+        val iterator = seatsSet.iterator()
 
         while (iterator.hasNext()) {
             if (iterator.next() == item) {
@@ -47,29 +47,29 @@ class ChooseSeatsViewModel @Inject constructor(
             }
         }
 
-        seatsSet.value = set
+        seatsSet = set
     }
 
     private fun setItems() {
-        val itemWithSeparator = seatsSet.value.toString()
+        val itemWithSeparator = seatsSet.toString()
             .replace(",", " /")
             .replace("[", "")
             .replace("]", "")
 
-        val itemWithoutSeparator = seatsSet.value.toString()
+        val itemWithoutSeparator = seatsSet.toString()
             .replace(",", "")
             .replace("[", "")
             .replace("]", "")
 
-        state = if (seatsSet.value.lastOrNull() == seatsSet.value.size) {
+        state = if (seatsSet.lastOrNull() == seatsSet.size) {
             state.copy(
                 list = itemWithoutSeparator,
-                seatsQuantity = seatsSet.value.size
+                seatsQuantity = seatsSet.size
             )
         } else {
             state.copy(
                 list = itemWithSeparator,
-                seatsQuantity = seatsSet.value.size
+                seatsQuantity = seatsSet.size
             )
         }
     }

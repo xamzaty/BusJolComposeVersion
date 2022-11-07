@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +29,7 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.SizeMode
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import kz.busjol.presentation.AppBar
 import kz.busjol.R
 import kz.busjol.presentation.ProgressButton
@@ -45,7 +47,9 @@ fun ChooseSeatsScreen(
     viewModel: ChooseSeatsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
-    val isButtonAvailable = remember { state.seatsQuantity == ticket.passengerList?.size }
+    val scope = rememberCoroutineScope()
+
+    val isButtonAvailable = remember { mutableStateOf(state.seatsQuantity == ticket.passengerList?.size) }
 
     LazyColumn(horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -53,10 +57,10 @@ fun ChooseSeatsScreen(
             .background(GrayBackground),
         content = {
             stickyHeader {
-                AppBar(
-                    title = stringResource(id = R.string.choose_seats_title)
-                ) {
-                    navigator.navigateUp()
+                AppBar(title = stringResource(id = R.string.choose_seats_title)) {
+                    scope.launch {
+                        navigator.navigateUp()
+                    }
                 }
             }
             item {
@@ -97,8 +101,8 @@ fun ChooseSeatsScreen(
                     modifier = Modifier
                         .nestedScroll(rememberViewInteropNestedScrollConnection())
                         .fillMaxWidth()
-                        .defaultMinSize(minHeight = 400.dp)
-                        .padding(top = 16.dp, start = 42.dp, end = 42.dp)
+                        .defaultMinSize(minHeight = 450.dp)
+                        .padding(top = 16.dp, start = 60.dp, end = 60.dp)
                 ) {
 
                     Column(
@@ -118,15 +122,15 @@ fun ChooseSeatsScreen(
                         FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 24.dp),
-                            mainAxisSize = SizeMode.Expand,
+                                .padding(horizontal = 15.dp),
+                            mainAxisSize = SizeMode.Wrap,
                             mainAxisAlignment = FlowMainAxisAlignment.SpaceBetween
                         ) {
                             ticket.seatList?.forEachIndexed { index, seats ->
                                 SeatItem(
                                     text = seats.seatNumber,
-                                    index = index,
-                                    isEmpty = true
+                                    isEmpty = true,
+                                    modifier = Modifier.seatModifier(index)
                                 )
                             }
                         }
@@ -167,32 +171,34 @@ fun ChooseSeatsScreen(
                         ProgressButton(
                             textId = R.string.continue_button,
                             isProgressAvailable = false,
-                            isEnabled = isButtonAvailable,
+                            isEnabled = true,
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
-                            navigator.navigate(
-                                PassengerDataScreenDestination(
-                                    ticket = Ticket(
-                                        departureCity = ticket.departureCity,
-                                        arrivalCity = ticket.arrivalCity,
-                                        date = ticket.date,
-                                        passengerList = ticket.passengerList,
-                                        journey = ticket.journey
+                            scope.launch {
+                                navigator.navigate(
+                                    PassengerDataScreenDestination(
+                                        ticket = Ticket(
+                                            departureCity = ticket.departureCity,
+                                            arrivalCity = ticket.arrivalCity,
+                                            date = ticket.date,
+                                            passengerList = ticket.passengerList,
+                                            journey = ticket.journey
+                                        )
                                     )
                                 )
-                            )
+                            }
                         }
                     }
                 }
             }
-        })
+        }
+    )
 }
 
 @Composable
 fun SeatItem(
     modifier: Modifier = Modifier,
     text: String,
-    index: Int,
     isEmpty: Boolean,
     viewModel: ChooseSeatsViewModel = hiltViewModel()
 ) {
@@ -207,7 +213,6 @@ fun SeatItem(
         backgroundColor = if (isEmpty) backgroundColor.value else GrayBackground,
         border = if (isEmpty) border.value else BorderStroke(2.dp, GrayBackground),
         modifier = modifier
-            .padding(horizontal = 15.dp, vertical = 10.dp)
             .size(40.dp)
             .toggleable(value = isChecked.value, role = Role.Checkbox) {
                 if (isEmpty) {
@@ -255,10 +260,14 @@ private fun SmallDescriptionBox(
         content = { })
 }
 
-private fun Modifier.seatModifier(index: Int) = when (index) {
-    0 -> this.padding(top = 24.dp)
-    1 -> this.padding(start = 8.dp, top = 24.dp, end = 15.dp)
-    2 -> this.padding(start = 15.dp, top = 24.dp)
-    3 -> this.padding(start = 8.dp, top = 24.dp)
+private fun Modifier.seatModifier(index: Int) = when {
+    index == 0 -> this.padding(top = 24.dp)
+    index == 1 -> this.padding(start = 8.dp, top = 24.dp, end = 15.dp)
+    index == 2 -> this.padding(start = 20.dp, top = 24.dp)
+    index == 3 -> this.padding(start = 8.dp, top = 24.dp)
+    index % 4 == 0 -> this.padding(top = 8.dp)
+    index % 4 == 1 -> this.padding(start = 8.dp, top = 8.dp, end = 15.dp)
+    index % 4 == 2 -> this.padding(start = 20.dp, top = 8.dp)
+    index % 4 == 3  -> this.padding(start = 8.dp, top = 8.dp)
     else -> this
 }

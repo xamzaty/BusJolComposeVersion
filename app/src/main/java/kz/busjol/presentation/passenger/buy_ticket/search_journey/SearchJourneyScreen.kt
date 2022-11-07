@@ -29,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Route
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
@@ -44,9 +45,7 @@ import kz.busjol.presentation.theme.GrayBorder
 @Destination(start = true)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SearchJourneyScreen(
-    navigator: DestinationsNavigator
-) {
+fun SearchJourneyScreen(navigator: DestinationsNavigator) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     var currentBottomSheet: SearchJourneyBottomSheetScreen? by remember {
@@ -79,13 +78,13 @@ fun SearchJourneyScreen(
             }
         }) { paddingValues ->
         Box(Modifier.padding(paddingValues)) {
-            MainContent(openSheet, navigator)
+            MainContent(openSheet, navigator, scope)
         }
     }
 }
 
 @Composable
-fun SheetLayout(currentScreen: SearchJourneyBottomSheetScreen, onCloseBottomSheet: () -> Unit) {
+private fun SheetLayout(currentScreen: SearchJourneyBottomSheetScreen, onCloseBottomSheet: () -> Unit) {
     when (currentScreen) {
         is SearchJourneyBottomSheetScreen.PassengersScreen -> PassengerQuantityScreen(
             onCloseBottomSheet
@@ -104,31 +103,32 @@ fun SheetLayout(currentScreen: SearchJourneyBottomSheetScreen, onCloseBottomShee
 private fun MainContent(
     openSheet: (SearchJourneyBottomSheetScreen) -> Unit,
     navigator: DestinationsNavigator,
+    scope: CoroutineScope,
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
+    val state = viewModel.state
+    
+    Loader(isDialogVisible = state.isLoading)
 
-    OnLifecycleEvent { _, event ->
-        when (event) {
-            Lifecycle.Event.ON_STOP -> {
-                viewModel.onEvent(SearchJourneyEvent.NewDestinationStatus(false))
-            }
-            else -> Unit
+    LaunchedEffect(state.startNewDestination) {
+        if (state.startNewDestination == true) {
+            navigator.navigate(
+                JourneyScreenDestination(
+                    ticket = Ticket(
+                        departureCity = state.fromCity,
+                        arrivalCity = state.toCity,
+                        passengerList = state.passengerQuantityList,
+                        journeyList = state.journeyList
+                    )
+                )
+            )
         }
     }
 
-    val state = viewModel.state
-
-    if (state.startNewDestination == true) {
-        navigator.navigate(
-            JourneyScreenDestination(
-                ticket = Ticket(
-                    departureCity = state.fromCity,
-                    arrivalCity = state.toCity,
-                    passengerList = state.passengerQuantityList,
-                    journeyList = state.journeyList
-                )
-            )
-        )
+    DisposableEffect(state.startNewDestination) {
+        onDispose {
+            viewModel.onEvent(SearchJourneyEvent.NewDestinationStatus(false))
+        }
     }
 
     Column(
@@ -174,25 +174,31 @@ private fun MainContent(
                 fromCityValue = state.fromCity?.name ?: "",
                 toCityValue = state.toCity?.name ?: "",
                 fromCitiesClick = {
-                    viewModel.onEvent(
-                        SearchJourneyEvent.CityListClicked
-                    )
-                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from"))
+                    scope.launch {
+                        viewModel.onEvent(
+                            SearchJourneyEvent.CityListClicked
+                        )
+                        openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from"))
+                    }
                 },
 
                 toCitiesClick = {
-                    viewModel.onEvent(
-                        SearchJourneyEvent.CityListClicked
-                    )
-                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to"))
+                    scope.launch {
+                        viewModel.onEvent(
+                            SearchJourneyEvent.CityListClicked
+                        )
+                        openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to"))
+                    }
                 },
 
                 swapButtonOnClick = {
-                    viewModel.onEvent(
-                        SearchJourneyEvent.SwapCities(
-                            state.fromCity ?: City(), state.toCity ?: City()
+                    scope.launch {
+                        viewModel.onEvent(
+                            SearchJourneyEvent.SwapCities(
+                                state.fromCity ?: City(), state.toCity ?: City()
+                            )
                         )
-                    )
+                    }
                 },
                 modifier = Modifier.padding(top = 32.dp)
             )
@@ -212,7 +218,9 @@ private fun MainContent(
                         .weight(1f)
                         .padding(end = 2.5.dp)
                 ) {
-                    openSheet(SearchJourneyBottomSheetScreen.CalendarScreen)
+                    scope.launch {
+                        openSheet(SearchJourneyBottomSheetScreen.CalendarScreen)
+                    }
                 }
 
                 ClickableTextField(
@@ -225,7 +233,9 @@ private fun MainContent(
                         .weight(1f)
                         .padding(start = 2.5.dp)
                 ) {
-                    openSheet(SearchJourneyBottomSheetScreen.PassengersScreen)
+                    scope.launch {
+                        openSheet(SearchJourneyBottomSheetScreen.PassengersScreen)
+                    }
                 }
             }
 
@@ -235,19 +245,21 @@ private fun MainContent(
                 isProgressAvailable = state.isButtonLoading,
                 isEnabled = true
             ) {
-                viewModel.onEvent(
-                    SearchJourneyEvent.JourneyListSearch(
-                        JourneyPost(
-                            cityFrom = state.fromCity?.id ?: 1,
-                            cityTo = state.toCity?.id ?: 2,
-                            dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
-                            dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
-                            childrenAmount = state.passengerQuantity?.childValue ?: 0,
-                            adultAmount = state.passengerQuantity?.adultValue ?: 1,
-                            disabledAmount = state.passengerQuantity?.disabledValue ?: 0
+                scope.launch {
+                    viewModel.onEvent(
+                        SearchJourneyEvent.JourneyListSearch(
+                            JourneyPost(
+                                cityFrom = state.fromCity?.id ?: 1,
+                                cityTo = state.toCity?.id ?: 2,
+                                dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
+                                dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
+                                childrenAmount = state.passengerQuantity?.childValue ?: 0,
+                                adultAmount = state.passengerQuantity?.adultValue ?: 1,
+                                disabledAmount = state.passengerQuantity?.disabledValue ?: 0
+                            )
                         )
                     )
-                )
+                }
             }
         }
 }
@@ -280,7 +292,8 @@ fun CitiesLayout(
                     end.linkTo(parent.end)
                     bottom.linkTo(divider.top)
                     width = Dimension.fillToConstraints
-                })
+                }
+            )
 
             Divider(
                 color = GrayBorder,
@@ -305,7 +318,8 @@ fun CitiesLayout(
                     end.linkTo(parent.end)
                     bottom.linkTo(parent.bottom)
                     width = Dimension.fillToConstraints
-                })
+                }
+            )
 
             SwapCitiesButton(
                 onClick = swapButtonOnClick,
@@ -313,7 +327,8 @@ fun CitiesLayout(
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                     end.linkTo(parent.end, 16.dp)
-                })
+                }
+            )
         }
     }
 }

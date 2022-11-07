@@ -1,31 +1,27 @@
 package kz.busjol.presentation
 
+import android.graphics.Typeface
+import android.os.Build
+import android.text.Html
+import android.text.Spanned
+import android.text.style.*
+import android.widget.TextView
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import kz.busjol.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -34,7 +30,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -43,23 +38,30 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.*
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.text.HtmlCompat
+import androidx.core.text.getSpans
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -72,8 +74,9 @@ import kz.busjol.utils.MaskVisualTransformation
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(
-    title: String,
     modifier: Modifier = Modifier,
+    title: String,
+    isCross: Boolean = false,
     onClick: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -92,7 +95,10 @@ fun AppBar(
                 )
             },
             navigationIcon = {
-                BackButton(modifier = Modifier.padding(start = 15.dp)) {
+                BackButton(
+                    modifier = Modifier.padding(start = 15.dp),
+                    isCross = isCross
+                ) {
                     onClick()
                 }
             },
@@ -110,6 +116,31 @@ fun AppBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .alpha(0.7f)
+        )
+    }
+}
+
+@Composable
+fun BackButton(
+    modifier: Modifier,
+    isCross: Boolean = false,
+    onClick: () -> Unit
+) {
+    Card(
+        elevation = 0.dp,
+        border = BorderStroke(1.dp, GrayBorder),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+            .clickable { onClick() }
+            .size(32.dp)
+    ) {
+        Image(
+            painter = painterResource(
+                id = if (!isCross) R.drawable.arrow_back else R.drawable.cross
+            ),
+            contentDescription = "arrow",
+            contentScale = ContentScale.Inside,
+            modifier = Modifier
         )
     }
 }
@@ -270,28 +301,6 @@ fun Loader(isDialogVisible: Boolean) {
     }
 }
 
-@Composable
-fun BackButton(
-    modifier: Modifier,
-    onClick: () -> Unit
-    ) {
-    Card(
-        elevation = 0.dp,
-        border = BorderStroke(1.dp, GrayBorder),
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier
-            .size(32.dp)
-            .clickable { onClick() }
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.arrow_back),
-            contentDescription = "arrow",
-            contentScale = ContentScale.Inside,
-            modifier = Modifier
-        )
-    }
-}
-
 fun Modifier.scrollEnabled(
     enabled: Boolean,
 ) = nestedScroll(
@@ -310,9 +319,11 @@ fun CustomTextField(
     @DrawableRes iconId: Int? = null,
     @StringRes hintId: Int,
     @StringRes labelId: Int,
+    onValueChange: (String) -> Unit,
     keyboardType: KeyboardType? = null,
+    visualTransformation: VisualTransformation? = null,
+    maskVisualTransformation: MaskVisualTransformation? = null,
     maxChar: Int? = null,
-    maskVisualTransformation: MaskVisualTransformation? = null
 ) {
 
     var textValue by rememberSaveable { mutableStateOf(text) }
@@ -329,8 +340,10 @@ fun CustomTextField(
             value = textValue,
             onValueChange = {
                 if (it.length <= (maxChar ?: 1000)) textValue = it
+                onValueChange(it)
             },
             maxLines = 1,
+            visualTransformation = maskVisualTransformation ?: visualTransformation ?: VisualTransformation.None,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType ?: KeyboardType.Text),
             trailingIcon = {
                 iconId?.let { painterResource(id = it) }?.let {
@@ -510,7 +523,9 @@ fun CustomSimpleTextField(
 fun ProgressButton(
     modifier: Modifier = Modifier,
     @StringRes textId: Int,
-    isProgressAvailable: Boolean, isEnabled: Boolean, onClick: () -> Unit
+    isProgressAvailable: Boolean = false,
+    isEnabled: Boolean = true,
+    onClick: () -> Unit
 ) {
     val isButtonEnabled by rememberSaveable { mutableStateOf(isEnabled) }
     val isLoadingOn by rememberSaveable { mutableStateOf(isProgressAvailable) }
@@ -652,5 +667,221 @@ fun NestedLazyList(
             }
         }
 
+    }
+}
+
+@Composable
+fun HtmlText(
+    modifier: Modifier = Modifier,
+    @StringRes textId: Int,
+    urlSpanStyle: SpanStyle = SpanStyle(
+        color = MaterialTheme.colors.secondary),
+    colorMapping: Map<Color, Color> = emptyMap(),
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    inlineContent: Map<String, InlineTextContent> = mapOf(),
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+    style: TextStyle = LocalTextStyle.current
+) {
+    val context = LocalContext.current
+    val annotatedString = context.resources.getText(textId).toAnnotatedString(urlSpanStyle, colorMapping)
+    val clickable = annotatedString.getStringAnnotations(0, annotatedString.length - 1).any { it.tag == "url" }
+
+    val uriHandler = LocalUriHandler.current
+    val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+
+    Text(
+        modifier = modifier.then(if (clickable) Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { pos ->
+                layoutResult.value?.let { layoutResult ->
+                    val position = layoutResult.getOffsetForPosition(pos)
+                    annotatedString.getStringAnnotations(position, position)
+                        .firstOrNull()
+                        ?.let { sa ->
+                            if (sa.tag == "url") { // NON-NLS
+                                uriHandler.openUri(sa.item)
+                            }
+                        }
+                }
+            })
+        } else Modifier),
+        text = annotatedString,
+        color = color,
+        fontSize = fontSize,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = overflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        inlineContent = inlineContent,
+        onTextLayout = {
+            layoutResult.value = it
+            onTextLayout(it)
+        },
+        style = style
+    )
+}
+
+/**
+ * Simple Text composable to show the text with html styling from a String.
+ * Supported are:
+ *
+ * &lt;b>Bold&lt;/b>
+ *
+ * &lt;i>Italic&lt;/i>
+ *
+ * &lt;u>Underlined&lt;/u>
+ *
+ * &lt;strike>Strikethrough&lt;/strike>
+ *
+ * &lt;a href="https://google.de">Link&lt;/a>
+ *
+ * @see androidx.compose.material.Text
+ *
+ */
+@Composable
+fun HtmlText(
+    modifier: Modifier = Modifier,
+    text: String,
+    urlSpanStyle: SpanStyle = SpanStyle(
+        color = MaterialTheme.colors.secondary),
+    colorMapping: Map<Color, Color> = emptyMap(),
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    inlineContent: Map<String, InlineTextContent> = mapOf(),
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+    style: TextStyle = LocalTextStyle.current
+) {
+    val annotatedString = if (Build.VERSION.SDK_INT <24) {
+        Html.fromHtml(text)
+    } else {
+        Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY)
+    }.toAnnotatedString(urlSpanStyle, colorMapping)
+
+    val clickable = annotatedString.getStringAnnotations(0, annotatedString.length - 1).any { it.tag == "url" }
+
+    val uriHandler = LocalUriHandler.current
+    val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
+
+    Text(
+        modifier = modifier.then(if (clickable) Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { pos ->
+                layoutResult.value?.let { layoutResult ->
+                    val position = layoutResult.getOffsetForPosition(pos)
+                    annotatedString.getStringAnnotations(position, position)
+                        .firstOrNull()
+                        ?.let { sa ->
+                            if (sa.tag == "url") { // NON-NLS
+                                uriHandler.openUri(sa.item)
+                            }
+                        }
+                }
+            })
+        } else Modifier),
+        text = annotatedString,
+        color = color,
+        fontSize = fontSize,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = overflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        inlineContent = inlineContent,
+        onTextLayout = {
+            layoutResult.value = it
+            onTextLayout(it)
+        },
+        style = style
+    )
+}
+
+fun CharSequence.toAnnotatedString(
+    urlSpanStyle: SpanStyle = SpanStyle(
+        color = Color.Blue
+    ),
+    colorMapping: Map<Color, Color> = emptyMap()
+): AnnotatedString {
+    return if (this is Spanned) {
+        this.toAnnotatedString(urlSpanStyle, colorMapping)
+    } else {
+        buildAnnotatedString {
+            append(this@toAnnotatedString.toString())
+        }
+    }
+}
+
+fun Spanned.toAnnotatedString(
+    urlSpanStyle: SpanStyle = SpanStyle(
+        color = Color.Blue
+    ),
+    colorMapping: Map<Color, Color> = emptyMap()
+): AnnotatedString {
+    return buildAnnotatedString {
+        append(this@toAnnotatedString.toString())
+        val urlSpans = getSpans<URLSpan>()
+        val styleSpans = getSpans<StyleSpan>()
+        val colorSpans = getSpans<ForegroundColorSpan>()
+        val underlineSpans = getSpans<UnderlineSpan>()
+        val strikethroughSpans = getSpans<StrikethroughSpan>()
+        urlSpans.forEach { urlSpan ->
+            val start = getSpanStart(urlSpan)
+            val end = getSpanEnd(urlSpan)
+            addStyle(urlSpanStyle, start, end)
+            addStringAnnotation("url", urlSpan.url, start, end) // NON-NLS
+        }
+        colorSpans.forEach { colorSpan ->
+            val start = getSpanStart(colorSpan)
+            val end = getSpanEnd(colorSpan)
+            addStyle(SpanStyle(color = colorMapping.getOrElse(Color(colorSpan.foregroundColor)) { Color(colorSpan.foregroundColor) }), start, end)
+        }
+        styleSpans.forEach { styleSpan ->
+            val start = getSpanStart(styleSpan)
+            val end = getSpanEnd(styleSpan)
+            when (styleSpan.style) {
+                Typeface.BOLD -> addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, end)
+                Typeface.ITALIC -> addStyle(SpanStyle(fontStyle = FontStyle.Italic), start, end)
+                Typeface.BOLD_ITALIC -> addStyle(SpanStyle(fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic), start, end)
+            }
+        }
+//        underlineSpans.forEach { underlineSpan ->
+//            val start = getSpanStart(underlineSpan)
+//            val end = getSpanEnd(underlineSpan)
+//            addStyle(SpanStyle(textDecoration = TextDecoration.Underline), start, end)
+//        }
+        strikethroughSpans.forEach { strikethroughSpan ->
+            val start = getSpanStart(strikethroughSpan)
+            val end = getSpanEnd(strikethroughSpan)
+            addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough), start, end)
+        }
     }
 }

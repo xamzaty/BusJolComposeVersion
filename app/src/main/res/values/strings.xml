@@ -86,6 +86,7 @@
     <string name="date_of_birth_hint">xx.xx.xxxx</string>
     <string name="email_label">Email</string>
     <string name="email_hint">Введите эл. почту</string>
+    <string name="phone_hint">Введите номер телефона</string>
     <string name="phone_label">Телефон</string>
     <string name="contact_information_title">Контактная информация</string>
     <string name="contact_information_description">Для регистрации клиента, а также мы отправим\nбилет на этот эл. адрес.\nНомер телефона необходим для связи в случае\nизменений</string>
@@ -113,29 +114,30 @@
     <string name="payment_order_result_title">Ваш заказ №%1$s</string>
     <string name="client_data">Дата клиента</string>
     <string name="seats">Места</string>
-    <string name="back_to_main_menu_button">Вернуться на главное</string>
+    <string name="back_to_main_menu_button">Вернуться на главную</string>
 
     // MyTickets
     <string name="my_tickets_title">Мои билеты</string>
     <string name="my_tickets_description_title">Список ваших билетов</string>
-    <string name="my_tickets_description_text">Здесь будет сохранятся\nсписок всех ваших билетов.\nАвторизуйтесь для того, чтобы\nвидеть ваши билеты!</string>
+    <string name="my_tickets_description_text">Здесь будет сохраняться список всех ваших билетов. Авторизуйтесь для того, чтобы видеть ваши билеты!</string>
     <string name="my_tickets_description_text_no_tickets">Билетов нет</string>
 
     // Contacts
     <string name="contacts_title">Контакты</string>
     <string name="contacts_description_title">Задавайте вопросы - мы\nпоможем!</string>
-    <string name="contacts_description_text">Возникли вопросы?\nПроверьте в списке вопроов и\nответов или позвоните нам.</string>
+    <string name="contacts_description_text">Возникли вопросы? Проверьте в списке вопроов и ответов или позвоните нам.</string>
     <string name="faq_button">Вопросы и ответы</string>
     <string name="call_button">Позвонить</string>
 
     // Profile
     <string name="profile_title">Профиль</string>
     <string name="we_did_not_recognise_you_title">Мы вас не узнали</string>
-    <string name="we_did_not_recognise_you_text">Войдите, чтобы просмотреть личные\nданные и использовать данные о\nпассажирах</string>
+    <string name="we_did_not_recognise_you_text">Войдите, чтобы просмотреть личные данные и использовать данные о пассажирах</string>
     <string name="settings_subtitle">Настройки</string>
     <string name="change_language">Сменить язык</string>
     <string name="notifications">Уведомления</string>
     <string name="additionally_subtitle">Дополнительно</string>
+    <string name="main_subtitle">Основное</string>
     <string name="rate_the_app">Оценить приложение</string>
     <string name="app_version">Версия %1$s</string>
     <string name="my_data_subtitle">Мои данные</string>
@@ -154,19 +156,19 @@
 
     // Login
     <string name="enter_title">Вход</string>
-    <string name="enter_description_title">Войдите, чтобы видеть свои\nбилеты и пассажиров</string>
-    <string name="enter_description_text">Используйте эл. почту, которую указывали при\nпокупке или регистрации на BusJol</string>
+    <string name="enter_description_title">Войдите, чтобы видеть свои билеты и пассажиров</string>
+    <string name="enter_description_text">Используйте эл. почту, которую указывали при покупке или регистрации на BusJol</string>
     <string name="password_label">Пароль</string>
     <string name="password_hint">Введите пароль</string>
     <string name="forgot_password">Забыли пароль?</string>
     <string name="register">Зарегистрироваться</string>
     
     <string name="password_recovery_title">Восстановление пароля</string>
-    <string name="password_recovery_description_text">Укажите эл. почту, которую использовали при\nрегистрации на сайте или в приложении BusJol.\nНа эту эл. почту мы вышлем ссылку для восстановления пароля</string>
+    <string name="password_recovery_description_text">Укажите эл. почту, которую использовали при регистрации на сайте или в приложении BusJol. На эту эл. почту мы вышлем ссылку для восстановления пароля</string>
 
     <string name="register_title">Регистрация</string>
-    <string name="register_description_text">Укажите эл. почту, мы вышлем письмо с\nвременным паролем</string>
-    <string name="personal_data_collection_consent">Я даю <a href="">согласие на обработку моих\nперсональных данных</a></string>
+    <string name="register_description_text">Укажите эл. почту, мы вышлем письмо с временным паролем</string>
+    <string name="personal_data_collection_consent">Я даю <a href="https://stackoverflow.com/questions/66494838/android-compose-how-to-use-html-tags-in-a-text-view">согласие на обработку моих персональных данных</a></string>
     <string name="personal_data_collection_error">Чтобы зарегистрироваться, необходимо дать согласие на\nобработку персональных данных</string>
     <string name="register_button">Зарегистрироваться</string>
 

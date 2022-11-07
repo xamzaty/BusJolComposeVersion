@@ -33,6 +33,7 @@ import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.destinations.BookingScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.journey_details.JourneyDetailsScreen
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
+import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.theme.*
 import kz.busjol.utils.MaskVisualTransformation
 import kz.busjol.utils.Regex.isValidEmail
@@ -97,7 +98,9 @@ private fun MainContent(
                         id = R.string.passenger_data_title
                     )
                 ) {
-                    navigator.navigateUp()
+                    coroutineScope.launch {
+                        navigator.navigateUp()
+                    }
                 }
             }
 
@@ -143,7 +146,9 @@ private fun MainContent(
                                 color = Blue500,
                                 fontSize = 13.sp,
                                 modifier = Modifier.clickable {
-                                    coroutineScope.launch { sheetState.show() }
+                                    coroutineScope.launch {
+                                        sheetState.show()
+                                    }
                                 }
                             )
                         }
@@ -159,8 +164,10 @@ private fun MainContent(
                 }
             }
 
-            itemsIndexed(ticket.passengerList ?: emptyList()) { index, _ ->
-                PassengerRegistrationLayout(count = index)
+            val list = ticket.passengerList ?: listOf(Passenger())
+
+            itemsIndexed(list) { index, _ ->
+                PassengerRegistrationLayout(count = index + 1)
             }
 
             item {
@@ -193,6 +200,9 @@ private fun MainContent(
 
                         CustomTextField(
                             text = emailValue,
+                            onValueChange = {
+
+                            },
                             iconId = null,
                             hintId = R.string.email_hint,
                             labelId = R.string.email_label,
@@ -296,17 +306,19 @@ private fun MainContent(
                         modifier = Modifier
                             .padding(vertical = 16.dp, horizontal = 15.dp)
                     ) {
-                        navigator.navigate(
-                            BookingScreenDestination(
-                                ticket = Ticket(
-                                    departureCity = ticket.departureCity,
-                                    arrivalCity = ticket.arrivalCity,
-                                    date = ticket.date,
-                                    passengerList = ticket.passengerList,
-                                    journey = ticket.journey
+                        coroutineScope.launch {
+                            navigator.navigate(
+                                BookingScreenDestination(
+                                    ticket = Ticket(
+                                        departureCity = ticket.departureCity,
+                                        arrivalCity = ticket.arrivalCity,
+                                        date = ticket.date,
+                                        passengerList = ticket.passengerList,
+                                        journey = ticket.journey
+                                    )
                                 )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -373,6 +385,8 @@ private fun PassengerRegistrationLayout(
 
             CustomTextField(
                 text = "",
+                onValueChange = {
+                },
                 hintId = R.string.surname_hint,
                 labelId = R.string.surname_label,
                 modifier = Modifier.padding(top = 12.dp)
@@ -380,6 +394,9 @@ private fun PassengerRegistrationLayout(
 
             CustomTextField(
                 text = "",
+                onValueChange = {
+
+                },
                 hintId = R.string.first_name_hint,
                 labelId = R.string.first_name_label,
                 modifier = Modifier.padding(top = 12.dp)

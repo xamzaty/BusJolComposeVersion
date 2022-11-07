@@ -1,6 +1,5 @@
 package kz.busjol.presentation.passenger.my_tickets
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -13,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -24,66 +22,39 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
-import kz.busjol.domain.models.City
 import kz.busjol.domain.models.Journey
-import kz.busjol.domain.models.JourneyItem
-import kz.busjol.presentation.MultiStyleTextRow
 import kz.busjol.presentation.ProgressButton
-import kz.busjol.presentation.passenger.login.LoginScreen
+import kz.busjol.presentation.destinations.LoginScreenDestination
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.BlueText
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
 
 @Destination
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MyTicketsScreen() {
-    val sheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded }
-    )
-
-    val coroutineScope = rememberCoroutineScope()
-
-    BackHandler(sheetState.isVisible) {
-        coroutineScope.launch { sheetState.hide() }
-    }
-
-    ModalBottomSheetLayout(
-        sheetState = sheetState,
-        sheetContent =
-        {
-            LoginScreen(sheetState, coroutineScope)
-        }) {
-        MainContent(sheetState, coroutineScope)
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun MainContent(
-    sheetState: ModalBottomSheetState,
-    coroutineScope: CoroutineScope
+fun MyTicketsScreen(
+    navigator: DestinationsNavigator
 ) {
+    val scope = rememberCoroutineScope()
+
     val isRegistered = remember { false }
     val isUserHaveTickets = remember { false }
 
     if (!isRegistered) {
-        UnregisteredSection(sheetState, coroutineScope)
+        UnregisteredSection(scope, navigator)
     } else {
         RegisteredSection(isUserHaveTickets = isUserHaveTickets)
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun UnregisteredSection(
-    sheetState: ModalBottomSheetState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    navigator: DestinationsNavigator
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -125,6 +96,7 @@ private fun UnregisteredSection(
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .padding(top = 8.dp)
+                .width(200.dp)
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -134,7 +106,11 @@ private fun UnregisteredSection(
             isProgressAvailable = false,
             isEnabled = true
         ) {
-            coroutineScope.launch { sheetState.show() }
+            coroutineScope.launch {
+                navigator.navigate(
+                    LoginScreenDestination()
+                )
+            }
         }
     }
 }

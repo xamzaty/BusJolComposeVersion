@@ -64,6 +64,7 @@ fun ContactsScreen() {
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .padding(top = 8.dp)
+                .width(200.dp)
         )
 
         Spacer(modifier = Modifier.weight(1f))
