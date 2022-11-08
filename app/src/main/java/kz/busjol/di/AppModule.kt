@@ -1,14 +1,22 @@
 package kz.busjol.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.dataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kz.busjol.AppSettings
+import kz.busjol.AppSettingsSerializer
 import kz.busjol.BuildConfig
 import kz.busjol.utils.Consts.BASE_URL
 import kz.busjol.data.remote.api.CityListApi
 import kz.busjol.data.remote.api.SearchJourneyApi
 import kz.busjol.data.remote.api.SeatsListApi
+import kz.busjol.data.repository.DataStoreManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -85,4 +93,12 @@ class AppModule {
     fun provideSeatsListApi(): SeatsListApi {
         return getRetrofit().create(SeatsListApi::class.java)
     }
-}
+
+    @Provides
+    @Singleton
+    fun dataStoreManager(@ApplicationContext appContext: Context): DataStore<AppSettings> =
+        DataStoreFactory.create(
+            serializer = AppSettingsSerializer,
+            produceFile = { appContext.dataStoreFile("app-settings.json") },
+        )
+    }

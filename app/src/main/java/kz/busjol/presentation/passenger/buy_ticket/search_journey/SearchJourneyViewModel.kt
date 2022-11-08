@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
 import kz.busjol.domain.repository.CityListRepository
+import kz.busjol.domain.repository.DataStoreRepository
 import kz.busjol.domain.repository.JourneyListRepository
 import kz.busjol.domain.util.Resource
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchJourneyViewModel @Inject constructor(
     private val cityRepository: CityListRepository,
-    private val journeyRepository: JourneyListRepository
+    private val journeyRepository: JourneyListRepository,
+    private val dataStoreRepository: DataStoreRepository
 ) : ViewModel() {
 
     var state by mutableStateOf(SearchJourneyState().mock())
@@ -31,6 +33,7 @@ class SearchJourneyViewModel @Inject constructor(
     private var toCity by mutableStateOf(City())
 
     init {
+        getLanguage()
         loadCityList(true)
     }
 
@@ -64,6 +67,18 @@ class SearchJourneyViewModel @Inject constructor(
                         disabledValue = event.quantity
                     )
                 )
+            }
+        }
+    }
+
+    private fun getLanguage() {
+        viewModelScope.launch {
+            dataStoreRepository
+                .getAppSettings()
+                .collect {
+                    state = state.copy(
+                        language = it.language
+                    )
             }
         }
     }

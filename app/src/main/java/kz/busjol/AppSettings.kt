@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 data class AppSettings(
     val language: Language = Language.RUSSIAN,
     val userState: UserState = UserState.UNREGISTERED,
-    var isNotificationsAvailable: Boolean = true
+    var isNotificationsAvailable: Boolean = true,
+    val email: String? = ""
 )
 
 enum class Language {

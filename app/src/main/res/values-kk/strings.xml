@@ -143,7 +143,7 @@
     <string name="my_data_subtitle">Мои данные</string>
     <string name="passengers_subtitle">Пассажиры</string>
     <string name="my_trips_subtitle">Мои поездки</string>
-    <string name="app_language">Русский</string>
+    <string name="app_language">Казакша</string>
 
     // ChangeLanguage
     <string name="app_language_title">Язык приложения</string>
@@ -163,7 +163,7 @@
     <string name="password_hint">Введите пароль</string>
     <string name="forgot_password">Забыли пароль?</string>
     <string name="register">Зарегистрироваться</string>
-    
+
     <string name="password_recovery_title">Восстановление пароля</string>
     <string name="password_recovery_description_text">Укажите эл. почту, которую использовали при регистрации на сайте или в приложении BusJol. На эту эл. почту мы вышлем ссылку для восстановления пароля</string>
 
@@ -183,7 +183,7 @@
     // Scan
     <string name="scan_title">Сканирование билета</string>
     <string name="point_the_camera">Наведите камеру на\nQR код</string>
-    
+
     // TicketVerification
     <string name="ticket_is_valid">Билет действителен</string>
     <string name="ticket_is_invalid">Билет недействителен</string>

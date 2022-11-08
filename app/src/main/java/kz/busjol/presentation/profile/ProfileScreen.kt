@@ -11,25 +11,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.BuildConfig
+import kz.busjol.Language
 import kz.busjol.presentation.profile.change_language.ChangeLanguageScreen
 import kz.busjol.presentation.profile.rate_the_app.RateTheApp
 import kz.busjol.R
+import kz.busjol.UserState
 import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.destinations.LoginScreenDestination
-import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
-
+import kz.busjol.utils.setLocale
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination
@@ -65,7 +68,7 @@ fun ProfileScreen(
     BottomSheetScaffold(sheetPeekHeight = 0.dp, scaffoldState = scaffoldState,
         sheetContent = {
             currentBottomSheet?.let { currentSheet ->
-                SheetLayout(currentSheet, closeSheet)
+                SheetLayout(currentSheet, navigator, closeSheet)
             }
         }) { paddingValues ->
         Box(Modifier.padding(paddingValues)) {
@@ -75,10 +78,13 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun SheetLayout(currentScreen: ProfileBottomSheetScreen, onCloseBottomSheet: () -> Unit) {
+private fun SheetLayout(
+    currentScreen: ProfileBottomSheetScreen,
+    navigator: DestinationsNavigator,
+    onCloseBottomSheet: () -> Unit) {
     when (currentScreen) {
         is ProfileBottomSheetScreen.ChangeLanguageScreen -> ChangeLanguageScreen(
-            onCloseBottomSheet
+            onCloseBottomSheet, navigator
         )
         is ProfileBottomSheetScreen.RateTheAppScreen -> RateTheApp(
             onCloseBottomSheet
@@ -90,16 +96,26 @@ private fun SheetLayout(currentScreen: ProfileBottomSheetScreen, onCloseBottomSh
 private fun MainContent(
     openSheet: (ProfileBottomSheetScreen) -> Unit,
     scope: CoroutineScope,
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    viewModel: ProfileScreenViewModel = hiltViewModel()
 ) {
-    val isUserAuthorized = remember { false }
-    val isDriverAuthorized = remember { false }
+    val state = viewModel.state
 
-    val isAuthorized = remember { isUserAuthorized || isDriverAuthorized }
+    val isUserAuthorized = remember { mutableStateOf(
+        state.userState == UserState.REGISTERED
+    )}
+
+    val isDriverAuthorized = remember { mutableStateOf(
+        state.userState == UserState.DRIVER
+    )}
+
+    val isAuthorized = remember { mutableStateOf(
+        isUserAuthorized.value || isDriverAuthorized.value
+    )}
 
     val emailValue = remember { "h.yerzhanov@gmail.com" }
 
-    val appVersion = remember { BuildConfig.VERSION_NAME }
+    val appVersion = remember { mutableStateOf(BuildConfig.VERSION_NAME) }
 
     val verticalScrollState = rememberScrollState()
 
@@ -122,7 +138,7 @@ private fun MainContent(
         )
 
         WeDoNotRecogniseYouLayout(
-            isUserAuthorized = isAuthorized,
+            isUserAuthorized = isAuthorized.value,
             modifier = Modifier.padding(
                 start = 15.dp, top = 38.dp, end = 15.dp, bottom = 8.dp
             ),
@@ -131,19 +147,19 @@ private fun MainContent(
         )
 
         DriverLayout(
-            isDriverAuthorized = isDriverAuthorized,
+            isDriverAuthorized = isDriverAuthorized.value,
             email = emailValue,
             modifier = Modifier.padding(top = 48.dp)
         )
 
         AuthorizedUserLayout(
-            isUserAuthorized = isUserAuthorized,
+            isUserAuthorized = isUserAuthorized.value,
             email = emailValue,
             modifier = Modifier.padding(top = 24.dp)
         )
 
         SettingsLayout(
-            modifier = Modifier.padding(top = if (isAuthorized) 20.dp else 28.dp),
+            modifier = Modifier.padding(top = if (isAuthorized.value) 20.dp else 28.dp),
             openSheet
         )
 
@@ -163,7 +179,7 @@ private fun MainContent(
         )
 
         Text(
-            text = stringResource(id = R.string.app_version, appVersion),
+            text = stringResource(id = R.string.app_version, appVersion.value),
             textAlign = TextAlign.Center,
             color = Color(0xFF8B98A7),
             fontSize = 12.sp,
@@ -328,8 +344,6 @@ private fun SettingsLayout(
     openSheet: (ProfileBottomSheetScreen) -> Unit
 ) {
 
-    val languageValue = remember { "Русский" }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -338,7 +352,7 @@ private fun SettingsLayout(
 
         ClickableLayout(
             text = stringResource(id = R.string.change_language),
-            language = languageValue,
+            language = stringResource(id = R.string.app_language),
             modifier = Modifier.padding(top = 4.dp)
         ) {
             openSheet(ProfileBottomSheetScreen.ChangeLanguageScreen)

@@ -1,5 +1,10 @@
 package kz.busjol.presentation.profile
 
+import kz.busjol.Language
+import kz.busjol.UserState
+
 data class ProfileState(
-    val list: List<Int>? = null
+    val language: Language? = null,
+    val userState: UserState? = null,
+    val isNotificationsEnabled: Boolean = true
 )

@@ -21,11 +21,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
+import kz.busjol.UserState
 import kz.busjol.domain.models.Journey
 import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.destinations.LoginScreenDestination
@@ -37,11 +39,15 @@ import kz.busjol.presentation.theme.GrayText
 @Destination
 @Composable
 fun MyTicketsScreen(
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    viewModel: MyTicketsViewModel = hiltViewModel()
 ) {
+    val state = viewModel.state
     val scope = rememberCoroutineScope()
 
-    val isRegistered = remember { false }
+    val isRegistered = remember {
+        state.userState == UserState.REGISTERED
+    }
     val isUserHaveTickets = remember { false }
 
     if (!isRegistered) {

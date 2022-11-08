@@ -1,5 +1,6 @@
 package kz.busjol
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,12 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.datastore.dataStore
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -30,6 +29,8 @@ import kz.busjol.presentation.profile.ProfileScreen
 import kz.busjol.presentation.profile.my_data.MyDataScreen
 import kz.busjol.presentation.theme.BusJolComposeTheme
 import kz.busjol.utils.BottomBar
+
+val Context.dataStore by dataStore("app-settings.json", AppSettingsSerializer)
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

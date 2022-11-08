@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -31,6 +32,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Route
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kz.busjol.Language
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
@@ -41,6 +43,7 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.calendar.Calen
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.city_picker.CityPickerScreen
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengerQuantityScreen
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.utils.setLocale
 
 @Destination(start = true)
 @OptIn(ExperimentalMaterialApi::class)
@@ -107,6 +110,14 @@ private fun MainContent(
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
+
+    val language = remember {
+        mutableStateOf(
+            if (state.language == Language.RUSSIAN) "ru" else "kk"
+        )
+    }
+
+    setLocale(LocalContext.current, language.value)
     
     Loader(isDialogVisible = state.isLoading)
 
@@ -389,7 +400,7 @@ private fun Int.passengerText() = when (this) {
         1, 21, 31, 41, 51, 61, 71, 81, 91, 101 ->
             stringResource(id = R.string.passenger_type_one, this)
         in 2..4, in 22..24, in 32..34, in 42..44, in 52..54,
-        in 62..64, in 72..74, in 82..84, in 92..94->
+        in 62..64, in 72..74, in 82..84, in 92..94 ->
             stringResource(id = R.string.passenger_type_two, this)
         in 5..20, in 25..30, in 35..40, in 45..50, in 55..60,
         in 65..70, in 75..80, in 85..90, in 95..100 ->

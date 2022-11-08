@@ -1,5 +1,6 @@
 package kz.busjol.presentation.passenger.buy_ticket.search_journey
 
+import kz.busjol.Language
 import kz.busjol.domain.models.City
 import kz.busjol.domain.models.Journey
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
@@ -12,6 +13,7 @@ data class SearchJourneyState(
     val toCity: City? = null,
     val departureDate: String? = null,
     val arrivalDate: String? = null,
+    val language: Language? = null,
     val passengerQuantity: PassengersQuantity? = null,
     val passengerQuantityList: List<Passenger>? = null,
     val journeyList: List<Journey>? = null,
@@ -31,7 +33,8 @@ data class SearchJourneyState(
             fromCity = City(), toCity = City(),
             departureDate = currentDate, arrivalDate = currentDate,
             passengerQuantity = PassengersQuantity(), passengerQuantityList = emptyList(),
-            journeyList = emptyList(), cityList = emptyList()
+            journeyList = emptyList(), cityList = emptyList(),
+            language = Language.RUSSIAN
         )
     }
 }

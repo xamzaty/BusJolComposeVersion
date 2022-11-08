@@ -8,7 +8,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,13 +17,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.popUpTo
+import kotlinx.coroutines.launch
+import kz.busjol.Language
 import kz.busjol.R
+import kz.busjol.presentation.NavGraphs
+import kz.busjol.presentation.destinations.DirectionDestination
+import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
+import kz.busjol.presentation.profile.ProfileEvent
+import kz.busjol.presentation.profile.ProfileScreenViewModel
+import kz.busjol.presentation.startAppDestination
 import kz.busjol.presentation.theme.GrayBorder
 
 @Composable
-fun ChangeLanguageScreen(onCloseBottomSheet: () -> Unit) {
+fun ChangeLanguageScreen(
+    onCloseBottomSheet: () -> Unit,
+    navigator: DestinationsNavigator,
+    viewModel: ProfileScreenViewModel = hiltViewModel()
+) {
+    val state = viewModel.state
+    val scope = rememberCoroutineScope()
 
-    val isRussianSelected = remember { mutableStateOf(true) }
+    val isRussianSelected = remember { mutableStateOf(
+        state.language == Language.RUSSIAN
+    )}
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -66,14 +85,22 @@ fun ChangeLanguageScreen(onCloseBottomSheet: () -> Unit) {
             isLanguageSelected = !isRussianSelected.value,
             isRussian = false
         ) {
-            isRussianSelected.value = false
+            scope.launch {
+                isRussianSelected.value = false
+                viewModel.onEvent(ProfileEvent.SetLanguage(Language.KAZAKH))
+                navigator.backToMainScreen()
+            }
         }
 
         LanguageLayout(
             isLanguageSelected = isRussianSelected.value,
             isRussian = true
         ) {
-            isRussianSelected.value = true
+            scope.launch {
+                isRussianSelected.value = true
+                viewModel.onEvent(ProfileEvent.SetLanguage(Language.RUSSIAN))
+                navigator.backToMainScreen()
+            }
         }
     }
 }
@@ -84,7 +111,13 @@ private fun LanguageLayout(
     isRussian: Boolean,
     onClick: () -> Unit
 ) {
-    val textValue = remember { if (isRussian) R.string.russian_language else R.string.kazakh_language }
+    val textValue = remember {
+        if (isRussian) R.string.russian_language else R.string.kazakh_language
+    }
+
+    val fontWeight = remember {
+        if (isLanguageSelected) FontWeight.W600 else FontWeight.W400
+    }
 
     Column(
         modifier = Modifier
@@ -100,7 +133,8 @@ private fun LanguageLayout(
             Text(
                 text = stringResource(id = textValue),
                 fontSize = 16.sp,
-                color = Color(0xFF1A1C1F)
+                color = Color(0xFF1A1C1F),
+                fontWeight = fontWeight
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -121,3 +155,10 @@ private fun LanguageLayout(
         )
     }
 }
+
+private fun DestinationsNavigator.backToMainScreen() =
+    this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
+        popUpTo(SearchJourneyScreenDestination) {
+            inclusive = true
+        }
+    }
