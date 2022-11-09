@@ -42,7 +42,7 @@
     <string name="adult_passenger">Взрослый</string>
     <string name="adult_passenger_description">От полных 15 лет</string>
     <string name="child_passenger">Детский</string>
-    <string name="child_passenger_description">От полных 15 лет</string>
+    <string name="child_passenger_description">От 2 до 15 лет</string>
     <string name="disabled_person">Инвалидный</string>
     <string name="disabled_person_passenger_description">Наличие документа</string>
     <string name="passenger_type_one">%1$d пассажир</string>

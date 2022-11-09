@@ -8,12 +8,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.CustomTextField
@@ -21,6 +23,8 @@ import kz.busjol.presentation.ProgressButton
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
+import kz.busjol.BuildConfig
+import kz.busjol.UserState
 import kz.busjol.presentation.destinations.PasswordRecoveryScreenDestination
 import kz.busjol.presentation.destinations.RegistrationScreenDestination
 import kz.busjol.presentation.theme.Blue500
@@ -28,7 +32,8 @@ import kz.busjol.presentation.theme.Blue500
 @Destination
 @Composable
 fun LoginScreen(
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     val scope = rememberCoroutineScope()
 
@@ -91,10 +96,15 @@ fun LoginScreen(
 
         ProgressButton(
             textId = R.string.enter_button,
-            isEnabled = buttonAvailability.value,
+            isEnabled = true,
             modifier = Modifier.padding(start = 15.dp, top = 24.dp, end = 15.dp)
         ) {
-            
+            if (
+                emailTextValue.value == "driver@gmail.com" &&
+                passwordTextValue.value == "12345"
+            ) {
+                viewModel.onEvent(LoginEvent.SetUserState(UserState.DRIVER))
+            }
         }
 
         Row(

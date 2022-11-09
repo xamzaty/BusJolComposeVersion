@@ -2,192 +2,192 @@
     // App
     <string name="app_name">BusJol</string>
 
-    <string name="choose_button">Выбрать</string>
-    <string name="continue_button">Продолжить</string>
-    <string name="enter_button">Войти</string>
-    <string name="exit_button">Выйти</string>
-    <string name="save_button">Сохранить</string>
-    <string name="send_button">Отправить</string>
+    <string name="choose_button">Таңдау</string>
+    <string name="continue_button">Жалғастыру</string>
+    <string name="enter_button">Кіру</string>
+    <string name="exit_button">Шығу</string>
+    <string name="save_button">Сақтау</string>
+    <string name="send_button">Жіберу</string>
 
-    <string name="not_found">Не найдено!</string>
+    <string name="not_found">Табылмады!</string>
 
-    <string name="fill_in_all_the_fields_error">Заполните все поля!</string>
+    <string name="fill_in_all_the_fields_error">Барлық өрістерді толтырыңыз!</string>
 
-    <string name="invalid_email">Неверный адрес электронной почты!</string>
+    <string name="invalid_email">Электрондық пошта мекенжайы дұрыс емес!</string>
 
-    <string name="alert_exit_title">Выход</string>
-    <string name="alert_exit_description">Вы уверены, что хотите выйти?</string>
-    <string name="yes">Да</string>
-    <string name="no">Нет</string>
+    <string name="alert_exit_title">Шығу</string>
+    <string name="alert_exit_description">Шығыңыз келетініне сенімдісіз бе?</string>
+    <string name="yes">Иә</string>
+    <string name="no">Жоқ</string>
 
     // Categories
-    <string name="search_category">Поиск</string>
-    <string name="my_tickets_category">Мои билеты</string>
-    <string name="contacts_category">Контакты</string>
+    <string name="search_category">Іздеу</string>
+    <string name="my_tickets_category">Менің билеттерім</string>
+    <string name="contacts_category">Контактілер</string>
     <string name="profile_category">Профиль</string>
-    <string name="driver_main_category">Главная</string>
-    <string name="scan_category">Скан</string>
+    <string name="driver_main_category">Үй</string>
+    <string name="scan_category">Сканерлеу</string>
 
     // SearchJourneyScreen
-    <string name="search_journey_subtitle">Поиск и продажа\nбилетов на автобусы</string>
-    <string name="cities_layout_hint">Выберите город</string>
-    <string name="cities_layout_from_label">Откуда</string>
-    <string name="cities_layout_to_label">Куда</string>
-    <string name="search_button">Искать</string>
-    <string name="date_layout_label">Дата</string>
-    <string name="passenger_layout_label">Пассажиры</string>
+    <string name="search_journey_subtitle">Автобустарға билеттерді іздеу\nжәне сату</string>
+    <string name="cities_layout_hint">Қаланы таңдаңыз</string>
+    <string name="cities_layout_from_label">Қайдан</string>
+    <string name="cities_layout_to_label">Қайда</string>
+    <string name="search_button">Іздеу</string>
+    <string name="date_layout_label">Күні</string>
+    <string name="passenger_layout_label">Жолаушылар</string>
 
     // PassengerQuantityScreen
-    <string name="passenger_quantity_screen_title">Пассажиры</string>
-    <string name="adult_passenger">Взрослый</string>
-    <string name="adult_passenger_description">От полных 15 лет</string>
-    <string name="child_passenger">Детский</string>
-    <string name="child_passenger_description">От полных 15 лет</string>
-    <string name="disabled_person">Инвалидный</string>
-    <string name="disabled_person_passenger_description">Наличие документа</string>
-    <string name="passenger_type_one">%1$d пассажир</string>
-    <string name="passenger_type_two">%1$d пассажира</string>
-    <string name="passenger_type_three">%1$d пассажиров</string>
+    <string name="passenger_quantity_screen_title">Жолаушылар</string>
+    <string name="adult_passenger">Ересек</string>
+    <string name="adult_passenger_description">толық 15 жастан</string>
+    <string name="child_passenger">Балаларға арналған</string>
+    <string name="child_passenger_description">2 жастан 15 жасқа дейін</string>
+    <string name="disabled_person">Мүгедек</string>
+    <string name="disabled_person_passenger_description">құжаттың болуы</string>
+    <string name="passenger_type_one">%1$d жолаушы</string>
+    <string name="passenger_type_two">%1$d жолаушы</string>
+    <string name="passenger_type_three">%1$d жолаушы</string>
 
     // CalendarScreen
-    <string name="calendar_date_title">Выберите дату</string>
+    <string name="calendar_date_title">Күнді таңдаңыз</string>
 
     // JourneyScreen
     <string name="journey_screen_title">%1$s - %2$s</string>
-    <string name="radio_group_title">Тип места:</string>
-    <string name="radio_button_all">Все</string>
-    <string name="radio_button_seat">Сидячий</string>
-    <string name="radio_button_lying">Лежачий</string>
-    <string name="journey_number">Рейс №%1$s</string>
-    <string name="time_left">%1$sч %2$sмин</string>
-    <string name="seat_type">Тип места: %1$s</string>
-    <string name="free_seats">Свободно мест:</string>
-    <string name="free_seats_of">%1$s из %2$s</string>
+    <string name="radio_group_title">Орналасу түрі:</string>
+    <string name="radio_button_all">Барлық</string>
+    <string name="radio_button_seat">Отырықшы</string>
+    <string name="radio_button_lying">Жатқан</string>
+    <string name="journey_number">№%1$s рейс</string>
+    <string name="time_left">%1$sс %2$sмин</string>
+    <string name="seat_type">Орналасу түрі: %1$s</string>
+    <string name="free_seats">Бос орындар:</string>
+    <string name="free_seats_of">%1$s-дан %2$s</string>
 
     // ChooseSeats
-    <string name="choose_seats_title">Выбор места</string>
-    <string name="free_seat">Свободное</string>
-    <string name="occupied_seat">Занятое</string>
-    <string name="chosen_seats">Выбранные места</string>
+    <string name="choose_seats_title">Орын таңдау</string>
+    <string name="free_seat">Бос</string>
+    <string name="occupied_seat">Бос емес</string>
+    <string name="chosen_seats">Таңдалған орындар</string>
 
     // PassengerData
-    <string name="passenger_data_title">Данные пассажира</string>
-    <string name="passenger_data_details">Детали</string>
-    <string name="passenger_number">Пассажир %1$d</string>
-    <string name="passenger_type_men">Мужской</string>
-    <string name="passenger_type_women">Женский</string>
-    <string name="iin_label">ИИН</string>
-    <string name="iin_hint">Введите ИИН</string>
-    <string name="surname_label">Фамилия</string>
-    <string name="surname_hint">Введите фамилию</string>
-    <string name="first_name_label">Имя</string>
-    <string name="first_name_hint">Введите имя</string>
-    <string name="date_of_birth_label">Дата рождения</string>
+    <string name="passenger_data_title">Жолаушы деректері</string>
+    <string name="passenger_data_details">Мәліметтер</string>
+    <string name="passenger_number">Жолаушы %1$d</string>
+    <string name="passenger_type_men">Еркек</string>
+    <string name="passenger_type_women">Әйел</string>
+    <string name="iin_label">ЖСН</string>
+    <string name="iin_hint">ЖСН енгізіңіз</string>
+    <string name="surname_label">Тегі</string>
+    <string name="surname_hint">Тегіңызды енгізіңіз</string>
+    <string name="first_name_label">Аты</string>
+    <string name="first_name_hint">Атыңызды енгізіңіз</string>
+    <string name="date_of_birth_label">Туған күні</string>
     <string name="date_of_birth_hint">xx.xx.xxxx</string>
     <string name="email_label">Email</string>
-    <string name="email_hint">Введите эл. почту</string>
-    <string name="phone_hint">Введите номер телефона</string>
+    <string name="email_hint">Эл. поштаны енгізіңіз</string>
+    <string name="phone_hint">Телефон нөмірін енгізіңіз</string>
     <string name="phone_label">Телефон</string>
-    <string name="contact_information_title">Контактная информация</string>
-    <string name="contact_information_description">Для регистрации клиента, а также мы отправим\nбилет на этот эл. адрес.\nНомер телефона необходим для связи в случае\nизменений</string>
-    <string name="tariff_rules_and_offer_title">Правила тарифа и оферта</string>
-    <string name="tariff_rules_and_offer_description">Ознакомьтесь <a href="google.com">с правилами обмена и возврата</a> и\n<a href="google.com">публичной оферты</a></string>
-    <string name="tariff_rules_and_offer_agreement">Я принимаю правила тарифа и оферту</string>
-    <string name="this_field_is_required">Это поле обязательное</string>
+    <string name="contact_information_title">Байланыс ақпараты</string>
+    <string name="contact_information_description">Клиентті тіркеу үшін, сондай-ақ біз осы электрондық поштаға\nбилет жібереміз. мекенжайы.\nӨзгертілген жағдайда\nбайланыс үшін телефон нөмірі қажет</string>
+    <string name="tariff_rules_and_offer_title">Тариф ережелері және ұсыныс</string>
+    <string name="tariff_rules_and_offer_description"><a href="google.com">Айырбастау және қайтару саясатын</a> және\n<a href="google.com">Қоғамдық ұсынысты</a> оқыңыз.</string>
+    <string name="tariff_rules_and_offer_agreement">Мен тарифтік ережелер мен ұсынысты қабылдаймын</string>
+    <string name="this_field_is_required">Бұл керек аймақ</string>
 
     // JourneyDetails
-    <string name="journey_details_title">Детали рейса</string>
-    <string name="time_on_the_way">%1$sч %2$sмин в пути</string>
-    <string name="carrier">Перевозчик: %1$s</string>
+    <string name="journey_details_title">Автобус маршрутының мәліметтері</string>
+    <string name="time_on_the_way">Жолда %1$sс %2$sмин</string>
+    <string name="carrier">Тасымалдаушы: %1$s</string>
 
     // Booking
-    <string name="booking_title">Бронирование</string>
-    <string name="pay_for_the_reservation">Оплатите бронь в течение</string>
-    <string name="with_bank_cards">Банковскими картами</string>
+    <string name="booking_title">Брондау</string>
+    <string name="pay_for_the_reservation">Брондау үшін төлеңіз</string>
+    <string name="with_bank_cards">Банк карталары</string>
     <string name="with_kaspi">Kaspi.kz</string>
-    <string name="payment_button">Перейти к оплате</string>
+    <string name="payment_button">Тексеріске өту</string>
 
     // PaymentOrder
-    <string name="payment_order_title">Оплата заказа</string>
+    <string name="payment_order_title">Төлемге тапсырыс беру</string>
 
     // PaymentOrderResult
-    <string name="payment_order_result_title">Ваш заказ №%1$s</string>
-    <string name="client_data">Дата клиента</string>
-    <string name="seats">Места</string>
-    <string name="back_to_main_menu_button">Вернуться на главную</string>
+    <string name="payment_order_result_title">Тапсырысыңыз №%1$s</string>
+    <string name="client_data">Клиент күні</string>
+    <string name="seats">Орындар</string>
+    <string name="back_to_main_menu_button">Басты бетке оралу</string>
 
     // MyTickets
-    <string name="my_tickets_title">Мои билеты</string>
-    <string name="my_tickets_description_title">Список ваших билетов</string>
-    <string name="my_tickets_description_text">Здесь будет сохраняться список всех ваших билетов. Авторизуйтесь для того, чтобы видеть ваши билеты!</string>
-    <string name="my_tickets_description_text_no_tickets">Билетов нет</string>
+    <string name="my_tickets_title">Менің билетім</string>
+    <string name="my_tickets_description_title">Сіздің билеттеріңіздің тізімі</string>
+    <string name="my_tickets_description_text">Барлық билеттеріңіздің тізімі осы жерде сақталады. Билеттеріңізді көру үшін жүйеге кіріңіз!</string>
+    <string name="my_tickets_description_text_no_tickets">Билет жоқ</string>
 
     // Contacts
-    <string name="contacts_title">Контакты</string>
-    <string name="contacts_description_title">Задавайте вопросы - мы\nпоможем!</string>
-    <string name="contacts_description_text">Возникли вопросы? Проверьте в списке вопроов и ответов или позвоните нам.</string>
-    <string name="faq_button">Вопросы и ответы</string>
-    <string name="call_button">Позвонить</string>
+    <string name="contacts_title">Контактілер</string>
+    <string name="contacts_description_title">Сұрақтар қойыңыз - біз\nкөмектесеміз!</string>
+    <string name="contacts_description_text">Кез келген сұрақ? Сұрақтар мен жауаптардың тізімін тексеріңіз немесе бізге қоңырау шалыңыз.</string>
+    <string name="faq_button">Сұрақтар мен жауаптар</string>
+    <string name="call_button">Қоңырау шалу</string>
 
     // Profile
     <string name="profile_title">Профиль</string>
-    <string name="we_did_not_recognise_you_title">Мы вас не узнали</string>
-    <string name="we_did_not_recognise_you_text">Войдите, чтобы просмотреть личные данные и использовать данные о пассажирах</string>
-    <string name="settings_subtitle">Настройки</string>
-    <string name="change_language">Сменить язык</string>
-    <string name="notifications">Уведомления</string>
-    <string name="additionally_subtitle">Дополнительно</string>
-    <string name="main_subtitle">Основное</string>
-    <string name="rate_the_app">Оценить приложение</string>
-    <string name="app_version">Версия %1$s</string>
-    <string name="my_data_subtitle">Мои данные</string>
-    <string name="passengers_subtitle">Пассажиры</string>
-    <string name="my_trips_subtitle">Мои поездки</string>
-    <string name="app_language">Казакша</string>
+    <string name="we_did_not_recognise_you_title">Біз сізді танымадық</string>
+    <string name="we_did_not_recognise_you_text">Жеке деректерді көру және жолаушы деректерін пайдалану үшін жүйеге кіріңіз</string>
+    <string name="settings_subtitle">Параметрлер</string>
+    <string name="change_language">Тілді өзгерту</string>
+    <string name="notifications">Хабарландырулар</string>
+    <string name="additionally_subtitle">Қосымша</string>
+    <string name="main_subtitle">Негізгі</string>
+    <string name="rate_the_app">Қолданбаны бағалаңыз</string>
+    <string name="app_version">%1$s нұсқасы</string>
+    <string name="my_data_subtitle">Менің мәліметтерім</string>
+    <string name="passengers_subtitle">Жолаушылар</string>
+    <string name="my_trips_subtitle">Менің сапарларым</string>
+    <string name="app_language">Қазақша</string>
 
     // ChangeLanguage
-    <string name="app_language_title">Язык приложения</string>
-    <string name="kazakh_language">Казакша</string>
+    <string name="app_language_title">Қолданба тілі</string>
+    <string name="kazakh_language">Қазақша</string>
     <string name="russian_language">Русский</string>
 
     // RateTheApp
-    <string name="rate_the_app_title">Оцените приложение</string>
-    <string name="i_like_the_app">Нравится</string>
-    <string name="i_do_not_like_the_app">Не особо</string>
+    <string name="rate_the_app_title">Қолданбаны бағалаңыз</string>
+    <string name="i_like_the_app">Ұнайды</string>
+    <string name="i_do_not_like_the_app">Онша емес</string>
 
     // Login
-    <string name="enter_title">Вход</string>
-    <string name="enter_description_title">Войдите, чтобы видеть свои билеты и пассажиров</string>
-    <string name="enter_description_text">Используйте эл. почту, которую указывали при покупке или регистрации на BusJol</string>
-    <string name="password_label">Пароль</string>
-    <string name="password_hint">Введите пароль</string>
-    <string name="forgot_password">Забыли пароль?</string>
-    <string name="register">Зарегистрироваться</string>
+    <string name="enter_title">Кіру</string>
+    <string name="enter_description_title">Билеттер мен жолаушыларды көру үшін жүйеге кіріңіз</string>
+    <string name="enter_description_text">Электрондық поштаны пайдаланыңыз. BusJol сайтында сатып алу немесе тіркелу кезінде көрсетілген электрондық пошта</string>
+    <string name="password_label">Құпия сөз</string>
+    <string name="password_hint">Құпия сөзді еңгізіңіз</string>
+    <string name="forgot_password">Құпия сөзіңізді ұмыттыңыз ба?</string>
+    <string name="register">Тіркелу</string>
 
-    <string name="password_recovery_title">Восстановление пароля</string>
-    <string name="password_recovery_description_text">Укажите эл. почту, которую использовали при регистрации на сайте или в приложении BusJol. На эту эл. почту мы вышлем ссылку для восстановления пароля</string>
+    <string name="password_recovery_title">Құпия сөзді қалпына келтіру</string>
+    <string name="password_recovery_description_text">Электрондық поштаны енгізіңіз веб-сайтта немесе BusJol қолданбасында тіркелу кезінде пайдаланылған электрондық пошта. Осы электрондық поштаға Біз сізге электрондық пошта арқылы құпия сөзді қалпына келтіру сілтемесін жібереміз.</string>
 
-    <string name="register_title">Регистрация</string>
-    <string name="register_description_text">Укажите эл. почту, мы вышлем письмо с временным паролем</string>
-    <string name="personal_data_collection_consent">Я даю <a href="https://stackoverflow.com/questions/66494838/android-compose-how-to-use-html-tags-in-a-text-view">согласие на обработку моих персональных данных</a></string>
-    <string name="personal_data_collection_error">Чтобы зарегистрироваться, необходимо дать согласие на\nобработку персональных данных</string>
-    <string name="register_button">Зарегистрироваться</string>
+    <string name="register_title">Тіркеу</string>
+    <string name="register_description_text">Эл.поштаны енгізіңіз пошта, біз уақытша құпия сөзбен электрондық хат жібереміз</string>
+    <string name="personal_data_collection_consent">Мен <a href="https://stackoverflow.com/questions/66494838/android-compose-how-to-use-html-tags-in-a-text-view">жеке деректерімді өңдеуге келісім беремін </a></string>
+    <string name="personal_data_collection_error">Тіркелу үшін сіз жеке деректерді өңдеуге келісуіңіз керек</string>
+    <string name="register_button">Тіркелу</string>
 
     // DriverMain
     <string name="driver_main_title">BusJol</string>
-    <string name="placed_filled">Заполнено: %1$s из %2$s</string>
-    <string name="expects">Ожидает</string>
-    <string name="completed">Выполнен</string>
-    <string name="canceled">Отменен</string>
+    <string name="placed_filled">Толтырылды: %2$s ішінен %1$s</string>
+    <string name="expects">Күтуде</string>
+    <string name="completed">Аяқталды</string>
+    <string name="canceled">Бас тартылды</string>
 
     // Scan
-    <string name="scan_title">Сканирование билета</string>
-    <string name="point_the_camera">Наведите камеру на\nQR код</string>
+    <string name="scan_title">Билет сканерлеу</string>
+    <string name="point_the_camera">Камераны\nQR кодына бағыттаңыз</string>
 
     // TicketVerification
-    <string name="ticket_is_valid">Билет действителен</string>
-    <string name="ticket_is_invalid">Билет недействителен</string>
-    <string name="fio">ФИО</string>
+    <string name="ticket_is_valid">Билет жарамды</string>
+    <string name="ticket_is_invalid">Билет жарамсыз</string>
+    <string name="fio">МФА</string>
     <string name="route">Маршрут</string>
 
 </resources>
