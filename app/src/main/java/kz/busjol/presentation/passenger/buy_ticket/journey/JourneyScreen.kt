@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -37,7 +36,6 @@ import kz.busjol.ext.reformatDateFromBackendOnlyTime
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.MultiStyleTextRow
 import kz.busjol.presentation.NotFoundView
-import kz.busjol.presentation.OnLifecycleEvent
 import kz.busjol.presentation.destinations.ChooseSeatsScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500

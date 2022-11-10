@@ -35,16 +35,17 @@ fun LoginScreen(
     navigator: DestinationsNavigator,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
+    val state = viewModel.state
     val scope = rememberCoroutineScope()
 
-    val emailTextValue = rememberSaveable { mutableStateOf("") }
-    val passwordTextValue = rememberSaveable { mutableStateOf("") }
+    val emailTextValue = remember { mutableStateOf("") }
+    val passwordTextValue = remember { mutableStateOf("") }
 
-    val buttonAvailability = rememberSaveable {
-        mutableStateOf(
-            emailTextValue.value.isNotEmpty() && passwordTextValue.value.isNotEmpty()
-        )
+    val buttonAvailability = remember {
+        emailTextValue.value.isNotEmpty()
     }
+
+    println(buttonAvailability)
 
     Column(
         modifier = Modifier
@@ -75,7 +76,8 @@ fun LoginScreen(
         CustomTextField(
             text = emailTextValue.value,
             onValueChange = {
-
+                emailTextValue.value = it
+                viewModel.onEvent(LoginEvent.GetEmailValue(it))
             },
             hintId = R.string.email_hint,
             labelId = R.string.email_label,
@@ -85,7 +87,8 @@ fun LoginScreen(
         CustomTextField(
             text = passwordTextValue.value,
             onValueChange = {
-
+                passwordTextValue.value = it
+                viewModel.onEvent(LoginEvent.GetPasswordValue(it))
             },
             hintId = R.string.password_hint,
             labelId = R.string.password_label,
@@ -96,7 +99,7 @@ fun LoginScreen(
 
         ProgressButton(
             textId = R.string.enter_button,
-            isEnabled = true,
+            isEnabled = buttonAvailability,
             modifier = Modifier.padding(start = 15.dp, top = 24.dp, end = 15.dp)
         ) {
             if (

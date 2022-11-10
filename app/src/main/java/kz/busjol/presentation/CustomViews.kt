@@ -208,14 +208,18 @@ fun CustomAlertDialog(
 }
 
 @Composable
-fun NotFoundView(modifier: Modifier = Modifier) {
+fun NotFoundView(
+    modifier: Modifier = Modifier,
+    @DrawableRes imageId: Int = R.drawable.bus_with_city_image,
+    @StringRes textId: Int = R.string.not_found
+) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
         Image(
-            painter = painterResource(id = R.drawable.bus_with_city_image),
+            painter = painterResource(id = imageId),
             contentDescription = "notFound",
             contentScale = ContentScale.Crop,
             alignment = Alignment.Center,
@@ -223,60 +227,12 @@ fun NotFoundView(modifier: Modifier = Modifier) {
         )
 
         Text(
-            text = stringResource(id = R.string.not_found),
+            text = stringResource(id = textId),
             fontSize = 14.sp,
             color = GrayText,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 16.dp)
         )
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun BottomSheet(
-    content: (sheetState: ModalBottomSheetState) -> Composable
-) {
-    val sheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        confirmStateChange = { it != ModalBottomSheetValue.HalfExpanded }
-    )
-
-    val coroutineScope = rememberCoroutineScope()
-
-    BackHandler(sheetState.isVisible) {
-        coroutineScope.launch { sheetState.hide() }
-    }
-
-    ModalBottomSheetLayout(sheetContent = {
-
-    }) {
-        content(sheetState)
-    }
-}
-
-@Composable
-fun GrayDivider(modifier: Modifier) {
-    Divider(
-        color = GrayBorder,
-        thickness = 1.dp,
-        modifier = modifier
-            .fillMaxWidth()
-    )
-}
-
-@Composable
-fun CustomCard(
-    modifier: Modifier = Modifier,
-    content: () -> Unit
-) {
-    Card(
-        elevation = 0.dp,
-        border = BorderStroke(1.dp, GrayBorder),
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier
-    ) {
-        content()
     }
 }
 
@@ -300,17 +256,6 @@ fun Loader(isDialogVisible: Boolean) {
         }
     }
 }
-
-fun Modifier.scrollEnabled(
-    enabled: Boolean,
-) = nestedScroll(
-    connection = object : NestedScrollConnection {
-        override fun onPreScroll(
-            available: Offset,
-            source: NestedScrollSource
-        ): Offset = if(enabled) Offset.Zero else available
-    }
-)
 
 @Composable
 fun CustomTextField(
@@ -430,7 +375,6 @@ fun ClickableTextField(
     modifier: Modifier,
     onClick: () -> Unit
 ) {
-
     Card(
         border = BorderStroke(1.dp, GrayBorder),
         shape = RoundedCornerShape(8.dp),
@@ -529,20 +473,32 @@ fun ProgressButton(
 ) {
     val isButtonEnabled by rememberSaveable { mutableStateOf(isEnabled) }
     val isLoadingOn by rememberSaveable { mutableStateOf(isProgressAvailable) }
+    val alpha = remember {
+        mutableStateOf(
+            if (isButtonEnabled) 1f else 0.6f
+        )
+    }
 
     Button(
         onClick = { onClick() },
         shape = RoundedCornerShape(8.dp),
         enabled = isButtonEnabled,
+        colors = ButtonDefaults.buttonColors(
+            disabledBackgroundColor = Blue500
+        ),
         modifier = modifier
             .fillMaxWidth()
             .height(52.dp)
+            .alpha(alpha.value)
     ) {
         if (!isLoadingOn) {
             Text(
                 text = stringResource(id = textId),
                 fontSize = 16.sp,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = White,
+                modifier = Modifier
+                    .alpha(alpha.value)
             )
         } else {
             CircularProgressIndicator(
@@ -601,74 +557,6 @@ fun MultiStyleTextRow(
     }
 }
 
-@Composable
-fun NestedLazyList(
-    modifier: Modifier = Modifier,
-    outerState: LazyListState = rememberLazyListState(),
-    innerState: LazyListState = rememberLazyListState(),
-    outerContent: LazyListScope.() -> Unit,
-    innerContent: LazyListScope.() -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val innerFirstVisibleItemIndex by remember {
-        derivedStateOf {
-            innerState.firstVisibleItemIndex
-        }
-    }
-    SideEffect {
-        if (outerState.layoutInfo.visibleItemsInfo.size == 2 && innerState.layoutInfo.totalItemsCount == 0)
-            scope.launch { outerState.scrollToItem(outerState.layoutInfo.totalItemsCount) }
-        println("outer ${outerState.layoutInfo.visibleItemsInfo.map { it.index }}")
-        println("inner ${innerState.layoutInfo.visibleItemsInfo.map { it.index }}")
-    }
-
-    BoxWithConstraints(
-        modifier = modifier
-            .scrollable(
-                state = rememberScrollableState {
-                    scope.launch {
-                        val toDown = it <= 0
-                        if (toDown) {
-                            if (outerState.run { firstVisibleItemIndex == layoutInfo.totalItemsCount - 1 }) {
-                                innerState.scrollBy(-it)
-                            } else {
-                                outerState.scrollBy(-it)
-                            }
-                        } else {
-                            if (innerFirstVisibleItemIndex == 0 && innerState.firstVisibleItemScrollOffset == 0) {
-                                outerState.scrollBy(-it)
-                            } else {
-                                innerState.scrollBy(-it)
-                            }
-                        }
-                    }
-                    it
-                },
-                Orientation.Vertical,
-            )
-    ) {
-        LazyColumn(
-            userScrollEnabled = false,
-            state = outerState,
-            modifier = Modifier
-                .heightIn(maxHeight)
-        ) {
-            outerContent()
-            item {
-                LazyColumn(
-                    state = innerState,
-                    userScrollEnabled = false,
-                    modifier = Modifier
-                        .height(maxHeight)
-
-                ) {
-                    innerContent()
-                }
-            }
-        }
-
-    }
-}
 
 @Composable
 fun HtmlText(
@@ -737,23 +625,6 @@ fun HtmlText(
     )
 }
 
-/**
- * Simple Text composable to show the text with html styling from a String.
- * Supported are:
- *
- * &lt;b>Bold&lt;/b>
- *
- * &lt;i>Italic&lt;/i>
- *
- * &lt;u>Underlined&lt;/u>
- *
- * &lt;strike>Strikethrough&lt;/strike>
- *
- * &lt;a href="https://google.de">Link&lt;/a>
- *
- * @see androidx.compose.material.Text
- *
- */
 @Composable
 fun HtmlText(
     modifier: Modifier = Modifier,

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +32,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Route
 import kotlinx.coroutines.CoroutineScope
+import androidx.compose.runtime.getValue
 import kotlinx.coroutines.launch
 import kz.busjol.Language
 import kz.busjol.R
@@ -87,7 +89,10 @@ fun SearchJourneyScreen(navigator: DestinationsNavigator) {
 }
 
 @Composable
-private fun SheetLayout(currentScreen: SearchJourneyBottomSheetScreen, onCloseBottomSheet: () -> Unit) {
+private fun SheetLayout(
+    currentScreen: SearchJourneyBottomSheetScreen,
+    onCloseBottomSheet: () -> Unit
+) {
     when (currentScreen) {
         is SearchJourneyBottomSheetScreen.PassengersScreen -> PassengerQuantityScreen(
             onCloseBottomSheet
@@ -113,7 +118,7 @@ private fun MainContent(
 
     val language = remember {
         mutableStateOf(
-            if (state.language == Language.RUSSIAN) "ru" else "kk"
+            state.language?.value
         )
     }
 
@@ -147,132 +152,132 @@ private fun MainContent(
             .fillMaxSize()
             .padding(top = 23.dp, start = 15.dp, end = 15.dp)
             .background(White)
+    ) {
+        Text(
+            text = stringResource(id = R.string.app_name),
+            color = Color.Black,
+            fontWeight = FontWeight.W700,
+            fontSize = 20.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+        )
+
+        Box(
+            contentAlignment = Alignment.BottomStart,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 37.dp)
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.search_journey),
+                contentDescription = "searchJourney",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Text(
-                text = stringResource(id = R.string.app_name),
-                color = Color.Black,
-                fontWeight = FontWeight.W700,
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 5.dp)
+                text = stringResource(id = R.string.search_journey_subtitle),
+                fontSize = 16.sp,
+                color = White,
+                fontWeight = FontWeight.W500,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
             )
+        }
 
-            Box(
-                contentAlignment = Alignment.BottomStart,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 37.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.search_journey),
-                    contentDescription = "searchJourney",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Text(
-                    text = stringResource(id = R.string.search_journey_subtitle),
-                    fontSize = 16.sp,
-                    color = White,
-                    fontWeight = FontWeight.W500,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
-                )
-            }
-
-            CitiesLayout(
-                fromCityValue = state.fromCity?.name ?: "",
-                toCityValue = state.toCity?.name ?: "",
-                fromCitiesClick = {
-                    scope.launch {
-                        viewModel.onEvent(
-                            SearchJourneyEvent.CityListClicked
-                        )
-                        openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from"))
-                    }
-                },
-
-                toCitiesClick = {
-                    scope.launch {
-                        viewModel.onEvent(
-                            SearchJourneyEvent.CityListClicked
-                        )
-                        openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to"))
-                    }
-                },
-
-                swapButtonOnClick = {
-                    scope.launch {
-                        viewModel.onEvent(
-                            SearchJourneyEvent.SwapCities(
-                                state.fromCity ?: City(), state.toCity ?: City()
-                            )
-                        )
-                    }
-                },
-                modifier = Modifier.padding(top = 32.dp)
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-            ) {
-                ClickableTextField(
-                    text = state.arrivalDate ?: "",
-                    iconId = R.drawable.calendar,
-                    hintId = R.string.date_layout_label,
-                    labelId = R.string.date_layout_label,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 2.5.dp)
-                ) {
-                    scope.launch {
-                        openSheet(SearchJourneyBottomSheetScreen.CalendarScreen)
-                    }
-                }
-
-                ClickableTextField(
-                    text = state.passengerQuantity?.allPassengers()?.passengerText()
-                        ?: stringResource(id = R.string.passenger_type_one, 1),
-                    iconId = R.drawable.passenger,
-                    hintId = R.string.passenger_layout_label,
-                    labelId = R.string.passenger_layout_label,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 2.5.dp)
-                ) {
-                    scope.launch {
-                        openSheet(SearchJourneyBottomSheetScreen.PassengersScreen)
-                    }
-                }
-            }
-
-            ProgressButton(
-                textId = R.string.search_button,
-                modifier = Modifier.padding(top = 32.dp),
-                isProgressAvailable = state.isButtonLoading,
-                isEnabled = true
-            ) {
+        CitiesLayout(
+            fromCityValue = state.fromCity?.name ?: "",
+            toCityValue = state.toCity?.name ?: "",
+            fromCitiesClick = {
                 scope.launch {
                     viewModel.onEvent(
-                        SearchJourneyEvent.JourneyListSearch(
-                            JourneyPost(
-                                cityFrom = state.fromCity?.id ?: 1,
-                                cityTo = state.toCity?.id ?: 2,
-                                dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
-                                dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
-                                childrenAmount = state.passengerQuantity?.childValue ?: 0,
-                                adultAmount = state.passengerQuantity?.adultValue ?: 1,
-                                disabledAmount = state.passengerQuantity?.disabledValue ?: 0
-                            )
+                        SearchJourneyEvent.CityListClicked
+                    )
+                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from"))
+                }
+            },
+
+            toCitiesClick = {
+                scope.launch {
+                    viewModel.onEvent(
+                        SearchJourneyEvent.CityListClicked
+                    )
+                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to"))
+                }
+            },
+
+            swapButtonOnClick = {
+                scope.launch {
+                    viewModel.onEvent(
+                        SearchJourneyEvent.SwapCities(
+                            state.fromCity ?: City(), state.toCity ?: City()
                         )
                     )
                 }
+            },
+            modifier = Modifier.padding(top = 32.dp)
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+        ) {
+            ClickableTextField(
+                text = state.arrivalDate ?: "",
+                iconId = R.drawable.calendar,
+                hintId = R.string.date_layout_label,
+                labelId = R.string.date_layout_label,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 2.5.dp)
+            ) {
+                scope.launch {
+                    openSheet(SearchJourneyBottomSheetScreen.CalendarScreen)
+                }
+            }
+
+            ClickableTextField(
+                text = state.passengerQuantity?.allPassengers()?.passengerText()
+                    ?: stringResource(id = R.string.passenger_type_one, 1),
+                iconId = R.drawable.passenger,
+                hintId = R.string.passenger_layout_label,
+                labelId = R.string.passenger_layout_label,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.5.dp)
+            ) {
+                scope.launch {
+                    openSheet(SearchJourneyBottomSheetScreen.PassengersScreen)
+                }
             }
         }
+
+        ProgressButton(
+            textId = R.string.search_button,
+            modifier = Modifier.padding(top = 32.dp),
+            isProgressAvailable = state.isButtonLoading,
+            isEnabled = true
+        ) {
+            scope.launch {
+                viewModel.onEvent(
+                    SearchJourneyEvent.JourneyListSearch(
+                        JourneyPost(
+                            cityFrom = state.fromCity?.id ?: 1,
+                            cityTo = state.toCity?.id ?: 2,
+                            dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
+                            dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
+                            childrenAmount = state.passengerQuantity?.childValue ?: 0,
+                            adultAmount = state.passengerQuantity?.adultValue ?: 1,
+                            disabledAmount = state.passengerQuantity?.disabledValue ?: 0
+                        )
+                    )
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -397,14 +402,14 @@ private fun SwapCitiesButton(
 
 @Composable
 private fun Int.passengerText() = when (this) {
-        1, 21, 31, 41, 51, 61, 71, 81, 91, 101 ->
-            stringResource(id = R.string.passenger_type_one, this)
-        in 2..4, in 22..24, in 32..34, in 42..44, in 52..54,
-        in 62..64, in 72..74, in 82..84, in 92..94 ->
-            stringResource(id = R.string.passenger_type_two, this)
-        in 5..20, in 25..30, in 35..40, in 45..50, in 55..60,
-        in 65..70, in 75..80, in 85..90, in 95..100 ->
-            stringResource(id = R.string.passenger_type_three, this)
-        else ->
-            stringResource(id = R.string.passenger_type_one, this)
+    1, 21, 31, 41, 51, 61, 71, 81, 91, 101 ->
+        stringResource(id = R.string.passenger_type_one, this)
+    in 2..4, in 22..24, in 32..34, in 42..44, in 52..54,
+    in 62..64, in 72..74, in 82..84, in 92..94 ->
+        stringResource(id = R.string.passenger_type_two, this)
+    in 5..20, in 25..30, in 35..40, in 45..50, in 55..60,
+    in 65..70, in 75..80, in 85..90, in 95..100 ->
+        stringResource(id = R.string.passenger_type_three, this)
+    else ->
+        stringResource(id = R.string.passenger_type_one, this)
 }

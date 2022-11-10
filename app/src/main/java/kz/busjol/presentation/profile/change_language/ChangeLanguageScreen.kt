@@ -41,7 +41,7 @@ fun ChangeLanguageScreen(
     val scope = rememberCoroutineScope()
 
     val isRussianSelected = remember { mutableStateOf(
-        state.language == Language.RUSSIAN
+        state.language?.value == "ru"
     )}
 
     Column(

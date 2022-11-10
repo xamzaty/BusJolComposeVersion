@@ -11,17 +11,16 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
-import kz.busjol.presentation.NavGraphs
+import kz.busjol.presentation.NavGraph
+import kz.busjol.presentation.destinations.*
 import kz.busjol.presentation.theme.BusJolComposeTheme
 import kz.busjol.utils.BottomBar
-import kz.busjol.utils.setLocale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -47,6 +46,8 @@ private fun MainContent(
 
     ShowBottomNavBar(navBackStackEntry = navBackStackEntry, bottomBarState = bottomBarState)
 
+    println("route: ${navBackStackEntry?.destination?.route}")
+
     println("userState: ${data.userState}")
 
     Scaffold(
@@ -54,7 +55,7 @@ private fun MainContent(
         bottomBar = {
             BottomBar(
                 navController = navController,
-                bottomBarState = true,
+                bottomBarState = bottomBarState.value,
                 isPassengerMode =
                 data.userState == UserState.UNREGISTERED || data.userState == UserState.REGISTERED
             )
@@ -64,7 +65,7 @@ private fun MainContent(
             modifier = Modifier.padding(innerPadding)
         ) {
             DestinationsNavHost(
-                navGraph = NavGraphs.root,
+                navGraph = passengerNavGraph,
                 navController = navController
             )
         }
@@ -77,7 +78,46 @@ private fun ShowBottomNavBar(
     bottomBarState: MutableState<Boolean>
 ) {
     when (navBackStackEntry?.destination?.route) {
-        "search_journey_screen", "my_tickets_screen", "contacts_screen", "profile_screen" -> bottomBarState.value = true
-        else -> bottomBarState.value = false
+        "search_journey_screen", "my_tickets_screen", "contacts_screen", "profile_screen",
+        "driver_main_screen", "passenger_verification_screen" ->
+            bottomBarState.value = true
+        else ->
+            bottomBarState.value = false
     }
 }
+
+private val passengerNavGraph: NavGraph = NavGraph(
+    route = "root",
+    startRoute = SearchJourneyScreenDestination,
+    destinations = listOf(
+        BookingScreenDestination,
+        ChooseSeatsScreenDestination,
+        JourneyScreenDestination,
+        PassengerDataScreenDestination,
+        PaymentOrderScreenDestination,
+        PaymentOrderResultScreenDestination,
+        SearchJourneyScreenDestination,
+        ContactsScreenDestination,
+        FaqScreenDestination,
+        LoginScreenDestination,
+        PasswordRecoveryScreenDestination,
+        RegistrationScreenDestination,
+        MyTicketsScreenDestination,
+        ProfileScreenDestination,
+        MyDataScreenDestination,
+        MyTripsScreenDestination,
+        RateTheAppDestination
+    )
+)
+
+private val driverNavGraph: NavGraph = NavGraph(
+    route = "driverRoot",
+    startRoute = DriverMainScreenDestination,
+    destinations = listOf(
+        DriverMainScreenDestination,
+        PassengerVerificationScreenDestination,
+        ScanScreenDestination,
+        ProfileScreenDestination,
+        MyTripsScreenDestination,
+    )
+)

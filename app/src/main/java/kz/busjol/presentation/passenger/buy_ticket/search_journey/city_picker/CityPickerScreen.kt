@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kz.busjol.R
 import kz.busjol.domain.models.City
 import kz.busjol.presentation.BackButton
 import kz.busjol.presentation.NotFoundView
@@ -68,22 +69,33 @@ fun CityPickerScreen(
             thickness = 1.dp
         )
 
-        LazyColumn {
-            item {
-                if (state.cityList?.isNotEmpty() == true || !state.isCityLoading) {
+        if (state.cityList.isNullOrEmpty()) {
+            NotFoundView(
+                modifier = Modifier.padding(
+                    top = 64.dp
+                ),
+                textId = R.string.not_found
+            )
+        } else {
+            LazyColumn {
+                item {
                     state.cityList
-                        ?.filter { it.name?.lowercase()!!.contains(text.text.lowercase()) }
-                        ?.forEach { city ->
+                        .filter { it.name?.lowercase()!!.contains(text.text.lowercase()) }
+                        .forEach { city ->
 
-                        CityItem(city, cityList = state.cityList) {
-                            if (fromOrToCity == "from") viewModel.onEvent(SearchJourneyEvent.UpdateFromCityValue(city))
-                            else viewModel.onEvent(SearchJourneyEvent.UpdateToCityValue(city))
+                            CityItem(city, cityList = state.cityList) {
+                                if (fromOrToCity == "from") viewModel.onEvent(
+                                    SearchJourneyEvent.UpdateFromCityValue(
+                                        city
+                                    )
+                                )
+                                else {
+                                    viewModel.onEvent(SearchJourneyEvent.UpdateToCityValue(city))
+                                }
 
-                            onCloseBottomSheet()
+                                onCloseBottomSheet()
+                            }
                         }
-                    }
-                } else {
-                    NotFoundView(modifier = Modifier.padding(25.dp))
                 }
             }
         }
