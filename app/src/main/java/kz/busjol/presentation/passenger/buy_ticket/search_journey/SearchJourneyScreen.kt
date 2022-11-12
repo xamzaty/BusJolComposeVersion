@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,14 +26,11 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.spec.Route
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.launch
-import kz.busjol.Language
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
@@ -43,6 +39,7 @@ import kz.busjol.presentation.*
 import kz.busjol.presentation.destinations.JourneyScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.calendar.CalendarScreen
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.city_picker.CityPickerScreen
+import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengerQuantityScreen
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.utils.setLocale
@@ -123,8 +120,6 @@ private fun MainContent(
     }
 
     setLocale(LocalContext.current, language.value)
-    
-    Loader(isDialogVisible = state.isLoading)
 
     LaunchedEffect(state.startNewDestination) {
         if (state.startNewDestination == true) {
@@ -146,6 +141,26 @@ private fun MainContent(
             viewModel.onEvent(SearchJourneyEvent.NewDestinationStatus(false))
         }
     }
+
+    val adultPassengerQuantity = remember {
+        state.passengerQuantityList?.filter {
+            it.type == Passenger.PassengerType.ADULT
+        }?.size
+    }
+
+    val childPassengerQuantity = remember {
+        state.passengerQuantityList?.filter {
+            it.type == Passenger.PassengerType.CHILD
+        }?.size
+    }
+
+    val disabledPassengerQuantity = remember {
+        state.passengerQuantityList?.filter {
+            it.type == Passenger.PassengerType.DISABLED
+        }?.size
+    }
+
+    Loader(isDialogVisible = state.isLoading)
 
     Column(
         modifier = Modifier
@@ -240,7 +255,7 @@ private fun MainContent(
             }
 
             ClickableTextField(
-                text = state.passengerQuantity?.allPassengers()?.passengerText()
+                text = state.passengerQuantityList?.size?.passengerText()
                     ?: stringResource(id = R.string.passenger_type_one, 1),
                 iconId = R.drawable.passenger,
                 hintId = R.string.passenger_layout_label,
@@ -269,9 +284,9 @@ private fun MainContent(
                             cityTo = state.toCity?.id ?: 2,
                             dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
                             dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
-                            childrenAmount = state.passengerQuantity?.childValue ?: 0,
-                            adultAmount = state.passengerQuantity?.adultValue ?: 1,
-                            disabledAmount = state.passengerQuantity?.disabledValue ?: 0
+                            childrenAmount = childPassengerQuantity ?: 0,
+                            adultAmount = adultPassengerQuantity ?: 1,
+                            disabledAmount = disabledPassengerQuantity ?: 0
                         )
                     )
                 )

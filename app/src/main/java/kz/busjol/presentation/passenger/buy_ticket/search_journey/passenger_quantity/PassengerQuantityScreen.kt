@@ -30,8 +30,25 @@ fun PassengerQuantityScreen(
     onCloseBottomSheet: () -> Unit,
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
-
     val state = viewModel.state
+
+    var adultPassengerQuantity = remember {
+        state.passengerQuantityList?.filter {
+            it.type == Passenger.PassengerType.ADULT
+        }?.size
+    }
+
+    var childPassengerQuantity = remember {
+        state.passengerQuantityList?.filter {
+            it.type == Passenger.PassengerType.CHILD
+        }?.size
+    }
+
+    var disabledPassengerQuantity = remember {
+        state.passengerQuantityList?.filter {
+            it.type == Passenger.PassengerType.DISABLED
+        }?.size
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -70,27 +87,42 @@ fun PassengerQuantityScreen(
         )
 
         PassengerLayout(
-            passengerType = Passenger.PassengerType.ADULT,
             passengerTypeValue = stringResource(id = R.string.adult_passenger),
             description = stringResource(id = R.string.adult_passenger_description),
             modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
-            quantity = state.passengerQuantity?.adultValue ?: 1
+            quantity = adultPassengerQuantity ?: 1,
+            onMinusButtonClicked = {
+                adultPassengerQuantity = adultPassengerQuantity?.minus(1)
+            },
+            onPlusButtonClicked = {
+                adultPassengerQuantity = adultPassengerQuantity?.plus(1)
+            }
         )
 
         PassengerLayout(
-            passengerType = Passenger.PassengerType.CHILD,
             passengerTypeValue = stringResource(id = R.string.child_passenger),
             description = stringResource(id = R.string.child_passenger_description),
             modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
-            quantity = state.passengerQuantity?.childValue ?: 0
+            quantity = childPassengerQuantity ?: 0,
+            onMinusButtonClicked = {
+                childPassengerQuantity = childPassengerQuantity?.minus(1)
+            },
+            onPlusButtonClicked = {
+                childPassengerQuantity = childPassengerQuantity?.plus(1)
+            }
         )
 
         PassengerLayout(
-            passengerType = Passenger.PassengerType.DISABLED,
             passengerTypeValue = stringResource(id = R.string.disabled_person),
             description = stringResource(id = R.string.disabled_person_passenger_description),
             modifier = Modifier.padding(top = 16.dp, start = 15.dp, end = 15.dp),
-            quantity = state.passengerQuantity?.disabledValue ?: 0
+            quantity = disabledPassengerQuantity ?: 0,
+            onMinusButtonClicked = {
+                disabledPassengerQuantity = disabledPassengerQuantity?.minus(1)
+            },
+            onPlusButtonClicked = {
+                disabledPassengerQuantity = disabledPassengerQuantity?.plus(1)
+            }
         )
 
         ProgressButton(
@@ -99,16 +131,22 @@ fun PassengerQuantityScreen(
             isProgressAvailable = false,
             isEnabled = true
         ) {
+            println("""
+                adultValue: ${adultPassengerQuantity},
+                childValue: ${childPassengerQuantity},
+                disabledValue: $disabledPassengerQuantity
+            """.trimIndent())
+
             val adultList =
-                List(state.passengerQuantity!!.adultValue) {
+                List(adultPassengerQuantity ?: 1) {
                     listOf(Passenger(Passenger.PassengerType.ADULT))
                 }.flatten()
             val childList =
-                List(state.passengerQuantity.childValue) {
+                List(childPassengerQuantity ?: 0) {
                     listOf(Passenger(Passenger.PassengerType.CHILD))
                 }.flatten()
             val disabledList =
-                List(state.passengerQuantity.disabledValue) {
+                List(disabledPassengerQuantity ?: 0) {
                     listOf(Passenger(Passenger.PassengerType.DISABLED))
                 }.flatten()
 
@@ -122,14 +160,13 @@ fun PassengerQuantityScreen(
 
 @Composable
 private fun PassengerLayout(
-    passengerType: Passenger.PassengerType,
     passengerTypeValue: String,
     description: String,
     quantity: Int,
     modifier: Modifier,
-    viewModel: SearchJourneyViewModel = hiltViewModel()
+    onMinusButtonClicked: (Int) -> Unit,
+    onPlusButtonClicked: (Int) -> Unit,
 ) {
-
     var quantityValue by rememberSaveable { mutableStateOf(quantity) }
 
     Card(
@@ -177,24 +214,7 @@ private fun PassengerLayout(
                     modifier = Modifier.clickable {
                         if (quantityValue > 0) {
                             quantityValue--
-                        } else if (passengerType == Passenger.PassengerType.ADULT) {
-                            viewModel.onEvent(
-                                SearchJourneyEvent.AdultPassengerQuantity(
-                                    quantityValue
-                                )
-                            )
-                        } else if (passengerType == Passenger.PassengerType.CHILD) {
-                            viewModel.onEvent(
-                                SearchJourneyEvent.ChildPassengerQuantity(
-                                    quantityValue
-                                )
-                            )
-                        } else {
-                            viewModel.onEvent(
-                                SearchJourneyEvent.DisabledPassengerQuantity(
-                                    quantityValue
-                                )
-                            )
+                            onMinusButtonClicked(quantityValue)
                         }
                     }
                 )
@@ -211,30 +231,7 @@ private fun PassengerLayout(
                     contentDescription = "plus",
                     modifier = Modifier.clickable {
                         quantityValue++
-
-                        when (passengerType) {
-                            Passenger.PassengerType.ADULT -> {
-                                viewModel.onEvent(
-                                    SearchJourneyEvent.AdultPassengerQuantity(
-                                        quantityValue
-                                    )
-                                )
-                            }
-                            Passenger.PassengerType.CHILD -> {
-                                viewModel.onEvent(
-                                    SearchJourneyEvent.ChildPassengerQuantity(
-                                        quantityValue
-                                    )
-                                )
-                            }
-                            else -> {
-                                viewModel.onEvent(
-                                    SearchJourneyEvent.DisabledPassengerQuantity(
-                                        quantityValue
-                                    )
-                                )
-                            }
-                        }
+                        onPlusButtonClicked(quantityValue)
                     }
                 )
             }

@@ -4,7 +4,6 @@ import kz.busjol.Language
 import kz.busjol.domain.models.City
 import kz.busjol.domain.models.Journey
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
-import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengersQuantity
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -14,7 +13,6 @@ data class SearchJourneyState(
     val departureDate: String? = null,
     val arrivalDate: String? = null,
     val language: Language? = null,
-    val passengerQuantity: PassengersQuantity? = null,
     val passengerQuantityList: List<Passenger>? = null,
     val journeyList: List<Journey>? = null,
     val cityList: List<City>? = null,
@@ -30,9 +28,11 @@ data class SearchJourneyState(
         val currentDate: String = sdf.format(Date())
 
         return SearchJourneyState(
-            fromCity = City(), toCity = City(),
-            departureDate = currentDate, arrivalDate = currentDate,
-            passengerQuantity = PassengersQuantity(), passengerQuantityList = emptyList(),
+            fromCity = City(),
+            toCity = City(),
+            departureDate = currentDate,
+            arrivalDate = currentDate,
+            passengerQuantityList = listOf(Passenger()),
             journeyList = emptyList(), cityList = emptyList(),
             language = Language.RUSSIAN
         )

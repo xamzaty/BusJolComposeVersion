@@ -13,8 +13,5 @@ sealed interface SearchJourneyEvent {
     data class UpdateDateValue(val date: String) : SearchJourneyEvent
     data class UpdatePassengersQuantityValue(val passengersQuantity: List<Passenger>) : SearchJourneyEvent
     data class NewDestinationStatus(val isStarted: Boolean) : SearchJourneyEvent
-    data class AdultPassengerQuantity(val quantity: Int) : SearchJourneyEvent
-    data class ChildPassengerQuantity(val quantity: Int) : SearchJourneyEvent
-    data class DisabledPassengerQuantity(val quantity: Int) : SearchJourneyEvent
     object CityListClicked : SearchJourneyEvent
 }

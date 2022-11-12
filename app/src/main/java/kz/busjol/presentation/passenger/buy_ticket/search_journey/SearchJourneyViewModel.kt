@@ -14,9 +14,6 @@ import kz.busjol.domain.repository.DataStoreRepository
 import kz.busjol.domain.repository.JourneyListRepository
 import kz.busjol.domain.util.Resource
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
-import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengersQuantity
-import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,27 +44,6 @@ class SearchJourneyViewModel @Inject constructor(
             is SearchJourneyEvent.UpdateDateValue -> updateDateValue(event.date)
             is SearchJourneyEvent.UpdatePassengersQuantityValue -> updatePassengersQuantityValue(event.passengersQuantity)
             is SearchJourneyEvent.NewDestinationStatus -> newDestinationStatus(event.isStarted)
-            is SearchJourneyEvent.AdultPassengerQuantity -> {
-                state = state.copy(
-                    passengerQuantity = PassengersQuantity(
-                        adultValue = event.quantity
-                    )
-                )
-            }
-            is SearchJourneyEvent.ChildPassengerQuantity -> {
-                state = state.copy(
-                    passengerQuantity = PassengersQuantity(
-                        childValue = event.quantity
-                    )
-                )
-            }
-            is SearchJourneyEvent.DisabledPassengerQuantity -> {
-                state = state.copy(
-                    passengerQuantity = PassengersQuantity(
-                        disabledValue = event.quantity
-                    )
-                )
-            }
         }
     }
 
