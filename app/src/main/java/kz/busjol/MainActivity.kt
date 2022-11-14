@@ -43,12 +43,11 @@ private fun MainContent(
     val bottomBarState = rememberSaveable { (mutableStateOf(true)) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val data = viewModel.userState.collectAsState(initial = AppSettings()).value
+    val navGraph = remember { mutableStateOf(
+        if (data.userState != UserState.DRIVER) passengerNavGraph else driverNavGraph
+    ) }
 
     ShowBottomNavBar(navBackStackEntry = navBackStackEntry, bottomBarState = bottomBarState)
-
-    println("route: ${navBackStackEntry?.destination?.route}")
-
-    println("userState: ${data.userState}")
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -65,7 +64,7 @@ private fun MainContent(
             modifier = Modifier.padding(innerPadding)
         ) {
             DestinationsNavHost(
-                navGraph = passengerNavGraph,
+                navGraph = navGraph.value,
                 navController = navController
             )
         }
@@ -114,6 +113,7 @@ private val driverNavGraph: NavGraph = NavGraph(
     route = "driverRoot",
     startRoute = DriverMainScreenDestination,
     destinations = listOf(
+        SearchJourneyScreenDestination,
         DriverMainScreenDestination,
         PassengerVerificationScreenDestination,
         ScanScreenDestination,

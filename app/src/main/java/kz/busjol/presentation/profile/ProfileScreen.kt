@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,7 +23,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.BuildConfig
-import kz.busjol.Language
 import kz.busjol.presentation.profile.change_language.ChangeLanguageScreen
 import kz.busjol.presentation.profile.rate_the_app.RateTheApp
 import kz.busjol.R
@@ -33,7 +31,6 @@ import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.destinations.LoginScreenDestination
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
-import kz.busjol.utils.setLocale
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination
@@ -114,7 +111,9 @@ private fun MainContent(
         isUserAuthorized.value || isDriverAuthorized.value
     )}
 
-    val emailValue = remember { "h.yerzhanov@gmail.com" }
+    val emailValue = remember {
+        mutableStateOf(state.emailValue)
+    }
 
     val appVersion = remember { mutableStateOf(BuildConfig.VERSION_NAME) }
 
@@ -149,13 +148,13 @@ private fun MainContent(
 
         DriverLayout(
             isDriverAuthorized = isDriverAuthorized.value,
-            email = emailValue,
+            email = emailValue.value ?: "",
             modifier = Modifier.padding(top = 48.dp)
         )
 
         AuthorizedUserLayout(
             isUserAuthorized = isUserAuthorized.value,
-            email = emailValue,
+            email = emailValue.value ?: "",
             modifier = Modifier.padding(top = 24.dp)
         )
 
@@ -244,7 +243,8 @@ private fun WeDoNotRecogniseYouLayout(
 private fun DriverLayout(
     modifier: Modifier = Modifier,
     email: String? = null,
-    isDriverAuthorized: Boolean
+    isDriverAuthorized: Boolean,
+    viewModel: ProfileScreenViewModel = hiltViewModel()
 ) {
     if (isDriverAuthorized) {
         Row(
@@ -265,7 +265,10 @@ private fun DriverLayout(
             Text(
                 text = stringResource(id = R.string.exit_button),
                 fontSize = 13.sp,
-                color = Color.Red
+                color = Color.Red,
+                modifier = Modifier.clickable {
+                    viewModel.onEvent(ProfileEvent.ExitUserState)
+                }
             )
         }
 
@@ -291,7 +294,8 @@ private fun DriverLayout(
 private fun AuthorizedUserLayout(
     modifier: Modifier = Modifier,
     email: String? = null,
-    isUserAuthorized: Boolean
+    isUserAuthorized: Boolean,
+    viewModel: ProfileScreenViewModel = hiltViewModel()
 ) {
     if (isUserAuthorized) {
         Column(
@@ -316,7 +320,10 @@ private fun AuthorizedUserLayout(
                 Text(
                     text = stringResource(id = R.string.exit_button),
                     fontSize = 13.sp,
-                    color = Color.Red
+                    color = Color.Red,
+                    modifier = Modifier.clickable {
+                        viewModel.onEvent(ProfileEvent.ExitUserState)
+                    }
                 )
             }
 

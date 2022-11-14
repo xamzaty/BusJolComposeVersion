@@ -65,7 +65,7 @@ fun RateTheApp(onCloseBottomSheet: () -> Unit) {
             painter = painterResource(id = R.drawable.rate_the_app),
             contentDescription = "rate_the_app",
             modifier = Modifier
-                .size(180.dp)
+                .size(150.dp)
                 .padding(top = 24.dp)
         )
 

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kz.busjol.Language
+import kz.busjol.UserState
 import kz.busjol.domain.repository.DataStoreRepository
 import javax.inject.Inject
 
@@ -27,6 +28,10 @@ class ProfileScreenViewModel @Inject constructor(
             }
             is ProfileEvent.SetNotificationStatus -> {
                 setNotificationStatus(event.notificationStatus)
+                getDataStoreValues()
+            }
+            ProfileEvent.ExitUserState -> {
+                setUnregisteredUserState()
                 getDataStoreValues()
             }
         }
@@ -59,6 +64,12 @@ class ProfileScreenViewModel @Inject constructor(
     private fun setNotificationStatus(notificationStatus: Boolean) {
         viewModelScope.launch {
             dataStoreRepository.setNotificationsState(notificationStatus)
+        }
+    }
+
+    private fun setUnregisteredUserState() {
+        viewModelScope.launch {
+            dataStoreRepository.setUserState(UserState.UNREGISTERED)
         }
     }
 }

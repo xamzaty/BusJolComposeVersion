@@ -15,6 +15,6 @@ enum class BottomBarDestination(
     MyTickets(MyTicketsScreenDestination, R.drawable.my_tickets_category, R.string.my_tickets_category),
     Contacts(ContactsScreenDestination, R.drawable.contacts_category, R.string.contacts_category),
     Profile(ProfileScreenDestination, R.drawable.profile_category, R.string.profile_category),
-    DriverMain(DriverMainScreenDestination, R.drawable.profile_category, R.string.driver_main_category),
-    Scan(ScanScreenDestination, R.drawable.profile_category, R.string.scan_category)
+    DriverMain(DriverMainScreenDestination, R.drawable.driver_main_category, R.string.driver_main_category),
+    Scan(ScanScreenDestination, R.drawable.scan_category, R.string.scan_category)
 }

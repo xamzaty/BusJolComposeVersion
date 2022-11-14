@@ -23,8 +23,10 @@ import com.ramcosta.composedestinations.navigation.popUpTo
 import kotlinx.coroutines.launch
 import kz.busjol.Language
 import kz.busjol.R
+import kz.busjol.UserState
 import kz.busjol.presentation.NavGraphs
 import kz.busjol.presentation.destinations.DirectionDestination
+import kz.busjol.presentation.destinations.DriverMainScreenDestination
 import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
 import kz.busjol.presentation.profile.ProfileEvent
 import kz.busjol.presentation.profile.ProfileScreenViewModel
@@ -88,7 +90,7 @@ fun ChangeLanguageScreen(
             scope.launch {
                 isRussianSelected.value = false
                 viewModel.onEvent(ProfileEvent.SetLanguage(Language.KAZAKH))
-                navigator.backToMainScreen()
+                navigator.backToMainScreen(state.userState)
             }
         }
 
@@ -99,7 +101,7 @@ fun ChangeLanguageScreen(
             scope.launch {
                 isRussianSelected.value = true
                 viewModel.onEvent(ProfileEvent.SetLanguage(Language.RUSSIAN))
-                navigator.backToMainScreen()
+                navigator.backToMainScreen(state.userState)
             }
         }
     }
@@ -156,9 +158,16 @@ private fun LanguageLayout(
     }
 }
 
-private fun DestinationsNavigator.backToMainScreen() =
-    this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
-        popUpTo(SearchJourneyScreenDestination) {
-            inclusive = true
+private fun DestinationsNavigator.backToMainScreen(
+    userState: UserState?
+) = this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
+        if (userState == UserState.DRIVER) {
+            popUpTo(SearchJourneyScreenDestination) {
+                inclusive = true
+            }
+        } else {
+            popUpTo(DriverMainScreenDestination) {
+                inclusive = true
+            }
         }
     }

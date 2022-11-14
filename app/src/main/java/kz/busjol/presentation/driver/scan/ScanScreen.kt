@@ -31,12 +31,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
 
 @Destination
 @Composable
-fun ScanScreen() {
+fun ScanScreen(navigator: DestinationsNavigator) {
     var code by remember {
         mutableStateOf("")
     }
@@ -59,71 +61,83 @@ fun ScanScreen() {
             hasCamPermission = granted
         }
     )
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(key1 = true) {
         launcher.launch(Manifest.permission.CAMERA)
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        if (hasCamPermission) {
+        AppBar(title = stringResource(id = R.string.scan_title)) {
+            scope.launch {
+                navigator.navigateUp()
+            }
+        }
 
-            AndroidView(
-                factory = { context ->
-                    val previewView = PreviewView(context)
-                    val preview = Preview.Builder().build()
-                    val selector = CameraSelector.Builder()
-                        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                        .build()
-                    preview.setSurfaceProvider(previewView.surfaceProvider)
-                    val imageAnalysis = ImageAnalysis.Builder()
-                        .setTargetResolution(
-                            Size(
-                                previewView.width,
-                                previewView.height
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+
+            if (hasCamPermission) {
+                AndroidView(
+                    factory = { context ->
+                        val previewView = PreviewView(context)
+                        val preview = Preview.Builder().build()
+                        val selector = CameraSelector.Builder()
+                            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                            .build()
+                        preview.setSurfaceProvider(previewView.surfaceProvider)
+                        val imageAnalysis = ImageAnalysis.Builder()
+                            .setTargetResolution(
+                                Size(
+                                    previewView.width,
+                                    previewView.height
+                                )
                             )
+                            .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+                        imageAnalysis.setAnalyzer(
+                            ContextCompat.getMainExecutor(context),
+                            QrCodeAnalyzer { result ->
+                                code = result
+                            }
                         )
-                        .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
-                    imageAnalysis.setAnalyzer(
-                        ContextCompat.getMainExecutor(context),
-                        QrCodeAnalyzer { result ->
-                            code = result
+                        try {
+                            cameraProviderFuture.get().bindToLifecycle(
+                                lifecycleOwner,
+                                selector,
+                                preview,
+                                imageAnalysis
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
+                        previewView
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.camera_frame),
+                        contentDescription = "camera_frame"
                     )
-                    try {
-                        cameraProviderFuture.get().bindToLifecycle(
-                            lifecycleOwner,
-                            selector,
-                            preview,
-                            imageAnalysis
-                        )
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                    previewView
-                },
-                modifier = Modifier.fillMaxSize()
-            )
 
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.camera_frame),
-                    contentDescription = "camera_frame"
-                )
-
-                Text(
-                    text = stringResource(id = R.string.point_the_camera),
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 18.dp)
-                )
+                    Text(
+                        text = stringResource(id = R.string.point_the_camera),
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 18.dp)
+                    )
+                }
             }
         }
     }
