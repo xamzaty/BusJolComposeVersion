@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kz.busjol.Language
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
 import kz.busjol.domain.repository.CityListRepository
@@ -44,6 +45,7 @@ class SearchJourneyViewModel @Inject constructor(
             is SearchJourneyEvent.UpdateDateValue -> updateDateValue(event.date)
             is SearchJourneyEvent.UpdatePassengersQuantityValue -> updatePassengersQuantityValue(event.passengersQuantity)
             is SearchJourneyEvent.NewDestinationStatus -> newDestinationStatus(event.isStarted)
+            is SearchJourneyEvent.SetLanguage -> setLanguage(event.language)
         }
     }
 
@@ -56,6 +58,12 @@ class SearchJourneyViewModel @Inject constructor(
                         language = it.language
                     )
             }
+        }
+    }
+
+    private fun setLanguage(language: Language) {
+        viewModelScope.launch {
+            dataStoreRepository.setLanguage(language)
         }
     }
 

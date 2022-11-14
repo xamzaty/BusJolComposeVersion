@@ -279,7 +279,7 @@ fun CustomTextField(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier
             .fillMaxWidth()
-            .height(62.dp)
+            .height(54.dp)
     ) {
         TextField(
             value = textValue,

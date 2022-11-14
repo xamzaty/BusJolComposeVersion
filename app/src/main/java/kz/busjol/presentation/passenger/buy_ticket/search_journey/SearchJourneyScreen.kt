@@ -30,6 +30,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
@@ -43,11 +44,14 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quan
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengerQuantityScreen
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.utils.setLocale
+import kz.busjol.utils.showDataErrorToast
 
 @Destination(start = true)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SearchJourneyScreen(navigator: DestinationsNavigator) {
+fun SearchJourneyScreen(
+    navigator: DestinationsNavigator
+) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberBottomSheetScaffoldState()
     var currentBottomSheet: SearchJourneyBottomSheetScreen? by remember {
@@ -113,6 +117,8 @@ private fun MainContent(
 ) {
     val state = viewModel.state
 
+    val context = LocalContext.current
+
     val language = remember {
         mutableStateOf(
             state.language?.value
@@ -139,6 +145,16 @@ private fun MainContent(
     DisposableEffect(state.startNewDestination) {
         onDispose {
             viewModel.onEvent(SearchJourneyEvent.NewDestinationStatus(false))
+        }
+    }
+
+    val showAlert = remember { mutableStateOf(false) }
+
+    if (state.language == null) {
+        SelectLanguageAlertDialog(setShowDialog = {
+            showAlert.value = it
+        }) {
+            viewModel.onEvent(SearchJourneyEvent.SetLanguage(it))
         }
     }
 
@@ -206,19 +222,23 @@ private fun MainContent(
             toCityValue = state.toCity?.name ?: "",
             fromCitiesClick = {
                 scope.launch {
-                    viewModel.onEvent(
-                        SearchJourneyEvent.CityListClicked
-                    )
-                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from"))
+                    context.showDataErrorToast(state.error) {
+                        viewModel.onEvent(
+                            SearchJourneyEvent.CityListClicked
+                        )
+                        openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("from"))
+                    }
                 }
             },
 
             toCitiesClick = {
                 scope.launch {
-                    viewModel.onEvent(
-                        SearchJourneyEvent.CityListClicked
-                    )
-                    openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to"))
+                    context.showDataErrorToast(state.error) {
+                        viewModel.onEvent(
+                            SearchJourneyEvent.CityListClicked
+                        )
+                        openSheet(SearchJourneyBottomSheetScreen.CityPickerScreen("to"))
+                    }
                 }
             },
 
@@ -277,6 +297,8 @@ private fun MainContent(
             isEnabled = true
         ) {
             scope.launch {
+                context.showDataErrorToast(state.error)
+
                 viewModel.onEvent(
                     SearchJourneyEvent.JourneyListSearch(
                         JourneyPost(

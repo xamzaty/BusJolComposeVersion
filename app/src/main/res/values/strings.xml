@@ -9,6 +9,8 @@
     <string name="save_button">Сохранить</string>
     <string name="send_button">Отправить</string>
 
+    <string name="data_error">В данный момент невозможно загрузить данные</string>
+
     <string name="not_found">Не найдено!</string>
 
     <string name="fill_in_all_the_fields_error">Заполните все поля!</string>

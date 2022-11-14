@@ -31,6 +31,7 @@ import kz.busjol.R
 import kz.busjol.UserState
 import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.destinations.LoginScreenDestination
+import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.utils.setLocale
 
@@ -450,10 +451,10 @@ private fun ClickableLayout(
 
 @Composable
 private fun NotificationLayout(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: ProfileScreenViewModel = hiltViewModel()
 ) {
-
-    var checkboxState by rememberSaveable { mutableStateOf(true) }
+    val switchState = rememberSaveable { mutableStateOf(viewModel.state.isNotificationsEnabled) }
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -473,16 +474,21 @@ private fun NotificationLayout(
 
             Spacer(modifier = Modifier.weight(1f))
 
-//            Switch(
-//                checked = checkboxState,
-//                onCheckedChange = {
-//                    checkboxState = it
-//                },
-//                colors = SwitchDefaults.colors(
-//                    checkedTrackColor = Blue500,
-//                    checkedThumbColor = Color.White
-//                )
-//            )
+            Switch(
+                checked = switchState.value,
+                onCheckedChange = {
+                    viewModel.onEvent(ProfileEvent.SetNotificationStatus(it))
+                    switchState.value = it
+                },
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = Blue500,
+                    checkedThumbColor = Color.White
+                ),
+                modifier = Modifier
+                    .padding(end = 25.dp)
+                    .height(20.dp)
+                    .width(12.dp)
+            )
         }
 
         Divider(

@@ -79,6 +79,7 @@ fun LoginScreen(
                 emailTextValue.value = it
                 viewModel.onEvent(LoginEvent.GetEmailValue(it))
             },
+            keyboardType = KeyboardType.Email,
             hintId = R.string.email_hint,
             labelId = R.string.email_label,
             modifier = Modifier.padding(start = 15.dp, top = 16.dp, end = 15.dp)

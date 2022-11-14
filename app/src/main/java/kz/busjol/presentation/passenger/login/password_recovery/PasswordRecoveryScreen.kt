@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
@@ -58,6 +59,7 @@ fun PasswordRecoveryScreen(
                 emailTextValue.value = it
             },
             hintId = R.string.email_hint,
+            keyboardType = KeyboardType.Email,
             labelId = R.string.email_label,
             modifier = Modifier
                 .padding(start = 15.dp, top = 16.dp, end = 15.dp)

@@ -25,6 +25,10 @@ class ProfileScreenViewModel @Inject constructor(
                 setLanguage(event.language)
                 getDataStoreValues()
             }
+            is ProfileEvent.SetNotificationStatus -> {
+                setNotificationStatus(event.notificationStatus)
+                getDataStoreValues()
+            }
         }
     }
 
@@ -39,7 +43,8 @@ class ProfileScreenViewModel @Inject constructor(
                 .collect {
                     state = state.copy(
                         language = it.language,
-                        userState = it.userState
+                        userState = it.userState,
+                        isNotificationsEnabled = it.isNotificationsAvailable
                     )
                 }
         }
@@ -48,6 +53,12 @@ class ProfileScreenViewModel @Inject constructor(
     private fun setLanguage(language: Language) {
         viewModelScope.launch {
             dataStoreRepository.setLanguage(language)
+        }
+    }
+
+    private fun setNotificationStatus(notificationStatus: Boolean) {
+        viewModelScope.launch {
+            dataStoreRepository.setNotificationsState(notificationStatus)
         }
     }
 }

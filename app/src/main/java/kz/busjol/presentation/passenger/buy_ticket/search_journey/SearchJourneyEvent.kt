@@ -1,5 +1,6 @@
 package kz.busjol.presentation.passenger.buy_ticket.search_journey
 
+import kz.busjol.Language
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
@@ -13,5 +14,6 @@ sealed interface SearchJourneyEvent {
     data class UpdateDateValue(val date: String) : SearchJourneyEvent
     data class UpdatePassengersQuantityValue(val passengersQuantity: List<Passenger>) : SearchJourneyEvent
     data class NewDestinationStatus(val isStarted: Boolean) : SearchJourneyEvent
+    data class SetLanguage(val language: Language) : SearchJourneyEvent
     object CityListClicked : SearchJourneyEvent
 }

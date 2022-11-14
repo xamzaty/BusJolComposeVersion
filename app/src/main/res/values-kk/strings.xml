@@ -9,6 +9,8 @@
     <string name="save_button">Сақтау</string>
     <string name="send_button">Жіберу</string>
 
+    <string name="data_error">Қазіргі уақытта деректерді жүктеу мүмкін емес</string>
+
     <string name="not_found">Табылмады!</string>
 
     <string name="fill_in_all_the_fields_error">Барлық өрістерді толтырыңыз!</string>
