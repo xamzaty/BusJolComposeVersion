@@ -67,7 +67,7 @@ fun PasswordRecoveryScreen(
 
         ProgressButton(
             textId = R.string.send_button,
-            isEnabled = buttonAvailability.value,
+            enabled = buttonAvailability.value,
             modifier = Modifier.padding(start = 15.dp, top = 24.dp, end = 15.dp)
         ) {
 

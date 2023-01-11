@@ -102,7 +102,7 @@ fun RegistrationScreen(
 
         ProgressButton(
             textId = R.string.register_button,
-            isEnabled = buttonAvailability,
+            enabled = buttonAvailability,
             modifier = Modifier.padding(start = 15.dp, top = 25.5.dp, end = 15.dp)
         ) {
 

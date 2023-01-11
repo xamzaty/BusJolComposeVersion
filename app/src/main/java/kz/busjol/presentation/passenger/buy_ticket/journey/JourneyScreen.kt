@@ -34,6 +34,7 @@ import kz.busjol.R
 import kz.busjol.domain.models.Journey
 import kz.busjol.ext.reformatDateFromBackendOnlyTime
 import kz.busjol.presentation.AppBar
+import kz.busjol.presentation.Loader
 import kz.busjol.presentation.MultiStyleTextRow
 import kz.busjol.presentation.NotFoundView
 import kz.busjol.presentation.destinations.ChooseSeatsScreenDestination
@@ -76,6 +77,10 @@ fun JourneyScreen(
         onDispose {
             viewModel.onEvent(JourneyEvent.NewDestinationStatus(false))
         }
+    }
+
+    if (state.isLoading) {
+        Loader(isDialogVisible = state.isLoading)
     }
 
     Column(

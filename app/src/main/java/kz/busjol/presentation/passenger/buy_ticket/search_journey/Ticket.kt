@@ -2,6 +2,7 @@ package kz.busjol.presentation.passenger.buy_ticket.search_journey
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kz.busjol.domain.models.Booking
 import kz.busjol.domain.models.City
 import kz.busjol.domain.models.Journey
 import kz.busjol.domain.models.Seats
@@ -15,5 +16,7 @@ data class Ticket(
     val passengerList: List<Passenger>? = null,
     val journeyList: List<Journey>? = null,
     val journey: Journey? = null,
-    val seatList: List<Seats>? = null
+    val seatList: List<Seats>? = null,
+    val chosenSeatsList: List<Seats>? = null,
+    val bookingList: List<Booking>? = null
 ): Parcelable

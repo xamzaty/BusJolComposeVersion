@@ -30,7 +30,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
@@ -176,8 +175,6 @@ private fun MainContent(
         }?.size
     }
 
-    Loader(isDialogVisible = state.isLoading)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -293,8 +290,8 @@ private fun MainContent(
         ProgressButton(
             textId = R.string.search_button,
             modifier = Modifier.padding(top = 32.dp),
-            isProgressAvailable = state.isButtonLoading,
-            isEnabled = true
+            isProgressBarActive = state.isButtonLoading,
+            enabled = true
         ) {
             scope.launch {
                 context.showDataErrorToast(state.error)

@@ -19,7 +19,6 @@ class CityPickerRepositoryImpl @Inject constructor(
         return flow {
             emit(Resource.Loading(true))
             try {
-                emit(Resource.Loading(false))
                 emit(
                     Resource.Success(
                         data = cityListApi.getCityList().toCityList()
@@ -27,12 +26,10 @@ class CityPickerRepositoryImpl @Inject constructor(
                 )
             } catch(e: IOException) {
                 e.printStackTrace()
-                emit(Resource.Error("Couldn't load data"))
-                emit(Resource.Loading(false))
+                emit(Resource.Error("Ошибка: ${e.printStackTrace()}"))
             } catch (e: HttpException) {
                 e.printStackTrace()
-                emit(Resource.Error("Couldn't load data"))
-                emit(Resource.Loading(false))
+                emit(Resource.Error("Ошибка: ${e.printStackTrace()}"))
             }
         }
     }

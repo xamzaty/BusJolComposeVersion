@@ -1,5 +1,6 @@
 package kz.busjol.presentation.passenger.buy_ticket.choose_seats
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -29,6 +31,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import kz.busjol.presentation.AppBar
 import kz.busjol.R
+import kz.busjol.domain.models.Seats
 import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.destinations.PassengerDataScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
@@ -45,8 +48,19 @@ fun ChooseSeatsScreen(
 ) {
     val state = viewModel.state
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    val isButtonAvailable = remember { mutableStateOf(state.seatsQuantity == ticket.passengerList?.size) }
+    val isButtonEnabled by remember {
+        mutableStateOf(state.seatsQuantity == state.passengersQuantity)
+    }
+
+    LaunchedEffect(ticket.passengerList) {
+        viewModel.onEvent(
+            ChooseSeatsEvent.PassPassengersQuantity(
+                ticket.passengerList?.size ?: 1
+            )
+        )
+    }
 
     LazyColumn(horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -125,8 +139,7 @@ fun ChooseSeatsScreen(
                         ) {
                             ticket.seatList?.forEachIndexed { index, seats ->
                                 SeatItem(
-                                    text = seats.seatNumber,
-                                    isEmpty = true,
+                                    seats = seats,
                                     modifier = Modifier.seatModifier(index)
                                 )
                             }
@@ -159,7 +172,7 @@ fun ChooseSeatsScreen(
                             Spacer(modifier = Modifier.weight(1f))
 
                             Text(
-                                text = state.list ?: "",
+                                text = state.chosenSeatsList ?: "",
                                 fontWeight = FontWeight.W500,
                                 fontSize = 15.sp
                             )
@@ -167,22 +180,27 @@ fun ChooseSeatsScreen(
 
                         ProgressButton(
                             textId = R.string.continue_button,
-                            isProgressAvailable = false,
-                            isEnabled = true,
+                            isProgressBarActive = false,
+                            enabled = isButtonEnabled,
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
                             scope.launch {
-                                navigator.navigate(
-                                    PassengerDataScreenDestination(
-                                        ticket = Ticket(
-                                            departureCity = ticket.departureCity,
-                                            arrivalCity = ticket.arrivalCity,
-                                            date = ticket.date,
-                                            passengerList = ticket.passengerList,
-                                            journey = ticket.journey
+                                if (state.seatsQuantity != state.passengersQuantity) {
+                                    Toast.makeText(context, "Выберите нужное количество сидении", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    navigator.navigate(
+                                        PassengerDataScreenDestination(
+                                            ticket = Ticket(
+                                                departureCity = ticket.departureCity,
+                                                arrivalCity = ticket.arrivalCity,
+                                                date = ticket.date,
+                                                passengerList = ticket.passengerList,
+                                                journey = ticket.journey,
+                                                chosenSeatsList = state.seatList
+                                            )
                                         )
                                     )
-                                )
+                                }
                             }
                         }
                     }
@@ -195,8 +213,7 @@ fun ChooseSeatsScreen(
 @Composable
 fun SeatItem(
     modifier: Modifier = Modifier,
-    text: String,
-    isEmpty: Boolean,
+    seats: Seats,
     viewModel: ChooseSeatsViewModel = hiltViewModel()
 ) {
     val isChecked = remember { mutableStateOf(false) }
@@ -207,21 +224,21 @@ fun SeatItem(
     Card(
         shape = RoundedCornerShape(4.dp),
         elevation = 0.dp,
-        backgroundColor = if (isEmpty) backgroundColor.value else GrayBackground,
-        border = if (isEmpty) border.value else BorderStroke(2.dp, GrayBackground),
+        backgroundColor = if (seats.isEmpty) backgroundColor.value else GrayBackground,
+        border = if (seats.isEmpty) border.value else BorderStroke(2.dp, GrayBackground),
         modifier = modifier
             .size(40.dp)
             .toggleable(value = isChecked.value, role = Role.Checkbox) {
-                if (isEmpty) {
+                if (seats.isEmpty) {
                     isChecked.value = it
 
                     if (isChecked.value) {
-                        viewModel.onEvent(ChooseSeatsEvent.AddItemToList(text.toInt()))
+                        viewModel.onEvent(ChooseSeatsEvent.AddItemToList(seats))
                         border.value = BorderStroke(2.dp, Blue500)
                         backgroundColor.value = Blue500
                         textColor.value = Color.White
                     } else {
-                        viewModel.onEvent(ChooseSeatsEvent.RemoveItem(text.toInt()))
+                        viewModel.onEvent(ChooseSeatsEvent.RemoveItem(seats))
                         border.value = BorderStroke(2.dp, Blue500)
                         backgroundColor.value = Color.White
                         textColor.value = Color.Black
@@ -231,10 +248,10 @@ fun SeatItem(
 
         content = {
             Text(
-                text = text,
+                text = seats.seatNumber,
                 textAlign = TextAlign.Center,
                 fontSize = 12.sp,
-                color = if (isEmpty) textColor.value else Color.Black,
+                color = if (seats.isEmpty) textColor.value else Color.Black,
                 modifier = Modifier
                     .fillMaxSize()
                     .wrapContentHeight()
@@ -255,6 +272,15 @@ private fun SmallDescriptionBox(
         modifier = modifier
             .size(16.dp),
         content = { })
+}
+
+private fun Modifier.newSeatModifier(row: Int, column: Int) = when {
+        row == 1 && column == 1 -> this.padding(top = 24.dp)
+        row == 1 && column == 2 -> this.padding(start = 8.dp, top = 24.dp, end = 15.dp)
+        row == 1 && column == 3 -> this.padding(start = 20.dp, top = 24.dp)
+        row == 1 && column == 4 -> this.padding(start = 8.dp, top = 24.dp)
+
+        else -> this
 }
 
 private fun Modifier.seatModifier(index: Int) = when {

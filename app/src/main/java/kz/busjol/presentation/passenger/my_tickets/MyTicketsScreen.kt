@@ -109,8 +109,8 @@ private fun UnregisteredSection(
 
         ProgressButton(
             textId = R.string.enter_button,
-            isProgressAvailable = false,
-            isEnabled = true
+            isProgressBarActive = false,
+            enabled = true
         ) {
             coroutineScope.launch {
                 navigator.navigate(

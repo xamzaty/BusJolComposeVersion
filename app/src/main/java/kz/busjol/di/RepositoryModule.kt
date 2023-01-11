@@ -9,14 +9,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kz.busjol.data.repository.CityPickerRepositoryImpl
-import kz.busjol.data.repository.DataStoreManager
-import kz.busjol.data.repository.JourneyRepositoryImpl
-import kz.busjol.data.repository.SeatsRepositoryImpl
-import kz.busjol.domain.repository.CityListRepository
-import kz.busjol.domain.repository.DataStoreRepository
-import kz.busjol.domain.repository.JourneyListRepository
-import kz.busjol.domain.repository.SeatsListRepository
+import kz.busjol.data.repository.*
+import kz.busjol.domain.repository.*
 import javax.inject.Singleton
 
 @ExperimentalCoroutinesApi
@@ -41,4 +35,10 @@ abstract class RepositoryModule {
     abstract fun seatsListRepository(
         seatsRepositoryImpl: SeatsRepositoryImpl
     ): SeatsListRepository
+
+    @Binds
+    @Singleton
+    abstract fun bookingListRepository(
+        bookingListRepositoryImpl: BookingRepositoryImpl
+    ): BookingListRepository
 }

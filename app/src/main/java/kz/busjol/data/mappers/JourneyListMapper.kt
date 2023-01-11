@@ -15,7 +15,8 @@ fun List<JourneyDto>.toJourneyList(): List<Journey> {
             numberOfFreePlaces = journeyResponse.numberOfFreePlaces,
             stopName = journeyResponse.stopName,
             cityFrom = journeyResponse.cityFrom,
-            cityTo = journeyResponse.cityTo
+            cityTo = journeyResponse.cityTo,
+            segmentId = journeyResponse.segmentId
         )
     }
 }
@@ -29,5 +30,6 @@ private fun journeyItem(journeyResponse: JourneyDto) = JourneyItem(
     routeId = journeyResponse.journey?.routeId,
     carrierId = journeyResponse.journey?.carrierId,
     transportId = journeyResponse.journey?.transportId,
-    code = journeyResponse.journey?.code
+    code = journeyResponse.journey?.code,
+    driverId = journeyResponse.journey?.driverId
 )

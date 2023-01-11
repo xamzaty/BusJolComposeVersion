@@ -5,17 +5,11 @@ import android.os.Build
 import android.text.Html
 import android.text.Spanned
 import android.text.style.*
-import android.widget.TextView
-import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import kz.busjol.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -30,13 +24,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -57,15 +48,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.text.HtmlCompat
 import androidx.core.text.getSpans
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import kotlinx.coroutines.launch
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
@@ -321,6 +309,7 @@ fun CustomTextFieldWithMask(
     @StringRes hintId: Int,
     @StringRes labelId: Int,
     keyboardType: KeyboardType? = null,
+    onValueChange: (String) -> Unit,
     maxChar: Int? = null,
     maskVisualTransformation: MaskVisualTransformation
 ) {
@@ -333,12 +322,13 @@ fun CustomTextFieldWithMask(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier
             .fillMaxWidth()
-            .height(62.dp)
+            .height(54.dp)
     ) {
         TextField(
             value = textValue,
             onValueChange = {
                 if (it.length <= (maxChar ?: 1000)) textValue = it
+                onValueChange(it)
             },
             maxLines = 1,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType ?: KeyboardType.Text),
@@ -467,22 +457,20 @@ fun CustomSimpleTextField(
 fun ProgressButton(
     modifier: Modifier = Modifier,
     @StringRes textId: Int,
-    isProgressAvailable: Boolean = false,
-    isEnabled: Boolean = true,
+    isProgressBarActive: Boolean = false,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    val isButtonEnabled by rememberSaveable { mutableStateOf(isEnabled) }
-    val isLoadingOn by rememberSaveable { mutableStateOf(isProgressAvailable) }
     val alpha = remember {
         mutableStateOf(
-            if (isButtonEnabled) 1f else 0.6f
+            if (enabled) 1f else 0.6f
         )
     }
 
     Button(
         onClick = { onClick() },
         shape = RoundedCornerShape(8.dp),
-        enabled = isButtonEnabled,
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             disabledBackgroundColor = Blue500
         ),
@@ -491,7 +479,7 @@ fun ProgressButton(
             .height(52.dp)
             .alpha(alpha.value)
     ) {
-        if (!isLoadingOn) {
+        if (!isProgressBarActive) {
             Text(
                 text = stringResource(id = textId),
                 fontSize = 16.sp,

@@ -1,12 +1,17 @@
 package kz.busjol.presentation.passenger.buy_ticket.choose_seats
 
+import kz.busjol.domain.models.Seats
+
 data class ChooseSeatsState(
-    val list: String? = null,
-    val seatsQuantity: Int? = null
+    val chosenSeatsList: String? = null,
+    val seatList: List<Seats>? = null,
+    val seatsQuantity: Int? = null,
+    val passengersQuantity: Int? = null
 ) {
 
     fun mock() = ChooseSeatsState(
-        list = "",
-        seatsQuantity = null
+        chosenSeatsList = "",
+        seatsQuantity = null,
+        passengersQuantity = null
     )
 }

@@ -11,7 +11,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -32,7 +31,6 @@ import kz.busjol.R
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.NavGraphs
 import kz.busjol.presentation.ProgressButton
-import kz.busjol.presentation.destinations.BookingScreenDestination
 import kz.busjol.presentation.destinations.DirectionDestination
 import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
@@ -268,8 +266,8 @@ fun PaymentOrderResultScreen(
         ) {
             ProgressButton(
                 textId = R.string.back_to_main_menu_button,
-                isProgressAvailable = false,
-                isEnabled = true,
+                isProgressBarActive = false,
+                enabled = true,
                 modifier = Modifier
                     .padding(vertical = 16.dp, horizontal = 15.dp)
             ) {

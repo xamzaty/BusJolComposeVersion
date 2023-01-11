@@ -62,6 +62,8 @@
     <string name="radio_button_lying">Жатқан</string>
     <string name="journey_number">№%1$s рейс</string>
     <string name="time_left">%1$sс %2$sмин</string>
+    <string name="hours_left">с</string>
+    <string name="minutes_left">мин</string>
     <string name="seat_type">Орналасу түрі: %1$s</string>
     <string name="free_seats">Бос орындар:</string>
     <string name="free_seats_of">%1$s-дан %2$s</string>

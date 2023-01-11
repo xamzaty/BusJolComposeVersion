@@ -100,7 +100,7 @@ fun LoginScreen(
 
         ProgressButton(
             textId = R.string.enter_button,
-            isEnabled = buttonAvailability,
+            enabled = buttonAvailability,
             modifier = Modifier.padding(start = 15.dp, top = 24.dp, end = 15.dp)
         ) {
             if (

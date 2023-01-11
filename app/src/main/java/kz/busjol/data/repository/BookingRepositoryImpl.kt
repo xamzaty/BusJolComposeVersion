@@ -1,25 +1,26 @@
 package kz.busjol.data.repository
 
 import kotlinx.coroutines.flow.flow
-import kz.busjol.data.mappers.toSeatsList
-import kz.busjol.data.remote.api.SeatsListApi
-import kz.busjol.domain.repository.SeatsListRepository
+import kz.busjol.data.mappers.toBookingList
+import kz.busjol.data.remote.BookingPost
+import kz.busjol.data.remote.api.BookingApi
+import kz.busjol.domain.repository.BookingListRepository
 import kz.busjol.domain.util.Resource
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
-class SeatsRepositoryImpl @Inject constructor(
-    private val seatsListApi: SeatsListApi
-) : SeatsListRepository {
+class BookingRepositoryImpl @Inject constructor(
+    private val bookingListApi: BookingApi
+): BookingListRepository {
 
-    override suspend fun getSeatsList(id: String) =
+    override suspend fun getBookingList(bookingPost: BookingPost) =
         flow {
             emit(Resource.Loading(true))
             try {
                 emit(
                     Resource.Success(
-                        data = seatsListApi.getSeatsList(id).toSeatsList()
+                        data = bookingListApi.getBookingItem(bookingPost).toBookingList()
                     )
                 )
             } catch (e: IOException) {

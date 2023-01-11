@@ -128,14 +128,9 @@ fun PassengerQuantityScreen(
         ProgressButton(
             textId = R.string.choose_button,
             modifier = Modifier.padding(top = 24.dp, start = 15.dp, end = 15.dp, bottom = 24.dp),
-            isProgressAvailable = false,
-            isEnabled = true
+            isProgressBarActive = false,
+            enabled = true
         ) {
-            println("""
-                adultValue: ${adultPassengerQuantity},
-                childValue: ${childPassengerQuantity},
-                disabledValue: $disabledPassengerQuantity
-            """.trimIndent())
 
             val adultList =
                 List(adultPassengerQuantity ?: 1) {
@@ -152,7 +147,10 @@ fun PassengerQuantityScreen(
 
             val listOfAllPassengers: List<Passenger> = merge(adultList, childList, disabledList)
 
-            viewModel.onEvent(SearchJourneyEvent.UpdatePassengersQuantityValue(listOfAllPassengers))
+            if (listOfAllPassengers.isNotEmpty()) {
+                viewModel.onEvent(SearchJourneyEvent.UpdatePassengersQuantityValue(listOfAllPassengers))
+            }
+
             onCloseBottomSheet()
         }
     }

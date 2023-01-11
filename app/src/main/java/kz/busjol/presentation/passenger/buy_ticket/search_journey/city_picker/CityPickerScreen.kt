@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kz.busjol.R
 import kz.busjol.domain.models.City
 import kz.busjol.presentation.BackButton
+import kz.busjol.presentation.Loader
 import kz.busjol.presentation.NotFoundView
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.SearchJourneyEvent
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.SearchJourneyViewModel
@@ -69,7 +70,9 @@ fun CityPickerScreen(
             thickness = 1.dp
         )
 
-        if (state.cityList.isNullOrEmpty()) {
+        if (state.isCityLoading) {
+            Loader(isDialogVisible = state.isCityLoading)
+        } else if (state.cityList.isNullOrEmpty()) {
             NotFoundView(
                 modifier = Modifier.padding(
                     top = 64.dp

@@ -11,7 +11,8 @@ data class JourneyDto(
     val numberOfFreePlaces: Int?,
     val stopName: String?,
     val cityFrom: City,
-    val cityTo: City
+    val cityTo: City,
+    val segmentId: Int
 )
 
 class JourneyResponseItem(
@@ -23,5 +24,6 @@ class JourneyResponseItem(
     val routeId: Int?,
     val carrierId: Int?,
     val transportId: Int?,
-    val code: String?
+    val code: String?,
+    val driverId: Int?
 )

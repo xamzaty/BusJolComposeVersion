@@ -225,8 +225,8 @@ private fun WeDoNotRecogniseYouLayout(
 
                 ProgressButton(
                     textId = R.string.enter_button,
-                    isProgressAvailable = false,
-                    isEnabled = true
+                    isProgressBarActive = false,
+                    enabled = true
                 ) {
                     scope.launch {
                         navigator.navigate(

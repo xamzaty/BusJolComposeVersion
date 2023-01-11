@@ -12,6 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import kz.busjol.AppSettings
 import kz.busjol.AppSettingsSerializer
 import kz.busjol.BuildConfig
+import kz.busjol.data.remote.api.BookingApi
 import kz.busjol.utils.Consts.BASE_URL
 import kz.busjol.data.remote.api.CityListApi
 import kz.busjol.data.remote.api.SearchJourneyApi
@@ -92,6 +93,12 @@ class AppModule {
     @Singleton
     fun provideSeatsListApi(): SeatsListApi {
         return getRetrofit().create(SeatsListApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBookingListApi(): BookingApi {
+        return getRetrofit().create(BookingApi::class.java)
     }
 
     @Provides

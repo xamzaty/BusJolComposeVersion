@@ -20,7 +20,6 @@ import kz.busjol.presentation.passenger.buy_ticket.journey_details.JourneyDetail
 import kz.busjol.presentation.theme.GrayBackground
 import kz.busjol.R
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -32,7 +31,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
-import com.ramcosta.composedestinations.spec.Route
 import kz.busjol.ext.formatWithCurrency
 import kz.busjol.presentation.*
 import kz.busjol.presentation.destinations.DirectionDestination
@@ -292,8 +290,8 @@ private fun PaymentTypeLayout(
 
             ProgressButton(
                 textId = R.string.payment_button,
-                isProgressAvailable = false,
-                isEnabled = true,
+                isProgressBarActive = false,
+                enabled = true,
                 modifier = Modifier
                     .padding(bottom = 12.dp)
                     .height(42.dp)
