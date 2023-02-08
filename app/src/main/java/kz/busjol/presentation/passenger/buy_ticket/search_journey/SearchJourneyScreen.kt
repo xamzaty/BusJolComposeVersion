@@ -44,6 +44,7 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quan
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.utils.setLocale
 import kz.busjol.utils.showDataErrorToast
+import kz.busjol.utils.showSnackBar
 
 @Destination(start = true)
 @OptIn(ExperimentalMaterialApi::class)
@@ -52,38 +53,47 @@ fun SearchJourneyScreen(
     navigator: DestinationsNavigator
 ) {
     val scope = rememberCoroutineScope()
-    val scaffoldState = rememberBottomSheetScaffoldState()
+    val scaffoldState = rememberScaffoldState()
+    val bottomScaffoldState = rememberBottomSheetScaffoldState()
     var currentBottomSheet: SearchJourneyBottomSheetScreen? by remember {
         mutableStateOf(null)
     }
 
     val closeSheet: () -> Unit = {
         scope.launch {
-            scaffoldState.bottomSheetState.collapse()
+            bottomScaffoldState.bottomSheetState.collapse()
         }
     }
 
-    BackHandler(scaffoldState.bottomSheetState.isExpanded) {
-        scope.launch { scaffoldState.bottomSheetState.collapse() }
+    BackHandler(bottomScaffoldState.bottomSheetState.isExpanded) {
+        scope.launch { bottomScaffoldState.bottomSheetState.collapse() }
     }
 
     val openSheet: (SearchJourneyBottomSheetScreen) -> Unit = {
         currentBottomSheet = it
-        scope.launch { scaffoldState.bottomSheetState.expand() }
+        scope.launch { bottomScaffoldState.bottomSheetState.expand() }
 
     }
 
-    if (scaffoldState.bottomSheetState.isCollapsed)
+    if (bottomScaffoldState.bottomSheetState.isCollapsed)
         currentBottomSheet = null
 
-    BottomSheetScaffold(sheetPeekHeight = 0.dp, scaffoldState = scaffoldState,
+    BottomSheetScaffold(sheetPeekHeight = 0.dp, scaffoldState = bottomScaffoldState,
         sheetContent = {
             currentBottomSheet?.let { currentSheet ->
                 SheetLayout(currentSheet, closeSheet)
             }
         }) { paddingValues ->
         Box(Modifier.padding(paddingValues)) {
-            MainContent(openSheet, navigator, scope)
+            Scaffold(scaffoldState = scaffoldState) {
+                MainContent(
+                    modifier = Modifier.padding(it),
+                    openSheet = openSheet,
+                    navigator = navigator,
+                    scope = scope,
+                    scaffoldState = scaffoldState
+                )
+            }
         }
     }
 }
@@ -109,9 +119,11 @@ private fun SheetLayout(
 
 @Composable
 private fun MainContent(
+    modifier: Modifier = Modifier,
     openSheet: (SearchJourneyBottomSheetScreen) -> Unit,
     navigator: DestinationsNavigator,
     scope: CoroutineScope,
+    scaffoldState: ScaffoldState,
     viewModel: SearchJourneyViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
@@ -128,16 +140,18 @@ private fun MainContent(
 
     LaunchedEffect(state.startNewDestination) {
         if (state.startNewDestination == true) {
-            navigator.navigate(
-                JourneyScreenDestination(
-                    ticket = Ticket(
-                        departureCity = state.fromCity,
-                        arrivalCity = state.toCity,
-                        passengerList = state.passengerQuantityList,
-                        journeyList = state.journeyList
+            scope.launch {
+                navigator.navigate(
+                    JourneyScreenDestination(
+                        ticket = Ticket(
+                            departureCity = state.fromCity,
+                            arrivalCity = state.toCity,
+                            passengerList = state.passengerQuantityList,
+                            journeyList = state.journeyList
+                        )
                     )
                 )
-            )
+            }
         }
     }
 
@@ -150,9 +164,7 @@ private fun MainContent(
     val showAlert = remember { mutableStateOf(false) }
 
     if (state.language == null) {
-        SelectLanguageAlertDialog(setShowDialog = {
-            showAlert.value = it
-        }) {
+        SelectLanguageAlertDialog(setShowDialog = { showAlert.value = it }) {
             viewModel.onEvent(SearchJourneyEvent.SetLanguage(it))
         }
     }
@@ -176,7 +188,7 @@ private fun MainContent(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(top = 23.dp, start = 15.dp, end = 15.dp)
             .background(White)
@@ -219,7 +231,9 @@ private fun MainContent(
             toCityValue = state.toCity?.name ?: "",
             fromCitiesClick = {
                 scope.launch {
-                    context.showDataErrorToast(state.error) {
+                    if (state.error != null) {
+                        scaffoldState.showSnackBar(this, state.error)
+                    } else {
                         viewModel.onEvent(
                             SearchJourneyEvent.CityListClicked
                         )
@@ -230,7 +244,9 @@ private fun MainContent(
 
             toCitiesClick = {
                 scope.launch {
-                    context.showDataErrorToast(state.error) {
+                    if (state.error != null) {
+                        scaffoldState.showSnackBar(this, state.error)
+                    } else {
                         viewModel.onEvent(
                             SearchJourneyEvent.CityListClicked
                         )
@@ -294,21 +310,23 @@ private fun MainContent(
             enabled = true
         ) {
             scope.launch {
-                context.showDataErrorToast(state.error)
-
-                viewModel.onEvent(
-                    SearchJourneyEvent.JourneyListSearch(
-                        JourneyPost(
-                            cityFrom = state.fromCity?.id ?: 1,
-                            cityTo = state.toCity?.id ?: 2,
-                            dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
-                            dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
-                            childrenAmount = childPassengerQuantity ?: 0,
-                            adultAmount = adultPassengerQuantity ?: 1,
-                            disabledAmount = disabledPassengerQuantity ?: 0
+                if (state.error != null) {
+                    scaffoldState.showSnackBar(this, state.error)
+                } else {
+                    viewModel.onEvent(
+                        SearchJourneyEvent.JourneyListSearch(
+                            JourneyPost(
+                                cityFrom = state.fromCity?.id ?: 1,
+                                cityTo = state.toCity?.id ?: 2,
+                                dateFrom = state.departureDate?.reformatDateToBackend(true) ?: "",
+                                dateTo = state.arrivalDate?.reformatDateToBackend(true) ?: "",
+                                childrenAmount = childPassengerQuantity ?: 0,
+                                adultAmount = adultPassengerQuantity ?: 1,
+                                disabledAmount = disabledPassengerQuantity ?: 0
+                            )
                         )
                     )
-                )
+                }
             }
         }
     }

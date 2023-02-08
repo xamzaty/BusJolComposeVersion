@@ -78,7 +78,6 @@ private fun MainContent(
     navigator: DestinationsNavigator,
     viewModel: BookingViewModel = hiltViewModel()
 ) {
-
     val state = viewModel.state
 
     val openDialog = remember { mutableStateOf(false) }
@@ -106,6 +105,7 @@ private fun MainContent(
                 confirmButtonText = stringResource(id = R.string.yes),
                 dismissButtonText = stringResource(id = R.string.no),
                 onConfirmButtonClicked = {
+                    openDialog.value = false
                     navigator.backToMainScreen()
                 }
             )

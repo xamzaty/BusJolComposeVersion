@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -121,8 +124,16 @@ private fun UnregisteredSection(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun RegisteredSection(isUserHaveTickets: Boolean) {
+private fun RegisteredSection(
+    isUserHaveTickets: Boolean,
+    viewModel: MyTicketsViewModel = hiltViewModel()
+) {
+    val state = viewModel.state
+
+    val pullRefreshState = rememberPullRefreshState(state.isRefreshing, { viewModel.refresh() })
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -158,24 +169,33 @@ private fun RegisteredSection(isUserHaveTickets: Boolean) {
                     .padding(top = 20.dp)
             )
         } else {
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    top = 38.dp,
-                    bottom = 109.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                content = {
-                    item {
+            Box(Modifier.pullRefresh(pullRefreshState)) {
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        top = 38.dp,
+                        bottom = 109.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    content = {
+                        item {
 //                        journeyList.forEach {
 //                            TicketItemView(journey = it) {
 //
 //                            }
 //                        }
+                        }
                     }
-                }
+                )
+            }
+
+            PullRefreshIndicator(
+                refreshing = state.isRefreshing,
+                state = pullRefreshState,
+                contentColor = Blue500,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }

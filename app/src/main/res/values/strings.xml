@@ -22,6 +22,8 @@
     <string name="yes">Да</string>
     <string name="no">Нет</string>
 
+    <string name="password_mismatch_error">Пароли не совпадают</string>
+
     // Categories
     <string name="search_category">Поиск</string>
     <string name="my_tickets_category">Мои билеты</string>
@@ -67,6 +69,7 @@
     <string name="seat_type">Тип места: %1$s</string>
     <string name="free_seats">Свободно мест:</string>
     <string name="free_seats_of">%1$s из %2$s</string>
+    <string name="not_enough_free_places">Не хватает свободных мест</string>
 
     // ChooseSeats
     <string name="choose_seats_title">Выбор места</string>
@@ -88,7 +91,8 @@
     <string name="first_name_hint">Введите имя</string>
     <string name="date_of_birth_label">Дата рождения</string>
     <string name="date_of_birth_hint">xx.xx.xxxx</string>
-    <string name="email_label">Email</string>
+    <string name="email_or_phone_label">Email или номер телефона</string>
+    <string name="email_label" translatable="false">Email</string>
     <string name="email_hint">Введите эл. почту</string>
     <string name="phone_hint">Введите номер телефона</string>
     <string name="phone_label">Телефон</string>
@@ -167,6 +171,7 @@
     <string name="password_hint">Введите пароль</string>
     <string name="forgot_password">Забыли пароль?</string>
     <string name="register">Зарегистрироваться</string>
+    <string name="repeat_password_hint">Повторите пароль</string>
     
     <string name="password_recovery_title">Восстановление пароля</string>
     <string name="password_recovery_description_text">Укажите эл. почту, которую использовали при регистрации на сайте или в приложении BusJol. На эту эл. почту мы вышлем ссылку для восстановления пароля</string>

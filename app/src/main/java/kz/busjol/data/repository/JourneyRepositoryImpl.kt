@@ -1,6 +1,5 @@
 package kz.busjol.data.repository
 
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kz.busjol.data.mappers.toJourneyList
 import kz.busjol.data.remote.JourneyPost

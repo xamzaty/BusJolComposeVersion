@@ -12,12 +12,10 @@ import dagger.hilt.components.SingletonComponent
 import kz.busjol.AppSettings
 import kz.busjol.AppSettingsSerializer
 import kz.busjol.BuildConfig
-import kz.busjol.data.remote.api.BookingApi
+import kz.busjol.data.remote.api.*
 import kz.busjol.utils.Consts.BASE_URL
-import kz.busjol.data.remote.api.CityListApi
-import kz.busjol.data.remote.api.SearchJourneyApi
-import kz.busjol.data.remote.api.SeatsListApi
 import kz.busjol.data.repository.DataStoreManager
+import kz.busjol.utils.Consts.BASE_AUTH_URL
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -79,6 +77,16 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun getAuthRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_AUTH_URL)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .client(getOkHttpClient())
+            .build()
+    }
+
+    @Provides
+    @Singleton
     fun provideCityListApi(): CityListApi {
         return getRetrofit().create(CityListApi::class.java)
     }
@@ -99,6 +107,24 @@ class AppModule {
     @Singleton
     fun provideBookingListApi(): BookingApi {
         return getRetrofit().create(BookingApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTicketsApi(): TicketsApi {
+        return getRetrofit().create(TicketsApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthApi(): AuthApi {
+        return getAuthRetrofit().create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideJourneysApi(): JourneysApi {
+        return getRetrofit().create(JourneysApi::class.java)
     }
 
     @Provides

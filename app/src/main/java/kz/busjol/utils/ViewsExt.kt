@@ -2,6 +2,9 @@ package kz.busjol.utils
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.material.ScaffoldState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kz.busjol.R
 
 fun Context.showDataErrorToast(
@@ -14,5 +17,17 @@ fun Context.showDataErrorToast(
         if (unit != null) {
             unit()
         }
+    }
+}
+
+fun ScaffoldState.showSnackBar(
+    scope: CoroutineScope,
+    text: String = ""
+) {
+    scope.launch {
+        this@showSnackBar.snackbarHostState.showSnackbar(
+            message = text,
+            actionLabel = "ОК"
+        )
     }
 }

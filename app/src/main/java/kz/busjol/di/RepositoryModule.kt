@@ -41,4 +41,22 @@ abstract class RepositoryModule {
     abstract fun bookingListRepository(
         bookingListRepositoryImpl: BookingRepositoryImpl
     ): BookingListRepository
+
+    @Binds
+    @Singleton
+    abstract fun ticketsRepository(
+        ticketsRepositoryImpl: TicketsRepositoryImpl
+    ): TicketsRepository
+
+    @Binds
+    @Singleton
+    abstract fun journeysRepository(
+        journeysRepositoryImpl: JourneysRepositoryImpl
+    ): JourneysRepository
+
+    @Binds
+    @Singleton
+    abstract fun authRepository(
+        authRepositoryImpl: AuthRepositoryImpl
+    ): AuthRepository
 }

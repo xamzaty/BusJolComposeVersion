@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,7 +38,6 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.theme.*
 import kz.busjol.utils.MaskVisualTransformation
-import kz.busjol.utils.Regex.isValidEmail
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -86,17 +84,38 @@ private fun MainContent(
 
     val state = viewModel.state
 
-    var checkboxState by rememberSaveable { mutableStateOf(true) }
-    val emailValue by rememberSaveable { mutableStateOf("") }
-    val phoneValue by rememberSaveable { mutableStateOf("") }
+    val checkboxState = remember { mutableStateOf(true) }
+    val emailValue = remember { mutableStateOf("") }
+    val phoneValue = remember { mutableStateOf("") }
 
-    var isEmailValid = remember { isValidEmail(emailValue) }
+    val phoneValueResult = remember {
+        mutableStateOf(
+            if (state.isPassengerHaveLogin) {
+                ""
+            } else {
+                phoneValue.value
+            }
+        )
+    }
+
+    val emailValueResult = remember {
+        mutableStateOf(
+            if (state.isPassengerHaveLogin) {
+                ""
+            } else {
+                emailValue.value
+            }
+        )
+    }
+
+    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
+    val currentDate: String = sdf.format(Date())
 
     val phoneMask = "+7 ### ### ## ##"
 
     DisposableEffect(state.setDataToList) {
         onDispose {
-            viewModel.onEvent(PassengerDataEvent.SetDataToListStatus(false))
+            viewModel.onEvent(PassengerDataEvent.SetDataToListStatusFalse(false))
         }
     }
 
@@ -119,6 +138,21 @@ private fun MainContent(
 
     if (state.error?.isNotEmpty() == true) {
         Toast.makeText(context, state.error, Toast.LENGTH_SHORT).show()
+    }
+
+    if (state.setDataToList) {
+        viewModel.onEvent(
+            PassengerDataEvent.OnContinueButtonAction(
+                BookingPost(
+                    bookingElements = viewModel.state.bookingElementsList ?: emptyList(),
+                    email = emailValueResult.value.trim(),
+                    phoneNumber = phoneValueResult.value.trim(),
+                    phoneTimeAtCreating = currentDate,
+                    clientId = 0,
+                    segmentId = ticket.journey?.segmentId ?: 0
+                )
+            )
+        )
     }
 
     LazyColumn(
@@ -202,65 +236,70 @@ private fun MainContent(
             val list = ticket.passengerList ?: listOf(Passenger())
 
             itemsIndexed(list) { index, item ->
-                PassengerRegistrationLayout(
-                    count = index + 1,
-                    passenger = item
-                )
+                ticket.chosenSeatsList?.forEach { seat ->
+                    PassengerRegistrationLayout(
+                        count = index + 1,
+                        passenger = item,
+                        seatId = seat.id
+                    )
+                }
             }
 
             item {
-                Card(
-                    elevation = 0.dp,
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, GrayBorder),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 15.dp, end = 15.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                if (!state.isPassengerHaveLogin) {
+                    Card(
+                        elevation = 0.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, GrayBorder),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, start = 15.dp, end = 15.dp)
                     ) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
 
-                        Text(
-                            text = stringResource(id = R.string.contact_information_title),
-                            fontWeight = FontWeight.W700,
-                            color = Color.Black,
-                            fontSize = 16.sp
-                        )
+                            Text(
+                                text = stringResource(id = R.string.contact_information_title),
+                                fontWeight = FontWeight.W700,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
 
-                        Text(
-                            text = stringResource(id = R.string.contact_information_description),
-                            fontWeight = FontWeight.W500,
-                            fontSize = 12.sp,
-                            color = Color(0xFF8B98A7),
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
+                            Text(
+                                text = stringResource(id = R.string.contact_information_description),
+                                fontWeight = FontWeight.W500,
+                                fontSize = 12.sp,
+                                color = Color(0xFF8B98A7),
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
 
-                        CustomTextField(
-                            text = emailValue,
-                            onValueChange = {
+                            CustomTextField(
+                                text = emailValue.value,
+                                onValueChange = {
+                                    emailValue.value = it
+                                },
+                                iconId = null,
+                                hintId = R.string.email_hint,
+                                labelId = R.string.email_or_phone_label,
+                                keyboardType = KeyboardType.Email,
+                                modifier = Modifier.padding(top = 12.dp)
+                            )
 
-                            },
-                            iconId = null,
-                            hintId = R.string.email_hint,
-                            labelId = R.string.email_label,
-                            keyboardType = KeyboardType.Email,
-                            modifier = Modifier.padding(top = 12.dp)
-                        )
-
-                        CustomTextFieldWithMask(
-                            text = phoneValue,
-                            onValueChange = {
-
-                            },
-                            iconId = null,
-                            hintId = R.string.email_hint,
-                            labelId = R.string.phone_label,
-                            keyboardType = KeyboardType.Phone,
-                            maxChar = 10,
-                            modifier = Modifier.padding(top = 12.dp),
-                            maskVisualTransformation = MaskVisualTransformation(phoneMask)
-                        )
+                            CustomTextFieldWithMask(
+                                text = phoneValue.value,
+                                onValueChange = {
+                                    phoneValue.value = it
+                                },
+                                iconId = null,
+                                hintId = R.string.email_hint,
+                                labelId = R.string.phone_label,
+                                keyboardType = KeyboardType.Phone,
+                                maxChar = 10,
+                                modifier = Modifier.padding(top = 12.dp),
+                                maskVisualTransformation = MaskVisualTransformation(phoneMask)
+                            )
+                        }
                     }
                 }
             }
@@ -302,9 +341,9 @@ private fun MainContent(
                         ) {
 
                             Checkbox(
-                                checked = checkboxState,
+                                checked = checkboxState.value,
                                 onCheckedChange = {
-                                    checkboxState = it
+                                    checkboxState.value = it
                                 },
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = Blue500
@@ -319,7 +358,7 @@ private fun MainContent(
                             )
                         }
 
-                        if (!checkboxState) {
+                        if (!checkboxState.value) {
                             Text(
                                 text = stringResource(id = R.string.this_field_is_required),
                                 color = Color.Red,
@@ -330,9 +369,6 @@ private fun MainContent(
                     }
                 }
             }
-
-            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
-            val currentDate: String = sdf.format(Date())
 
             item {
                 Card(
@@ -347,22 +383,10 @@ private fun MainContent(
                         textId = R.string.continue_button,
                         isProgressBarActive = state.isLoading,
                         enabled = true,
-                        modifier = Modifier
-                            .padding(vertical = 16.dp, horizontal = 15.dp)
+                        modifier = Modifier.padding(vertical = 16.dp, horizontal = 15.dp)
                     ) {
                         coroutineScope.launch {
-                            viewModel.onEvent(
-                                PassengerDataEvent.OnContinueButtonAction(
-                                    BookingPost(
-                                        bookingElements = viewModel.state.bookingElementsList ?: emptyList(),
-                                        email = emailValue.trim(),
-                                        phoneNumber = phoneValue.trim(),
-                                        phoneTimeAtCreating = currentDate,
-                                        clientId = 0,
-                                        segmentId = ticket.journey?.segmentId ?: 0
-                                    )
-                                )
-                            )
+                            viewModel.onEvent(PassengerDataEvent.SetDataToListStatusTrue)
                         }
                     }
                 }
@@ -375,6 +399,7 @@ private fun MainContent(
 private fun PassengerRegistrationLayout(
     count: Int,
     passenger: Passenger,
+    seatId: Int,
     viewModel: PassengerViewModel = hiltViewModel()
 ) {
     val passengerSex = remember {
@@ -438,12 +463,12 @@ private fun PassengerRegistrationLayout(
                 ),
                 selectedOptionValue = passengerSex.value,
                 modifier = Modifier.padding(top = 12.dp)
-            )
+            ) {
+            }
 
             CustomTextFieldWithMask(
                 text = iinValue.value,
                 onValueChange = {
-                    iinValue.value = it
                 },
                 hintId = R.string.iin_hint,
                 labelId = R.string.iin_label,
@@ -456,7 +481,6 @@ private fun PassengerRegistrationLayout(
             CustomTextField(
                 text = lastNameValue.value,
                 onValueChange = {
-                    lastNameValue.value = it
                 },
                 hintId = R.string.surname_hint,
                 labelId = R.string.surname_label,
@@ -466,7 +490,6 @@ private fun PassengerRegistrationLayout(
             CustomTextField(
                 text = firstNameValue.value,
                 onValueChange = {
-                    firstNameValue.value = it
                 },
                 hintId = R.string.first_name_hint,
                 labelId = R.string.first_name_label,
@@ -481,7 +504,7 @@ private fun PassengerRegistrationLayout(
                             firstName = firstNameValue.value,
                             lastName = lastNameValue.value,
                             sex = passengerSex.value,
-                            seatId = 11
+                            seatId = seatId
                         )
                     )
                 )
@@ -494,14 +517,15 @@ private fun PassengerRegistrationLayout(
 fun RadioGroup(
     modifier: Modifier = Modifier,
     listOfOptions: List<String>,
-    selectedOptionValue: Int
+    selectedOptionValue: Int,
+    selectedValue: (Int) -> Unit
 ) {
-    var selectedOption by rememberSaveable {
+    val selectedOption = remember {
         mutableStateOf(selectedOptionValue)
     }
 
     val onSelectionChange = { position: Int ->
-        selectedOption = position
+        selectedOption.value = position
     }
 
     LazyRow(
@@ -522,13 +546,15 @@ fun RadioGroup(
                     text = text,
                     style = MaterialTheme.typography.body1.merge(),
                     textAlign = TextAlign.Center,
-                    color = if (index == selectedOption) Color.White else Color.Black,
+                    color = if (index == selectedOption.value) Color.White else Color.Black,
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(if (index == selectedOption) Blue500 else Color.White)
+                        .background(if (index == selectedOption.value) Blue500 else Color.White)
                         .wrapContentHeight()
                 )
             }
         }
     }
+
+    selectedValue(selectedOption.value)
 }

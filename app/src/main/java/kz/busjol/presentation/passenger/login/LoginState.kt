@@ -1,7 +1,7 @@
 package kz.busjol.presentation.passenger.login
 
 data class LoginState(
-    val isButtonEnable: Boolean? = false,
-    val emailValue: String? = null,
-    val passwordValue: String? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val returnToMainScreen: Boolean = false
 )

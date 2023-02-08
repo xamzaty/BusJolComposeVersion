@@ -7,21 +7,36 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kz.busjol.UserState
 import kz.busjol.data.remote.BookingElements
 import kz.busjol.data.remote.BookingPost
 import kz.busjol.domain.repository.BookingListRepository
+import kz.busjol.domain.repository.DataStoreRepository
 import kz.busjol.domain.util.Resource
 import javax.inject.Inject
 
 @HiltViewModel
 class PassengerViewModel @Inject constructor(
-    private val bookingListRepository: BookingListRepository
+    private val bookingListRepository: BookingListRepository,
+    private val dataStoreRepository: DataStoreRepository
 ): ViewModel() {
 
     var state by mutableStateOf(PassengerDataState().mock())
         private set
 
-    private var bookingList = mutableListOf<BookingElements>()
+    private var bookingList = mutableSetOf<BookingElements>()
+
+    init {
+        viewModelScope.launch {
+            dataStoreRepository
+                .getAppSettings()
+                .collect {
+                    state = state.copy(
+                        isPassengerHaveLogin = it.userState == UserState.REGISTERED
+                    )
+                }
+        }
+    }
 
     fun onEvent(event: PassengerDataEvent) {
         when (event) {
@@ -31,12 +46,18 @@ class PassengerViewModel @Inject constructor(
             is PassengerDataEvent.PassengerData -> {
                 addItemToSet(event.bookingElements)
                 state = state.copy(
-                    bookingElementsList = bookingList
+                    bookingElementsList = bookingList.toList(),
+                    setDataToList = true
                 )
             }
-            is PassengerDataEvent.SetDataToListStatus -> {
+            is PassengerDataEvent.SetDataToListStatusFalse -> {
                 state = state.copy(
                     setDataToList = false
+                )
+            }
+            is PassengerDataEvent.SetDataToListStatusTrue -> {
+                state = state.copy(
+                    setDataToList = true
                 )
             }
         }
@@ -44,18 +65,13 @@ class PassengerViewModel @Inject constructor(
 
     private fun addItemToSet(item: BookingElements) {
         val list = bookingList
-        list.add(item)
+        list.addAll(setOf(item))
 
         bookingList = list
     }
 
     private fun loadBookingList(bookingPost: BookingPost) {
         viewModelScope.launch {
-
-            state = state.copy(
-                setDataToList = true
-            )
-
             bookingListRepository
                 .getBookingList(bookingPost)
                 .collect { result ->

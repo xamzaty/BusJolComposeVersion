@@ -14,8 +14,12 @@ import kz.busjol.R
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -24,7 +28,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
@@ -40,7 +46,9 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -110,7 +118,7 @@ fun AppBar(
 
 @Composable
 fun BackButton(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     isCross: Boolean = false,
     onClick: () -> Unit
 ) {
@@ -257,9 +265,106 @@ fun CustomTextField(
     visualTransformation: VisualTransformation? = null,
     maskVisualTransformation: MaskVisualTransformation? = null,
     maxChar: Int? = null,
+    isHiddenToggleVisible: Boolean = false,
+    isError: Boolean = false,
+    errorText: String = "",
+    keyboardActions: KeyboardActions = KeyboardActions(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
+) {
+    var textValue by rememberSaveable { mutableStateOf(text) }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Card(
+            border = BorderStroke(1.dp, GrayBorder),
+            elevation = 0.dp,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+        ) {
+            TextField(
+                value = textValue,
+                onValueChange = {
+                    if (it.length <= (maxChar ?: 1000)) textValue = it
+                    onValueChange(it)
+                },
+                maxLines = 1,
+                singleLine = true,
+                visualTransformation = if (isHiddenToggleVisible) {
+                    if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
+                } else {
+                    maskVisualTransformation ?: visualTransformation ?: VisualTransformation.None
+                },
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+                isError = isError,
+                trailingIcon = {
+                    if (iconId != null) {
+                        Icon(
+                            painter = painterResource(id = iconId),
+                            contentDescription = "icon"
+                        )
+                    }
+
+                    if (isHiddenToggleVisible) {
+                        val image = if (passwordVisible)
+                            Icons.Filled.Visibility
+                        else Icons.Filled.VisibilityOff
+
+                        val description = if (passwordVisible) "Hide password" else "Show password"
+
+                        IconButton(onClick = {passwordVisible = !passwordVisible}){
+                            Icon(imageVector = image, description)
+                        }
+                    }
+                },
+                shape = RoundedCornerShape(8.dp),
+                placeholder = { Text(text = stringResource(id = hintId)) },
+                label = { Text(text = stringResource(id = labelId)) },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = Color.Black,
+                    disabledTextColor = Color.Transparent,
+                    backgroundColor = White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                )
+            )
+        }
+
+        if (isError) {
+            Text(
+                text = errorText,
+                color = Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun MaskTextField(
+    modifier: Modifier = Modifier,
+    text: String,
+    @DrawableRes iconId: Int? = null,
+    @StringRes hintId: Int,
+    @StringRes labelId: Int,
+    keyboardType: KeyboardType? = null,
+    onValueChange: (String) -> Unit,
+    maxChar: Int? = null,
+    textFieldMaskVariants: TextFieldMaskVariants,
+    keyboardActions: KeyboardActions = KeyboardActions(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
 
     var textValue by rememberSaveable { mutableStateOf(text) }
+
+    val phoneMask = "+7 ### ### ## ##"
+    val otherMask = "############################################################"
 
     Card(
         border = BorderStroke(1.dp, GrayBorder),
@@ -276,8 +381,9 @@ fun CustomTextField(
                 onValueChange(it)
             },
             maxLines = 1,
-            visualTransformation = maskVisualTransformation ?: visualTransformation ?: VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType ?: KeyboardType.Text),
+            singleLine = true,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             trailingIcon = {
                 iconId?.let { painterResource(id = it) }?.let {
                     Icon(
@@ -285,6 +391,10 @@ fun CustomTextField(
                         contentDescription = "icon"
                     )
                 }
+            },
+            visualTransformation = when (textFieldMaskVariants) {
+                TextFieldMaskVariants.PHONE -> MaskVisualTransformation(phoneMask)
+                else -> MaskVisualTransformation(otherMask)
             },
             shape = RoundedCornerShape(8.dp),
             placeholder = { Text(text = stringResource(id = hintId)) },
@@ -301,6 +411,10 @@ fun CustomTextField(
     }
 }
 
+enum class TextFieldMaskVariants {
+    PHONE, EMAIL, PASSWORD
+}
+
 @Composable
 fun CustomTextFieldWithMask(
     modifier: Modifier = Modifier,
@@ -311,7 +425,9 @@ fun CustomTextFieldWithMask(
     keyboardType: KeyboardType? = null,
     onValueChange: (String) -> Unit,
     maxChar: Int? = null,
-    maskVisualTransformation: MaskVisualTransformation
+    maskVisualTransformation: MaskVisualTransformation,
+    keyboardActions: KeyboardActions = KeyboardActions(),
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
 
     var textValue by rememberSaveable { mutableStateOf(text) }
@@ -331,7 +447,9 @@ fun CustomTextFieldWithMask(
                 onValueChange(it)
             },
             maxLines = 1,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType ?: KeyboardType.Text),
+            singleLine = true,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             trailingIcon = {
                 iconId?.let { painterResource(id = it) }?.let {
                     Icon(

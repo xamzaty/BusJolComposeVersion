@@ -22,6 +22,12 @@ class MyTicketsViewModel @Inject constructor(
         getDataStoreValues()
     }
 
+    fun refresh() {
+        viewModelScope.launch {
+            state = state.copy(isRefreshing = true)
+        }
+    }
+
     private fun getDataStoreValues() {
         viewModelScope.launch {
             dataStoreRepository

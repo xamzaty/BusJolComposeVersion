@@ -67,6 +67,7 @@
     <string name="seat_type">Орналасу түрі: %1$s</string>
     <string name="free_seats">Бос орындар:</string>
     <string name="free_seats_of">%1$s-дан %2$s</string>
+    <string name="not_enough_free_places">Бос орындар жеткіліксіз</string>
 
     // ChooseSeats
     <string name="choose_seats_title">Орын таңдау</string>
@@ -88,7 +89,7 @@
     <string name="first_name_hint">Атыңызды енгізіңіз</string>
     <string name="date_of_birth_label">Туған күні</string>
     <string name="date_of_birth_hint">xx.xx.xxxx</string>
-    <string name="email_label">Email</string>
+    <string name="email_or_phone_label">Email немесе телефон нөмірі</string>
     <string name="email_hint">Эл. поштаны енгізіңіз</string>
     <string name="phone_hint">Телефон нөмірін енгізіңіз</string>
     <string name="phone_label">Телефон</string>
@@ -167,6 +168,7 @@
     <string name="password_hint">Құпия сөзді еңгізіңіз</string>
     <string name="forgot_password">Құпия сөзіңізді ұмыттыңыз ба?</string>
     <string name="register">Тіркелу</string>
+    <string name="repeat_password_hint">Құпия сөзді қайталаңыз</string>
 
     <string name="password_recovery_title">Құпия сөзді қалпына келтіру</string>
     <string name="password_recovery_description_text">Электрондық поштаны енгізіңіз веб-сайтта немесе BusJol қолданбасында тіркелу кезінде пайдаланылған электрондық пошта. Осы электрондық поштаға Біз сізге электрондық пошта арқылы құпия сөзді қалпына келтіру сілтемесін жібереміз.</string>

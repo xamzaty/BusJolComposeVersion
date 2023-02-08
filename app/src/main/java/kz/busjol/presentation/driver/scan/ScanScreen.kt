@@ -19,6 +19,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import kz.busjol.utils.QrCodeAnalyzer
 import android.Manifest
 import android.util.Size
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,17 +32,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
+import kz.busjol.presentation.Loader
+import kz.busjol.presentation.destinations.PassengerVerificationScreenDestination
+import kz.busjol.presentation.destinations.ScanScreenDestination
 
 @Destination
 @Composable
-fun ScanScreen(navigator: DestinationsNavigator) {
-    var code by remember {
-        mutableStateOf("")
-    }
+fun ScanScreen(
+    navigator: DestinationsNavigator,
+    viewModel: ScanViewModel = hiltViewModel()
+) {
+    val state = viewModel.state
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember {
@@ -65,6 +72,26 @@ fun ScanScreen(navigator: DestinationsNavigator) {
 
     LaunchedEffect(key1 = true) {
         launcher.launch(Manifest.permission.CAMERA)
+    }
+
+    LaunchedEffect(state.isTicketValid) {
+        if (state.isTicketValid) {
+            navigator.navigate(PassengerVerificationScreenDestination)
+        }
+    }
+
+    DisposableEffect(state.isTicketValid) {
+        onDispose {
+
+        }
+    }
+
+    if (state.isLoading) {
+        Loader(isDialogVisible = true)
+    }
+
+    if (state.error?.isNotEmpty() == true) {
+        Toast.makeText(context, state.error, Toast.LENGTH_SHORT).show()
     }
 
     Column(
@@ -102,7 +129,9 @@ fun ScanScreen(navigator: DestinationsNavigator) {
                         imageAnalysis.setAnalyzer(
                             ContextCompat.getMainExecutor(context),
                             QrCodeAnalyzer { result ->
-                                code = result
+                                viewModel.onEvent(
+                                    ScanEvent.CheckTicket(qrCode = result)
+                                )
                             }
                         )
                         try {

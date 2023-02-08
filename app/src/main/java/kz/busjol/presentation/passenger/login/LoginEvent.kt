@@ -1,9 +1,8 @@
 package kz.busjol.presentation.passenger.login
 
 import kz.busjol.UserState
+import kz.busjol.data.remote.AuthenticatePost
 
 sealed interface LoginEvent {
-    data class SetUserState(val value: UserState) : LoginEvent
-    data class GetEmailValue(val value: String) : LoginEvent
-    data class GetPasswordValue(val value: String) : LoginEvent
+    data class OnLoginButtonPressed(val authenticatePost: AuthenticatePost) : LoginEvent
 }

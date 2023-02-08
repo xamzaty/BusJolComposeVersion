@@ -31,5 +31,11 @@ class DataStoreManager @Inject constructor(
         }
     }
 
-    override fun getAppSettings() = appContext.dataStore.data
+    override suspend fun setUserData(userData: UserData) {
+        appContext.dataStore.updateData {
+            it.copy(userData = userData)
+        }
+    }
+
+    override suspend fun getAppSettings() = appContext.dataStore.data
 }

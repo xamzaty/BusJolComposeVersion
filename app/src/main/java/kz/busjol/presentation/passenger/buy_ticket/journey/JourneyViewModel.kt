@@ -25,7 +25,7 @@ class JourneyViewModel @Inject constructor(
         state = when (event) {
             is JourneyEvent.SelectedOption -> {
                 state.copy(
-                    selectedOption = state.selectedOption
+                    selectedOption = event.value
                 )
             }
             is JourneyEvent.OnJourneyClicked -> {

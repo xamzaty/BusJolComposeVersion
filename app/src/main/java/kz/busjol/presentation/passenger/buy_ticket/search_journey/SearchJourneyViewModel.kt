@@ -8,9 +8,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import kz.busjol.BuildConfig
 import kz.busjol.Language
 import kz.busjol.data.remote.JourneyPost
 import kz.busjol.domain.models.City
+import kz.busjol.domain.models.Journey
+import kz.busjol.domain.models.JourneyItem
 import kz.busjol.domain.repository.CityListRepository
 import kz.busjol.domain.repository.DataStoreRepository
 import kz.busjol.domain.repository.JourneyListRepository
@@ -164,6 +167,41 @@ class SearchJourneyViewModel @Inject constructor(
 
     private fun loadJourneyList(journeyPost: JourneyPost) {
         viewModelScope.launch {
+            val allPassengers = journeyPost.adultAmount + journeyPost.childrenAmount + journeyPost.disabledAmount
+
+            println(allPassengers)
+
+            val journeyMock = listOf(
+                Journey(
+                journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
+                amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
+                departureTime = "", numberOfFreePlaces = 10, numberOfPlaces = 100, segmentId = 1, stopName = "Сидячий"
+            ),
+                Journey(
+                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
+                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
+                    departureTime = "", numberOfFreePlaces = 5, numberOfPlaces = 100, segmentId = 1, stopName = "Лежачий"
+                ),
+
+                Journey(
+                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
+                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
+                    departureTime = "", numberOfFreePlaces = 3, numberOfPlaces = 100, segmentId = 1, stopName = "Сидячий"
+                ),
+
+                Journey(
+                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
+                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
+                    departureTime = "", numberOfFreePlaces = 2, numberOfPlaces = 100, segmentId = 1, stopName = "Сидячий"
+                ),
+
+                Journey(
+                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
+                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
+                    departureTime = "", numberOfFreePlaces = 1, numberOfPlaces = 100, segmentId = 1, stopName = "Лежачий"
+                ),
+            )
+
             journeyRepository
                 .getJourneyList(journeyPost)
                 .collect { result ->
@@ -175,6 +213,15 @@ class SearchJourneyViewModel @Inject constructor(
                                 startNewDestination = true,
                                 error = null
                             )
+
+                            if (result.data?.isEmpty() == true && BuildConfig.DEBUG) {
+                                state = state.copy(
+                                    journeyList = journeyMock,
+                                    isButtonLoading = false,
+                                    startNewDestination = true,
+                                    error = null
+                                )
+                            }
                         }
 
                         is Resource.Error -> {

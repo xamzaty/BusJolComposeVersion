@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "324735651510",
+    "project_id": "busjol",
+    "storage_bucket": "busjol.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324735651510:android:d30386b0e898ed4bb9e017",
+        "android_client_info": {
+          "package_name": "kz.busjol"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324735651510-qv4h2n7ti456dsklrlvhn4jgjvkh5us5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnoY4lpiVaD4miuyDqBQQ9zx5pG5xQgbY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324735651510-qv4h2n7ti456dsklrlvhn4jgjvkh5us5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

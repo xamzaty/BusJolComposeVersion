@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import kz.busjol.presentation.NavGraph
+import kz.busjol.presentation.Test
 import kz.busjol.presentation.destinations.*
 import kz.busjol.presentation.theme.BusJolComposeTheme
 import kz.busjol.utils.BottomBar
@@ -42,10 +43,7 @@ private fun MainContent(
     val navController = rememberNavController()
     val bottomBarState = rememberSaveable { (mutableStateOf(true)) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val data = viewModel.userState.collectAsState(initial = AppSettings()).value
-    val navGraph = remember { mutableStateOf(
-        if (data.userState != UserState.DRIVER) passengerNavGraph else driverNavGraph
-    ) }
+    val data = viewModel.userState
 
     ShowBottomNavBar(navBackStackEntry = navBackStackEntry, bottomBarState = bottomBarState)
 
@@ -64,7 +62,7 @@ private fun MainContent(
             modifier = Modifier.padding(innerPadding)
         ) {
             DestinationsNavHost(
-                navGraph = navGraph.value,
+                navGraph = navGraph(data.userState != UserState.DRIVER),
                 navController = navController
             )
         }
@@ -85,9 +83,9 @@ private fun ShowBottomNavBar(
     }
 }
 
-private val passengerNavGraph: NavGraph = NavGraph(
+private fun navGraph(isPassenger: Boolean) = NavGraph(
     route = "root",
-    startRoute = SearchJourneyScreenDestination,
+    startRoute = if (isPassenger) SearchJourneyScreenDestination else DriverMainScreenDestination,
     destinations = listOf(
         BookingScreenDestination,
         ChooseSeatsScreenDestination,
@@ -105,19 +103,9 @@ private val passengerNavGraph: NavGraph = NavGraph(
         ProfileScreenDestination,
         MyDataScreenDestination,
         MyTripsScreenDestination,
-        RateTheAppDestination
-    )
-)
-
-private val driverNavGraph: NavGraph = NavGraph(
-    route = "driverRoot",
-    startRoute = DriverMainScreenDestination,
-    destinations = listOf(
-        SearchJourneyScreenDestination,
+        RateTheAppDestination,
         DriverMainScreenDestination,
         PassengerVerificationScreenDestination,
-        ScanScreenDestination,
-        ProfileScreenDestination,
-        MyTripsScreenDestination,
+        ScanScreenDestination
     )
 )

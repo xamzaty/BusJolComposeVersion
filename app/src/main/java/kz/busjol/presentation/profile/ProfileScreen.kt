@@ -27,10 +27,12 @@ import kz.busjol.presentation.profile.change_language.ChangeLanguageScreen
 import kz.busjol.presentation.profile.rate_the_app.RateTheApp
 import kz.busjol.R
 import kz.busjol.UserState
+import kz.busjol.presentation.Loader
 import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.destinations.LoginScreenDestination
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.utils.backToMainScreen
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination
@@ -119,6 +121,10 @@ private fun MainContent(
 
     val verticalScrollState = rememberScrollState()
 
+    if (state.isLoading) {
+        Loader(isDialogVisible = true)
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -149,23 +155,29 @@ private fun MainContent(
         DriverLayout(
             isDriverAuthorized = isDriverAuthorized.value,
             email = emailValue.value ?: "",
-            modifier = Modifier.padding(top = 48.dp)
+            modifier = Modifier.padding(top = 48.dp),
+            navigator = navigator,
+            scope = scope
         )
 
         AuthorizedUserLayout(
             isUserAuthorized = isUserAuthorized.value,
             email = emailValue.value ?: "",
-            modifier = Modifier.padding(top = 24.dp)
+            modifier = Modifier.padding(top = 24.dp),
+            navigator = navigator,
+            scope = scope
         )
 
         SettingsLayout(
             modifier = Modifier.padding(top = if (isAuthorized.value) 20.dp else 28.dp),
-            openSheet
+            openSheet = openSheet,
+            scope = scope
         )
 
         AdditionalLayout(
             modifier = Modifier.padding(top = 20.dp),
-            openSheet
+            openSheet = openSheet,
+            scope = scope
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -244,6 +256,8 @@ private fun DriverLayout(
     modifier: Modifier = Modifier,
     email: String? = null,
     isDriverAuthorized: Boolean,
+    navigator: DestinationsNavigator,
+    scope: CoroutineScope,
     viewModel: ProfileScreenViewModel = hiltViewModel()
 ) {
     if (isDriverAuthorized) {
@@ -267,7 +281,10 @@ private fun DriverLayout(
                 fontSize = 13.sp,
                 color = Color.Red,
                 modifier = Modifier.clickable {
-                    viewModel.onEvent(ProfileEvent.ExitUserState)
+                    scope.launch {
+                        viewModel.onEvent(ProfileEvent.ExitUserState)
+                        navigator.backToMainScreen()
+                    }
                 }
             )
         }
@@ -281,11 +298,15 @@ private fun DriverLayout(
             text = stringResource(id = R.string.my_data_subtitle),
             modifier = Modifier.padding(top = 4.dp)
         ) {
-            
+            scope.launch {
+
+            }
         }
         
         ClickableLayout(text = stringResource(id = R.string.my_trips_subtitle)) {
-            
+            scope.launch {
+
+            }
         }
     }
 }
@@ -295,6 +316,8 @@ private fun AuthorizedUserLayout(
     modifier: Modifier = Modifier,
     email: String? = null,
     isUserAuthorized: Boolean,
+    navigator: DestinationsNavigator,
+    scope: CoroutineScope,
     viewModel: ProfileScreenViewModel = hiltViewModel()
 ) {
     if (isUserAuthorized) {
@@ -322,7 +345,10 @@ private fun AuthorizedUserLayout(
                     fontSize = 13.sp,
                     color = Color.Red,
                     modifier = Modifier.clickable {
-                        viewModel.onEvent(ProfileEvent.ExitUserState)
+                        scope.launch {
+                            viewModel.onEvent(ProfileEvent.ExitUserState)
+                            navigator.backToMainScreen()
+                        }
                     }
                 )
             }
@@ -336,11 +362,15 @@ private fun AuthorizedUserLayout(
                 text = stringResource(id = R.string.my_data_subtitle),
                 modifier = Modifier.padding(top = 4.dp)
             ) {
+                scope.launch {
 
+                }
             }
 
             ClickableLayout(text = stringResource(id = R.string.passengers_subtitle)) {
+                scope.launch {
 
+                }
             }
         }
     }
@@ -349,9 +379,9 @@ private fun AuthorizedUserLayout(
 @Composable
 private fun SettingsLayout(
     modifier: Modifier = Modifier,
-    openSheet: (ProfileBottomSheetScreen) -> Unit
+    openSheet: (ProfileBottomSheetScreen) -> Unit,
+    scope: CoroutineScope
 ) {
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -363,11 +393,13 @@ private fun SettingsLayout(
             language = stringResource(id = R.string.app_language),
             modifier = Modifier.padding(top = 4.dp)
         ) {
-            openSheet(ProfileBottomSheetScreen.ChangeLanguageScreen)
+            scope.launch {
+                openSheet(ProfileBottomSheetScreen.ChangeLanguageScreen)
+            }
         }
 
         NotificationLayout(
-
+            scope = scope
         )
     }
 }
@@ -375,7 +407,8 @@ private fun SettingsLayout(
 @Composable
 private fun AdditionalLayout(
     modifier: Modifier = Modifier,
-    openSheet: (ProfileBottomSheetScreen) -> Unit
+    openSheet: (ProfileBottomSheetScreen) -> Unit,
+    scope: CoroutineScope
 ) {
     Column(
         modifier = modifier
@@ -384,7 +417,9 @@ private fun AdditionalLayout(
         Subtitle(text = stringResource(id = R.string.additionally_subtitle))
 
         ClickableLayout(text = stringResource(id = R.string.rate_the_app)) {
-            openSheet(ProfileBottomSheetScreen.RateTheAppScreen)
+            scope.launch {
+                openSheet(ProfileBottomSheetScreen.RateTheAppScreen)
+            }
         }
     }
 }
@@ -459,6 +494,7 @@ private fun ClickableLayout(
 @Composable
 private fun NotificationLayout(
     modifier: Modifier = Modifier,
+    scope: CoroutineScope,
     viewModel: ProfileScreenViewModel = hiltViewModel()
 ) {
     val switchState = rememberSaveable { mutableStateOf(viewModel.state.isNotificationsEnabled) }
@@ -484,8 +520,10 @@ private fun NotificationLayout(
             Switch(
                 checked = switchState.value,
                 onCheckedChange = {
-                    viewModel.onEvent(ProfileEvent.SetNotificationStatus(it))
-                    switchState.value = it
+                    scope.launch {
+                        viewModel.onEvent(ProfileEvent.SetNotificationStatus(it))
+                        switchState.value = it
+                    }
                 },
                 colors = SwitchDefaults.colors(
                     checkedTrackColor = Blue500,

@@ -4,73 +4,136 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import kz.busjol.R
+import kz.busjol.data.remote.RestorePasswordPost
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.CustomTextField
 import kz.busjol.presentation.ProgressButton
+import kz.busjol.utils.showSnackBar
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Destination
 @Composable
 fun PasswordRecoveryScreen(
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
+    viewModel: PasswordRecoveryViewModel = hiltViewModel()
 ) {
+    val state = viewModel.state
     val scope = rememberCoroutineScope()
-    val emailTextValue = rememberSaveable { mutableStateOf("") }
-    val buttonAvailability = rememberSaveable {
-        mutableStateOf(emailTextValue.value.isNotEmpty())
+    val scaffoldState = rememberScaffoldState()
+
+    val emailTextValue = remember { mutableStateOf("") }
+    val passwordTextValue = remember { mutableStateOf("") }
+    val secretCodeTextValue = remember { mutableStateOf("") }
+
+    val focusManager = LocalFocusManager.current
+
+    val openDialog = remember { mutableStateOf(false) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
+            scaffoldState.showSnackBar(this, state.error)
+        }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFAFAFA))
-    ) {
-        AppBar(title = stringResource(id = R.string.password_recovery_title)) {
-            scope.launch {
-                navigator.navigateUp()
-            }
-        }
-
-        Text(
-            text = stringResource(id = R.string.password_recovery_description_text),
-            color = Color(0xFF8B98A7),
-            fontSize = 14.sp,
+    Scaffold(scaffoldState = scaffoldState) { padding ->
+        Column(
             modifier = Modifier
-                .padding(start = 15.dp, top = 16.dp, end = 15.dp)
-        )
-
-        CustomTextField(
-            text = emailTextValue.value,
-            onValueChange = {
-                emailTextValue.value = it
-            },
-            hintId = R.string.email_hint,
-            keyboardType = KeyboardType.Email,
-            labelId = R.string.email_label,
-            modifier = Modifier
-                .padding(start = 15.dp, top = 16.dp, end = 15.dp)
-        )
-
-        ProgressButton(
-            textId = R.string.send_button,
-            enabled = buttonAvailability.value,
-            modifier = Modifier.padding(start = 15.dp, top = 24.dp, end = 15.dp)
+                .fillMaxSize()
+                .background(Color(0xFFFAFAFA))
+                .padding(padding)
         ) {
+            AppBar(title = stringResource(id = R.string.password_recovery_title)) {
+                scope.launch {
+                    navigator.navigateUp()
+                }
+            }
 
+            Text(
+                text = stringResource(id = R.string.password_recovery_description_text),
+                color = Color(0xFF8B98A7),
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .padding(start = 15.dp, top = 16.dp, end = 15.dp)
+            )
+
+            CustomTextField(
+                text = emailTextValue.value,
+                onValueChange = {
+                    emailTextValue.value = it
+                },
+                hintId = R.string.email_hint,
+                keyboardType = KeyboardType.Email,
+                labelId = R.string.email_label,
+                modifier = Modifier.padding(start = 15.dp, top = 16.dp, end = 15.dp),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+            )
+
+            CustomTextField(
+                text = passwordTextValue.value,
+                onValueChange = {
+                    passwordTextValue.value = it
+                },
+                hintId = R.string.password_hint,
+                keyboardType = KeyboardType.Password,
+                visualTransformation = PasswordVisualTransformation(),
+                labelId = R.string.password_label,
+                isHiddenToggleVisible = true,
+                modifier = Modifier
+                    .padding(start = 15.dp, top = 16.dp, end = 15.dp)
+            )
+
+            ProgressButton(
+                textId = R.string.send_button,
+                enabled = true,
+                isProgressBarActive = state.isLoading,
+                modifier = Modifier.padding(start = 15.dp, top = 24.dp, end = 15.dp)
+            ) {
+                scope.launch {
+                    keyboardController?.hide()
+
+                    if (emailTextValue.value.isEmpty()) {
+                        scaffoldState.showSnackBar(this, "Заполните поля")
+                    } else {
+                        viewModel.onEvent(
+                            PasswordRecoveryEvent.OnSendButtonClicked(
+                                RestorePasswordPost(
+                                    password = passwordTextValue.value,
+                                    secretCode = secretCodeTextValue.value,
+                                    loginInfo = emailTextValue.value
+                                )
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 }

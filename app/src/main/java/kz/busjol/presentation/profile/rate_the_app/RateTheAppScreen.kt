@@ -1,5 +1,10 @@
 package kz.busjol.presentation.profile.rate_the_app
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,20 +15,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import kz.busjol.R
 import kz.busjol.presentation.theme.GrayBorder
 
+
 @Destination
 @Composable
 fun RateTheApp(onCloseBottomSheet: () -> Unit) {
+
+    val context = LocalContext.current
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
@@ -72,31 +82,28 @@ fun RateTheApp(onCloseBottomSheet: () -> Unit) {
         RateButton(
             isLikeApp = true,
             modifier = Modifier.padding(start = 15.dp, top = 24.dp, end = 15.dp)
-        ) {
-            
-        }
+        )
 
         RateButton(
             isLikeApp = false,
             modifier = Modifier.padding(start = 15.dp, top = 12.dp, end = 15.dp, bottom = 24.dp)
-        ) {
-
-        }
+        )
     }
 }
 
 @Composable
 private fun RateButton(
     modifier: Modifier = Modifier,
-    isLikeApp: Boolean,
-    onClick: () -> Unit
+    isLikeApp: Boolean
 ) {
 
     val text = remember { if (isLikeApp) R.string.i_like_the_app else R.string.i_do_not_like_the_app }
     val image = remember { if (isLikeApp) R.drawable.like else R.drawable.dislike }
 
     Button(
-        onClick = { onClick() },
+        onClick = {
+
+        },
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFF2F6F8)),
         modifier = modifier
@@ -116,4 +123,16 @@ private fun RateButton(
             modifier = Modifier.padding(start = 4.83.dp)
         )
     }
+}
+
+fun openGooglePlay(context: Context) {
+//    val packageName = context.packageName.get()
+//    val uri: Uri = Uri.parse("market://details?id=$packageName")
+//
+//
+//    try {
+//        context.packageManager.
+//    } catch (e:Exception) {
+//
+//    }
 }

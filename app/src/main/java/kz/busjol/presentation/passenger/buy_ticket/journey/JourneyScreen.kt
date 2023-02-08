@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,8 +54,6 @@ fun JourneyScreen(
 ) {
     val state = viewModel.state
     val scope = rememberCoroutineScope()
-
-    val selectedOption = remember { state.selectedOption }
 
     LaunchedEffect(state.startNewDestination) {
         if (state.startNewDestination) {
@@ -110,7 +109,7 @@ fun JourneyScreen(
                     stringResource(id = R.string.radio_button_lying)
                 ),
                 seatTypeText = R.string.radio_group_title,
-                selectedOptionValue = selectedOption ?: 0
+                selectedOptionValue = state.selectedOption ?: 0
             )
 
             LazyColumn(
@@ -127,7 +126,7 @@ fun JourneyScreen(
                 content = {
                     item {
                         ticket.journeyList
-                            .filteredList(seatTypeIndex = selectedOption)
+                            .filteredList(seatTypeIndex = state.selectedOption)
                             .forEach { journey ->
                                 JourneyItemView(journey) {
                                     scope.launch {
@@ -343,6 +342,7 @@ fun RadioGroup(
 
     val onSelectionChange = { position: Int ->
         selectedOption = position
+        viewModel.onEvent(JourneyEvent.SelectedOption(position))
     }
 
     Column(
@@ -373,7 +373,6 @@ fun RadioGroup(
                         .height(40.dp)
                         .clickable {
                             onSelectionChange(index)
-                            viewModel.onEvent(JourneyEvent.SelectedOption(index))
                         }
                 ) {
                     Text(
