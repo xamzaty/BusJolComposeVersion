@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.BackButton
+import kz.busjol.presentation.DashLine
 import kz.busjol.presentation.ProgressButton
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
@@ -50,7 +51,6 @@ fun PaymentOrderResultScreen(
     ticket: Ticket,
     navigator: DestinationsNavigator
 ) {
-
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
@@ -71,13 +71,12 @@ fun PaymentOrderResultScreen(
         val arrivalCity = remember { "Балхаш" }
         val departureStation = remember { "Автовокзал Сайран" }
         val arrivalStation = remember { "Автовокзал Балхаш" }
-        val qrUrlList =
-            remember { "https://stackoverflow.com/questions/28232116/android-using-zxing-generate-qr-code" }
-
         val seatList = remember { mutableListOf(11,12) }
 
-        AppBar(title = stringResource(id = R.string.payment_order_result_title, "123123")) {
-
+        AppBar(title = stringResource(id = R.string.payment_order_result_title, "123123"), isCross = true) {
+            scope.launch {
+                navigator.backToMainScreen()
+            }
         }
 
         Card(
@@ -91,7 +90,9 @@ fun PaymentOrderResultScreen(
                     .fillMaxWidth()
                     .padding(vertical = 24.dp)
             ) {
-                val (clientDataRow, seatsRow, fromCircle, fromCityColumn, toCircle, toCityColumn, verticalLine, qrLazyRow, horizontalDivider, counter) = createRefs()
+                val (clientDataRow, seatsRow, fromCircle, fromCityColumn, toCircle,
+                    toCityColumn, verticalLine, qrLazyRow,
+                    horizontalDivider, circleLeft, circleRight, counter) = createRefs()
 
                 Row(modifier = Modifier
                     .fillMaxWidth()
@@ -215,15 +216,36 @@ fun PaymentOrderResultScreen(
                     )
                 }
 
-                Image(painter = painterResource(id = R.drawable.countour_horizontal_line),
-                    contentDescription = "horizontal_line",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier.constrainAs(horizontalDivider) {
+                Image(
+                    painter = painterResource(id = R.drawable.blue_circle_left),
+                    contentDescription = "circleLeft",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.constrainAs(circleLeft) {
                         start.linkTo(parent.start, 10.dp)
-                        end.linkTo(parent.end, 10.dp)
                         top.linkTo(toCityColumn.bottom, 24.dp)
+                    }
+                )
+
+                DashLine(
+                    modifier = Modifier.constrainAs(horizontalDivider) {
+                        start.linkTo(circleLeft.end)
+                        end.linkTo(circleRight.start)
+                        top.linkTo(circleLeft.top, 2.dp)
+                        bottom.linkTo(circleLeft.bottom)
                         width = Dimension.fillToConstraints
-                    })
+                    }
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.blue_circle_right),
+                    contentDescription = "circleRight",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.constrainAs(circleRight) {
+                        end.linkTo(parent.end, 10.dp)
+                        top.linkTo(circleLeft.top)
+                        bottom.linkTo(circleLeft.bottom)
+                    }
+                )
 
                 HorizontalPager(
                     modifier = Modifier.constrainAs(qrLazyRow) {
@@ -236,12 +258,14 @@ fun PaymentOrderResultScreen(
                         )
                     }, count = seatList.size, state = pagerState
                 ) {
-                    Image(
-                        bitmap = encodeAsBitmap("https://stackoverflow.com/questions/28232116/android-using-zxing-generate-qr-code"),
-                        contentDescription = "qr",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    ticket.bookingList?.forEach {
+                        Image(
+                            bitmap = encodeAsBitmap(it.qrCode),
+                            contentDescription = "qr",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
 
                 if (seatList.size > 1) {
@@ -277,7 +301,7 @@ fun PaymentOrderResultScreen(
                 modifier = Modifier.padding(vertical = 16.dp, horizontal = 15.dp)
             ) {
                 scope.launch {
-
+                    navigator.backToMainScreen()
                 }
             }
         }

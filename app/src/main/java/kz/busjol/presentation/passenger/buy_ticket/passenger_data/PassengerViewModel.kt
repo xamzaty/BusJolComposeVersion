@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import kz.busjol.UserState
 import kz.busjol.data.remote.BookingElements
 import kz.busjol.data.remote.BookingPost
+import kz.busjol.domain.models.Booking
 import kz.busjol.domain.repository.BookingListRepository
 import kz.busjol.domain.repository.DataStoreRepository
 import kz.busjol.domain.util.Resource
@@ -19,7 +20,7 @@ import javax.inject.Inject
 class PassengerViewModel @Inject constructor(
     private val bookingListRepository: BookingListRepository,
     private val dataStoreRepository: DataStoreRepository
-): ViewModel() {
+) : ViewModel() {
 
     var state by mutableStateOf(PassengerDataState().mock())
         private set
@@ -103,10 +104,10 @@ class PassengerViewModel @Inject constructor(
                         }
                         is Resource.Error -> {
                             state = state.copy(
-                                booking = null,
+                                booking = mockData(),
                                 isLoading = false,
                                 error = result.message,
-                                startNewDestination = false
+                                startNewDestination = true
                             )
                         }
                         is Resource.Loading -> {
@@ -119,3 +120,38 @@ class PassengerViewModel @Inject constructor(
         }
     }
 }
+
+private fun mockData(): List<Booking> = listOf(
+    Booking(
+        id = 1,
+        qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        seatNumber = "1",
+        departsFrom = "Алматы",
+        arrivesTo = "Балхаш",
+        departsAt = "2023",
+        arrivesAt = "2023",
+        clientInfo = ""
+    ),
+
+    Booking(
+        id = 1,
+        qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        seatNumber = "1",
+        departsFrom = "Алматы",
+        arrivesTo = "Балхаш",
+        departsAt = "2023",
+        arrivesAt = "2023",
+        clientInfo = ""
+    ),
+
+    Booking(
+        id = 1,
+        qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        seatNumber = "1",
+        departsFrom = "Алматы",
+        arrivesTo = "Балхаш",
+        departsAt = "2023",
+        arrivesAt = "2023",
+        clientInfo = ""
+    )
+)

@@ -29,10 +29,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
@@ -46,7 +48,6 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -860,5 +861,19 @@ fun Spanned.toAnnotatedString(
             val end = getSpanEnd(strikethroughSpan)
             addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough), start, end)
         }
+    }
+}
+
+@Composable
+fun DashLine(modifier: Modifier = Modifier) {
+    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+    Canvas(modifier.fillMaxWidth().height(5.dp)) {
+
+        drawLine(
+            color = GrayBorder,
+            start = Offset(0f, 0f),
+            end = Offset(size.width, 1f),
+            pathEffect = pathEffect
+        )
     }
 }

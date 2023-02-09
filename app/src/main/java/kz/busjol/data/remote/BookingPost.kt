@@ -1,6 +1,6 @@
 package kz.busjol.data.remote
 
-class BookingPost(
+data class BookingPost(
     val bookingElements: List<BookingElements>,
     val email: String,
     val phoneNumber: String,
@@ -9,7 +9,7 @@ class BookingPost(
     val segmentId: Int
 )
 
-class BookingElements(
+data class BookingElements(
     val iin: String,
     val firstName: String,
     val lastName: String,

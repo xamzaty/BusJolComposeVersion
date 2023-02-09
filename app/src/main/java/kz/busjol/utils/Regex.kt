@@ -23,9 +23,18 @@ object Regex {
         ".*[a-z].*"
     )
 
+    private val IIN_PATTERN: Pattern = Pattern.compile(
+        "^((0[48]|[2468][048]|[13579][26])0229[1-6]" +
+                "|000229[34]|\\d\\d((0[13578]|1[02])(0[1-9]|" +
+                "[12]\\d|3[01])|(0[469]|11)(0[1-9]|[12]\\d|30)|02(0[1-9]|1\\d|" +
+                "2[0-8]))[1-6])\\d{5}\$\n"
+    )
+
     fun String.isValidEmail() = EMAIL_ADDRESS_PATTERN.matcher(this).matches()
 
     fun String.isPasswordStrength() = PASSWORD_STRENGTH_PATTERN.matcher(this).matches()
 
     fun String.containsLetters() = CONTAINS_DIGITS.matcher(this).matches()
+
+    fun String.isValidIin() = IIN_PATTERN.matcher(this).matches()
 }

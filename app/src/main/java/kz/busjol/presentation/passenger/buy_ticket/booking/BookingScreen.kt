@@ -1,6 +1,8 @@
 package kz.busjol.presentation.passenger.buy_ticket.booking
 
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
@@ -40,7 +42,9 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
+import kz.busjol.utils.backToMainScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Destination
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -69,6 +73,7 @@ fun BookingScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun MainContent(
@@ -79,8 +84,13 @@ private fun MainContent(
     viewModel: BookingViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
-
     val openDialog = remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.countdownTimerValue) {
+        if (state.countdownTimerValue == "00:00") {
+            navigator.backToMainScreen()
+        }
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -181,7 +191,7 @@ private fun MainContent(
                 }
 
                 Text(
-                    text = "24.12.2022 09:00",
+                    text = ticket.journey?.departureTime ?: "",
                     color = GrayText,
                     modifier = Modifier.padding(
                         top = 4.dp,
@@ -193,8 +203,6 @@ private fun MainContent(
                     fontWeight = FontWeight.W500
                 )
 
-                val amountValue by rememberSaveable { mutableStateOf(10000) }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
@@ -205,13 +213,12 @@ private fun MainContent(
                 ) {
 
                     Text(
-                        text = amountValue.formatWithCurrency(),
+                        text = ticket.journey?.amount?.formatWithCurrency() ?: "",
                         fontWeight = FontWeight.W700,
                         color = Color.White,
                         fontSize = 17.sp,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

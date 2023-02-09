@@ -1,6 +1,5 @@
 package kz.busjol.presentation.passenger.buy_ticket.passenger_data
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -8,12 +7,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,6 +37,7 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.theme.*
 import kz.busjol.utils.MaskVisualTransformation
+import kz.busjol.utils.Regex.isValidEmail
 import kz.busjol.utils.showSnackBar
 import java.text.SimpleDateFormat
 import java.util.*
@@ -55,7 +55,6 @@ fun PassengerDataScreen(
     )
 
     val coroutineScope = rememberCoroutineScope()
-
     val scaffoldState = rememberScaffoldState()
 
     BackHandler(sheetState.isVisible) {
@@ -69,7 +68,7 @@ fun PassengerDataScreen(
             JourneyDetailsScreen(sheetState, coroutineScope, ticket)
         })
     {
-        Scaffold() {
+        Scaffold(scaffoldState = scaffoldState) {
             MainContent(
                 ticket = ticket,
                 paddingValues = it,
@@ -93,34 +92,17 @@ private fun MainContent(
     coroutineScope: CoroutineScope,
     viewModel: PassengerViewModel = hiltViewModel()
 ) {
-
-    val context = LocalContext.current
-
     val state = viewModel.state
 
     val checkboxState = remember { mutableStateOf(true) }
     val emailValue = remember { mutableStateOf("") }
     val phoneValue = remember { mutableStateOf("") }
 
-    val phoneValueResult = remember {
-        mutableStateOf(
-            if (state.isPassengerHaveLogin) {
-                ""
-            } else {
-                phoneValue.value
-            }
-        )
-    }
+    val formErrorText = remember { mutableStateOf("") }
 
-    val emailValueResult = remember {
-        mutableStateOf(
-            if (state.isPassengerHaveLogin) {
-                ""
-            } else {
-                emailValue.value
-            }
-        )
-    }
+    val bookingElementList = mutableListOf<BookingElements>()
+    val isSetDataToList = remember { mutableStateOf(false) }
+    val isDataReadyToLoad = remember { mutableStateOf(false) }
 
     val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
     val currentDate: String = sdf.format(Date())
@@ -133,8 +115,8 @@ private fun MainContent(
         }
     }
 
-    LaunchedEffect(state.startNewDestination) {
-        if (state.startNewDestination) {
+    if (state.startNewDestination) {
+        LaunchedEffect(navigator) {
             navigator.navigate(
                 BookingScreenDestination(
                     ticket = Ticket(
@@ -150,25 +132,27 @@ private fun MainContent(
         }
     }
 
-    LaunchedEffect(state.error) {
-        if (state.error?.isNotEmpty() == true) {
+    if (state.error?.isNotEmpty() == true) {
+        LaunchedEffect(scaffoldState.snackbarHostState) {
             scaffoldState.showSnackBar(this, state.error)
         }
     }
 
-    if (state.setDataToList) {
-        viewModel.onEvent(
-            PassengerDataEvent.OnContinueButtonAction(
-                BookingPost(
-                    bookingElements = viewModel.state.bookingElementsList ?: emptyList(),
-                    email = emailValueResult.value.trim(),
-                    phoneNumber = phoneValueResult.value.trim(),
-                    phoneTimeAtCreating = currentDate,
-                    clientId = 0,
-                    segmentId = ticket.journey?.segmentId ?: 0
+    if (isSetDataToList.value) {
+        LaunchedEffect(isSetDataToList) {
+            viewModel.onEvent(
+                PassengerDataEvent.OnContinueButtonAction(
+                    BookingPost(
+                        bookingElements = bookingElementList,
+                        email = emailValue.value.trim(),
+                        phoneNumber = "+7${phoneValue.value.trim()}",
+                        phoneTimeAtCreating = currentDate.trim(),
+                        clientId = 0,
+                        segmentId = ticket.journey?.segmentId ?: 0
+                    )
                 )
             )
-        )
+        }
     }
 
     LazyColumn(
@@ -240,7 +224,7 @@ private fun MainContent(
                         }
 
                         Text(
-                            text = "24.12.2022 09:00",
+                            text = ticket.journey?.departureTime ?: "",
                             color = GrayText,
                             modifier = Modifier.padding(top = 4.dp),
                             fontSize = 11.sp,
@@ -252,13 +236,20 @@ private fun MainContent(
 
             val list = ticket.passengerList ?: listOf(Passenger())
 
-            println("passengerList: $list")
-
             itemsIndexed(list) { index, item ->
                 PassengerRegistrationLayout(
                     count = index + 1,
                     passenger = item,
-                    seatId = item.seatId ?: 1
+                    seatId = item.seatId ?: 1,
+                    isDataReadyToLoad = {
+                        isDataReadyToLoad.value = it
+                    },
+                    errorText = {
+                        formErrorText.value = it
+                    },
+                    bookingElements = {
+                        bookingElementList.addAll(it)
+                    }
                 )
             }
 
@@ -298,8 +289,7 @@ private fun MainContent(
                                 },
                                 iconId = null,
                                 hintId = R.string.email_hint,
-                                labelId = R.string.email_or_phone_label,
-                                keyboardType = KeyboardType.Email,
+                                labelId = R.string.email_label,
                                 modifier = Modifier.padding(top = 12.dp)
                             )
 
@@ -403,7 +393,39 @@ private fun MainContent(
                         modifier = Modifier.padding(vertical = 16.dp, horizontal = 15.dp)
                     ) {
                         coroutineScope.launch {
-                            viewModel.onEvent(PassengerDataEvent.SetDataToListStatusTrue)
+                            when {
+                                formErrorText.value.isNotEmpty() -> {
+                                    scaffoldState.showSnackBar(this, formErrorText.value)
+                                }
+
+                                !state.isPassengerHaveLogin && (emailValue.value.isEmpty() ||
+                                        phoneValue.value.isEmpty()) -> {
+                                    scaffoldState.showSnackBar(this, "Заполните все поля")
+                                }
+
+                                !state.isPassengerHaveLogin && !emailValue.value.isValidEmail() -> {
+                                    scaffoldState.showSnackBar(
+                                        this,
+                                        "Неправильный электронный адрес"
+                                    )
+                                }
+
+                                !state.isPassengerHaveLogin && phoneValue.value.length < 10 -> {
+                                    scaffoldState.showSnackBar(
+                                        this,
+                                        "Введите номер телефона полностью"
+                                    )
+                                }
+
+                                !checkboxState.value -> {
+                                    scaffoldState.showSnackBar(
+                                        this,
+                                        "Чтобы продолжить, необходимо согласиться с правилами оферты и возврата"
+                                    )
+                                }
+
+                                else -> isSetDataToList.value = true
+                            }
                         }
                     }
                 }
@@ -417,7 +439,9 @@ private fun PassengerRegistrationLayout(
     count: Int,
     passenger: Passenger,
     seatId: Int,
-    viewModel: PassengerViewModel = hiltViewModel()
+    isDataReadyToLoad: (Boolean) -> Unit,
+    errorText: (String) -> Unit,
+    bookingElements: (List<BookingElements>) -> Unit,
 ) {
     val passengerSex = remember {
         mutableStateOf(0)
@@ -481,15 +505,17 @@ private fun PassengerRegistrationLayout(
                 selectedOptionValue = passengerSex.value,
                 modifier = Modifier.padding(top = 12.dp)
             ) {
+                passengerSex.value = it
             }
 
             CustomTextFieldWithMask(
                 text = iinValue.value,
                 onValueChange = {
+                    iinValue.value = it
                 },
                 hintId = R.string.iin_hint,
                 labelId = R.string.iin_label,
-                keyboardType = KeyboardType.Number,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 maxChar = 12,
                 modifier = Modifier.padding(top = 12.dp),
                 maskVisualTransformation = MaskVisualTransformation("### ### ### ###")
@@ -498,34 +524,53 @@ private fun PassengerRegistrationLayout(
             CustomTextField(
                 text = lastNameValue.value,
                 onValueChange = {
+                    lastNameValue.value = it
                 },
                 hintId = R.string.surname_hint,
                 labelId = R.string.surname_label,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.padding(top = 12.dp)
             )
 
             CustomTextField(
                 text = firstNameValue.value,
                 onValueChange = {
+                    firstNameValue.value = it
                 },
                 hintId = R.string.first_name_hint,
                 labelId = R.string.first_name_label,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.padding(top = 12.dp)
             )
 
-            if (viewModel.state.setDataToList) {
-                viewModel.onEvent(
-                    PassengerDataEvent.PassengerData(
-                        BookingElements(
-                            iin = iinValue.value,
-                            firstName = firstNameValue.value,
-                            lastName = lastNameValue.value,
-                            sex = passengerSex.value,
-                            seatId = seatId
-                        )
-                    )
-                )
+            when {
+                iinValue.value.isEmpty() || firstNameValue.value.isEmpty() ||
+                        lastNameValue.value.isEmpty() || iinValue.value.length < 12 -> {
+                    errorText("Заполните все поля в анкете")
+                }
+                else -> errorText("")
             }
+
+            val arrayList = arrayListOf<BookingElements>()
+
+            val bookingElement = BookingElements(
+                iin = iinValue.value,
+                firstName = firstNameValue.value.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.ROOT)
+                    else it.toString()
+                },
+                lastName = lastNameValue.value.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.ROOT)
+                    else it.toString()
+                },
+                sex = passengerSex.value,
+                seatId = seatId
+            )
+
+            arrayList.add(bookingElement)
+
+            bookingElements(arrayList)
+            isDataReadyToLoad(true)
         }
     }
 }
@@ -572,6 +617,5 @@ fun RadioGroup(
             }
         }
     }
-
     selectedValue(selectedOption.value)
 }
