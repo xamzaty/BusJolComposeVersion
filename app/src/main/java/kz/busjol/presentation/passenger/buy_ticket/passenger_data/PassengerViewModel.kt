@@ -26,11 +26,17 @@ class PassengerViewModel @Inject constructor(
 
     private var bookingList = mutableSetOf<BookingElements>()
 
+    private var emailValue: String = ""
+    private var phoneValue: String = ""
+
     init {
         viewModelScope.launch {
             dataStoreRepository
                 .getAppSettings()
                 .collect {
+                    emailValue = it.userData?.email ?: ""
+                    phoneValue = it.userData?.phone ?: ""
+
                     state = state.copy(
                         isPassengerHaveLogin = it.userState == UserState.REGISTERED
                     )
@@ -73,7 +79,18 @@ class PassengerViewModel @Inject constructor(
     private fun loadBookingList(bookingPost: BookingPost) {
         viewModelScope.launch {
             bookingListRepository
-                .getBookingList(bookingPost)
+                .getBookingList(
+                    if (state.isPassengerHaveLogin) {
+                        BookingPost(
+                            bookingElements = bookingPost.bookingElements,
+                            email = emailValue,
+                            phoneNumber = phoneValue,
+                            phoneTimeAtCreating = bookingPost.phoneTimeAtCreating,
+                            clientId = 0,
+                            segmentId = bookingPost.segmentId
+                        )
+                    } else bookingPost
+                )
                 .collect { result ->
                     when (result) {
                         is Resource.Success -> {

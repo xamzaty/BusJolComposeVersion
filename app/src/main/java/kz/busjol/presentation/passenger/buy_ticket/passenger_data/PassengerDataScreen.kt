@@ -38,6 +38,7 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.theme.*
 import kz.busjol.utils.MaskVisualTransformation
+import kz.busjol.utils.showSnackBar
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -55,6 +56,8 @@ fun PassengerDataScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    val scaffoldState = rememberScaffoldState()
+
     BackHandler(sheetState.isVisible) {
         coroutineScope.launch { sheetState.hide() }
     }
@@ -66,13 +69,24 @@ fun PassengerDataScreen(
             JourneyDetailsScreen(sheetState, coroutineScope, ticket)
         })
     {
-        MainContent(ticket, navigator, sheetState, coroutineScope)
+        Scaffold() {
+            MainContent(
+                ticket = ticket,
+                paddingValues = it,
+                scaffoldState = scaffoldState,
+                navigator = navigator,
+                sheetState = sheetState,
+                coroutineScope = coroutineScope
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun MainContent(
+    paddingValues: PaddingValues,
+    scaffoldState: ScaffoldState,
     ticket: Ticket,
     navigator: DestinationsNavigator,
     sheetState: ModalBottomSheetState,
@@ -136,8 +150,10 @@ private fun MainContent(
         }
     }
 
-    if (state.error?.isNotEmpty() == true) {
-        Toast.makeText(context, state.error, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(state.error) {
+        if (state.error?.isNotEmpty() == true) {
+            scaffoldState.showSnackBar(this, state.error)
+        }
     }
 
     if (state.setDataToList) {
@@ -159,6 +175,7 @@ private fun MainContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
+            .padding(paddingValues)
             .background(GrayBackground),
         content = {
             stickyHeader {
@@ -235,14 +252,14 @@ private fun MainContent(
 
             val list = ticket.passengerList ?: listOf(Passenger())
 
+            println("passengerList: $list")
+
             itemsIndexed(list) { index, item ->
-                ticket.chosenSeatsList?.forEach { seat ->
-                    PassengerRegistrationLayout(
-                        count = index + 1,
-                        passenger = item,
-                        seatId = seat.id
-                    )
-                }
+                PassengerRegistrationLayout(
+                    count = index + 1,
+                    passenger = item,
+                    seatId = item.seatId ?: 1
+                )
             }
 
             item {
