@@ -18,7 +18,6 @@ import androidx.navigation.compose.rememberNavController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import kz.busjol.presentation.NavGraph
-import kz.busjol.presentation.Test
 import kz.busjol.presentation.destinations.*
 import kz.busjol.presentation.theme.BusJolComposeTheme
 import kz.busjol.utils.BottomBar

@@ -39,6 +39,10 @@
     <string name="date_layout_label">Күні</string>
     <string name="passenger_layout_label">Жолаушылар</string>
 
+    // CityPickerScreen
+    <string name="search_city_label">Қаланы іздеу</string>
+    <string name="search_city_hint">Қаланың атын енгізіңіз</string>
+
     // PassengerQuantityScreen
     <string name="passenger_quantity_screen_title">Жолаушылар</string>
     <string name="adult_passenger">Ересек</string>

@@ -3,8 +3,10 @@ package kz.busjol.presentation.passenger.login
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
@@ -60,8 +62,8 @@ fun LoginScreen(
     val emailMask = "######################################################"
 
     val focusManager = LocalFocusManager.current
-
     val keyboardController = LocalSoftwareKeyboardController.current
+    val scrollState = rememberScrollState()
 
     Scaffold(scaffoldState = scaffoldState) { padding ->
 
@@ -82,6 +84,7 @@ fun LoginScreen(
                 .fillMaxSize()
                 .background(Color(0xFFFAFAFA))
                 .padding(padding)
+                .verticalScroll(scrollState)
         ) {
             AppBar(title = stringResource(id = R.string.enter_title), isCross = true) {
                 scope.launch {
@@ -109,9 +112,14 @@ fun LoginScreen(
                 onValueChange = {
                     loginTextValue.value = it
                 },
-                keyboardType =
-                if (loginTextValue.value.startsWith("+7")) KeyboardType.Phone
-                else KeyboardType.Email,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = if (
+                        loginTextValue.value.startsWith("+7") || loginTextValue.value.startsWith("87")
+                    ) KeyboardType.Phone
+                    else
+                        KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
                 hintId = R.string.email_hint,
                 labelId = R.string.email_or_phone_label,
                 modifier = Modifier.padding(start = 15.dp, top = 16.dp, end = 15.dp),
@@ -129,8 +137,7 @@ fun LoginScreen(
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                )
             )
 
             CustomTextField(
@@ -140,7 +147,7 @@ fun LoginScreen(
                 },
                 hintId = R.string.password_hint,
                 labelId = R.string.password_label,
-                keyboardType = KeyboardType.Password,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.padding(start = 15.dp, top = 8.dp, end = 15.dp),
                 isHiddenToggleVisible = true

@@ -7,14 +7,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -81,7 +89,9 @@ fun PassengerDataScreen(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
 private fun MainContent(
     paddingValues: PaddingValues,
@@ -103,6 +113,9 @@ private fun MainContent(
     val bookingElementList = mutableListOf<BookingElements>()
     val isSetDataToList = remember { mutableStateOf(false) }
     val isDataReadyToLoad = remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
     val currentDate: String = sdf.format(Date())
@@ -241,6 +254,7 @@ private fun MainContent(
                     count = index + 1,
                     passenger = item,
                     seatId = item.seatId ?: 1,
+                    focusManager = focusManager,
                     isDataReadyToLoad = {
                         isDataReadyToLoad.value = it
                     },
@@ -290,6 +304,13 @@ private fun MainContent(
                                 iconId = null,
                                 hintId = R.string.email_hint,
                                 labelId = R.string.email_label,
+                                keyboardActions = KeyboardActions(
+                                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                                ),
+                                keyboardOptions = KeyboardOptions(
+                                    imeAction = ImeAction.Next,
+                                    keyboardType = KeyboardType.Email
+                                ),
                                 modifier = Modifier.padding(top = 12.dp)
                             )
 
@@ -301,8 +322,11 @@ private fun MainContent(
                                 iconId = null,
                                 hintId = R.string.email_hint,
                                 labelId = R.string.phone_label,
-                                keyboardType = KeyboardType.Phone,
                                 maxChar = 10,
+                                keyboardOptions = KeyboardOptions(
+                                    imeAction = ImeAction.Next,
+                                    keyboardType = KeyboardType.Phone
+                                ),
                                 modifier = Modifier.padding(top = 12.dp),
                                 maskVisualTransformation = MaskVisualTransformation(phoneMask)
                             )
@@ -424,7 +448,10 @@ private fun MainContent(
                                     )
                                 }
 
-                                else -> isSetDataToList.value = true
+                                else -> {
+                                    isSetDataToList.value = true
+                                    keyboardController?.hide()
+                                }
                             }
                         }
                     }
@@ -439,23 +466,24 @@ private fun PassengerRegistrationLayout(
     count: Int,
     passenger: Passenger,
     seatId: Int,
+    focusManager: FocusManager,
     isDataReadyToLoad: (Boolean) -> Unit,
     errorText: (String) -> Unit,
     bookingElements: (List<BookingElements>) -> Unit,
 ) {
-    val passengerSex = remember {
+    val passengerSex = rememberSaveable {
         mutableStateOf(0)
     }
 
-    val iinValue = remember {
+    val iinValue = rememberSaveable {
         mutableStateOf("")
     }
 
-    val lastNameValue = remember {
+    val lastNameValue = rememberSaveable {
         mutableStateOf("")
     }
 
-    val firstNameValue = remember {
+    val firstNameValue = rememberSaveable {
         mutableStateOf("")
     }
 
@@ -515,7 +543,13 @@ private fun PassengerRegistrationLayout(
                 },
                 hintId = R.string.iin_hint,
                 labelId = R.string.iin_label,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Number
+                ),
                 maxChar = 12,
                 modifier = Modifier.padding(top = 12.dp),
                 maskVisualTransformation = MaskVisualTransformation("### ### ### ###")
@@ -528,7 +562,13 @@ private fun PassengerRegistrationLayout(
                 },
                 hintId = R.string.surname_hint,
                 labelId = R.string.surname_label,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Text
+                ),
                 modifier = Modifier.padding(top = 12.dp)
             )
 
@@ -539,7 +579,13 @@ private fun PassengerRegistrationLayout(
                 },
                 hintId = R.string.first_name_hint,
                 labelId = R.string.first_name_label,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Text
+                ),
                 modifier = Modifier.padding(top = 12.dp)
             )
 

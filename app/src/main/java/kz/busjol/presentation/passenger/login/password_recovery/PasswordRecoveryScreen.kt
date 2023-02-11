@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
@@ -50,7 +52,7 @@ fun PasswordRecoveryScreen(
 
     val focusManager = LocalFocusManager.current
 
-    val openDialog = remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -66,6 +68,7 @@ fun PasswordRecoveryScreen(
                 .fillMaxSize()
                 .background(Color(0xFFFAFAFA))
                 .padding(padding)
+                .verticalScroll(scrollState)
         ) {
             AppBar(title = stringResource(id = R.string.password_recovery_title)) {
                 scope.launch {
@@ -87,13 +90,15 @@ fun PasswordRecoveryScreen(
                     emailTextValue.value = it
                 },
                 hintId = R.string.email_hint,
-                keyboardType = KeyboardType.Email,
                 labelId = R.string.email_label,
                 modifier = Modifier.padding(start = 15.dp, top = 16.dp, end = 15.dp),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email
+                )
             )
 
             CustomTextField(
@@ -102,12 +107,11 @@ fun PasswordRecoveryScreen(
                     passwordTextValue.value = it
                 },
                 hintId = R.string.password_hint,
-                keyboardType = KeyboardType.Password,
                 visualTransformation = PasswordVisualTransformation(),
                 labelId = R.string.password_label,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isHiddenToggleVisible = true,
-                modifier = Modifier
-                    .padding(start = 15.dp, top = 16.dp, end = 15.dp)
+                modifier = Modifier.padding(start = 15.dp, top = 16.dp, end = 15.dp)
             )
 
             ProgressButton(

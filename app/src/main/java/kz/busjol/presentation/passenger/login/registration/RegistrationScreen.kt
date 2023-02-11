@@ -62,7 +62,6 @@ fun RegistrationScreen(
     var checkboxState by rememberSaveable { mutableStateOf(true) }
 
     val focusManager = LocalFocusManager.current
-
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(state.isRegistrationSuccess) {
@@ -106,13 +105,15 @@ fun RegistrationScreen(
                 },
                 hintId = R.string.email_hint,
                 labelId = R.string.email_label,
-                keyboardType = KeyboardType.Email,
                 modifier = Modifier
                     .padding(start = 15.dp, top = 16.dp, end = 15.dp),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email
+                )
             )
 
             MaskTextField(
@@ -122,7 +123,6 @@ fun RegistrationScreen(
                 },
                 hintId = R.string.phone_hint,
                 labelId = R.string.phone_label,
-                keyboardType = KeyboardType.Phone,
                 modifier = Modifier
                     .padding(start = 15.dp, top = 16.dp, end = 15.dp)
                     .onPreviewKeyEvent {
@@ -138,7 +138,10 @@ fun RegistrationScreen(
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Phone
+                )
             )
 
             CustomTextField(
@@ -148,7 +151,6 @@ fun RegistrationScreen(
                 },
                 hintId = R.string.password_hint,
                 labelId = R.string.password_label,
-                keyboardType = KeyboardType.Password,
                 modifier = Modifier
                     .padding(start = 15.dp, top = 16.dp, end = 15.dp)
                     .onPreviewKeyEvent {
@@ -163,7 +165,10 @@ fun RegistrationScreen(
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 ),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Password
+                )
             )
 
             CustomTextField(
@@ -173,12 +178,11 @@ fun RegistrationScreen(
                 },
                 hintId = R.string.password_hint,
                 labelId = R.string.repeat_password_hint,
-                keyboardType = KeyboardType.Password,
                 keyboardActions = KeyboardActions(
                     onDone = {keyboardController?.hide()}),
-                modifier = Modifier
-                    .padding(start = 15.dp, top = 16.dp, end = 15.dp),
+                modifier = Modifier.padding(start = 15.dp, top = 16.dp, end = 15.dp),
                 isHiddenToggleVisible = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password,),
                 isError = repeatPasswordTextValue.value.isNotEmpty() &&
                         repeatPasswordTextValue.value != passwordTextValue.value,
                 errorText = stringResource(id = R.string.password_mismatch_error),

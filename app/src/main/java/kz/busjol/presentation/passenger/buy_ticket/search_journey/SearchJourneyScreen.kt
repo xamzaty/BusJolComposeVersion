@@ -43,7 +43,6 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quan
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengerQuantityScreen
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.utils.setLocale
-import kz.busjol.utils.showDataErrorToast
 import kz.busjol.utils.showSnackBar
 
 @Destination(start = true)

@@ -13,7 +13,6 @@ data class PassengerDataState(
     val booking: List<Booking>? = null,
     val error: String? = null,
     val passengerList: List<BookingElements>? = null,
-    val bookingElementsList: List<BookingElements>? = null,
     val startNewDestination: Boolean = false,
     val setDataToList: Boolean = false,
     val isAllDataSet: Boolean = false
@@ -26,7 +25,6 @@ data class PassengerDataState(
         isLoading = false,
         booking = null,
         error = null,
-        bookingElementsList = null,
         startNewDestination = false,
         setDataToList = false
     )

@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kz.busjol.UserState
-import kz.busjol.data.remote.BookingElements
 import kz.busjol.data.remote.BookingPost
 import kz.busjol.domain.models.Booking
 import kz.busjol.domain.repository.BookingListRepository
@@ -24,8 +23,6 @@ class PassengerViewModel @Inject constructor(
 
     var state by mutableStateOf(PassengerDataState().mock())
         private set
-
-    private var bookingList = mutableSetOf<BookingElements>()
 
     private var emailValue: String = ""
     private var phoneValue: String = ""
@@ -51,9 +48,7 @@ class PassengerViewModel @Inject constructor(
                 loadBookingList(event.bookingPost)
             }
             is PassengerDataEvent.PassengerData -> {
-                addItemToSet(event.bookingElements)
                 state = state.copy(
-                    bookingElementsList = bookingList.toList(),
                     setDataToList = true
                 )
             }
@@ -68,13 +63,6 @@ class PassengerViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    private fun addItemToSet(item: BookingElements) {
-        val list = bookingList
-        list.addAll(setOf(item))
-
-        bookingList = list
     }
 
     private fun loadBookingList(bookingPost: BookingPost) {

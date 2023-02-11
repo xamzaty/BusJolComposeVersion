@@ -5,12 +5,8 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,23 +17,18 @@ import kotlinx.coroutines.launch
 import kz.busjol.presentation.passenger.buy_ticket.journey_details.JourneyDetailsScreen
 import kz.busjol.presentation.theme.GrayBackground
 import kz.busjol.R
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.popUpTo
 import kz.busjol.ext.formatWithCurrency
 import kz.busjol.presentation.*
-import kz.busjol.presentation.destinations.DirectionDestination
 import kz.busjol.presentation.destinations.PaymentOrderResultScreenDestination
-import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
@@ -85,6 +76,8 @@ private fun MainContent(
 ) {
     val state = viewModel.state
     val openDialog = remember { mutableStateOf(false) }
+
+    val isBankChosenPayment = remember { mutableStateOf(true) }
 
     LaunchedEffect(state.countdownTimerValue) {
         if (state.countdownTimerValue == "00:00") {
@@ -225,8 +218,12 @@ private fun MainContent(
         }
 
         PaymentTypeLayout(
-            isBankCardsPayment = true,
-            modifier = Modifier.padding(top = 16.dp)
+            paymentMethod = Payment.BANK,
+            modifier = Modifier.padding(top = 16.dp),
+            isChosenMethod = isBankChosenPayment.value,
+            chooseThisPayment = {
+                isBankChosenPayment.value = true
+            }
         ) {
             coroutineScope.launch {
                 navigator.navigate(
@@ -238,8 +235,12 @@ private fun MainContent(
         }
 
         PaymentTypeLayout(
-            isBankCardsPayment = false,
-            modifier = Modifier.padding(top = 12.dp)
+            paymentMethod = Payment.KASPI,
+            modifier = Modifier.padding(top = 12.dp),
+            isChosenMethod = !isBankChosenPayment.value,
+            chooseThisPayment = {
+                isBankChosenPayment.value = false
+            }
         ) {
             coroutineScope.launch {
                 navigator.navigate(
@@ -255,10 +256,11 @@ private fun MainContent(
 @Composable
 private fun PaymentTypeLayout(
     modifier: Modifier = Modifier,
-    isBankCardsPayment: Boolean,
+    paymentMethod : Payment,
+    isChosenMethod: Boolean,
+    chooseThisPayment: (Boolean) -> Unit,
     onClick: () -> Unit
 ) {
-
     Card(
         elevation = 0.dp,
         shape = RoundedCornerShape(12.dp),
@@ -266,6 +268,9 @@ private fun PaymentTypeLayout(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 15.dp, end = 15.dp)
+            .clickable {
+                chooseThisPayment(isChosenMethod)
+            }
     ) {
 
         Column(
@@ -279,15 +284,31 @@ private fun PaymentTypeLayout(
             ) {
 
                 Image(
-                    painter = painterResource(id = if (isBankCardsPayment) R.drawable.bank_card else R.drawable.kaspi_logo),
+                    painter = painterResource(
+                        id = if (paymentMethod == Payment.BANK) R.drawable.bank_card
+                             else R.drawable.kaspi_logo
+                    ),
                     contentDescription = "bank",
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier.size(24.dp)
                 )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Image(
+                    painter = painterResource(
+                        id = if (isChosenMethod) R.drawable.is_chosen_circle
+                             else R.drawable.is_not_chosen_circle
+                    ),
+                    contentDescription = "chosen_circle",
+                    contentScale = ContentScale.Crop
+                )
             }
 
             Text(
-                text = stringResource(id = if (isBankCardsPayment) R.string.with_bank_cards else R.string.with_kaspi),
+                text = stringResource(
+                    id = if (paymentMethod == Payment.BANK) R.string.with_bank_cards
+                         else R.string.with_kaspi),
                 modifier = Modifier.padding(top = 4.dp),
                 fontSize = 15.sp,
                 color = Color.Black
@@ -295,58 +316,22 @@ private fun PaymentTypeLayout(
 
             Spacer(modifier = Modifier.padding(top = 12.dp))
 
-            ProgressButton(
-                textId = R.string.payment_button,
-                isProgressBarActive = false,
-                enabled = true,
-                modifier = Modifier
-                    .padding(bottom = 12.dp)
-                    .height(42.dp)
-            ) {
-                onClick()
-            }
-        }
-    }
-}
-
-@Composable
-private fun RoundedCheckView(
-    modifier: Modifier = Modifier,
-    isCheckedValue: Boolean,
-) {
-    val isChecked = remember { mutableStateOf(isCheckedValue) }
-    val backgroundColor = remember { mutableStateOf(Color.White) }
-
-    Card(
-        elevation = 0.dp,
-        shape = CircleShape,
-        border = BorderStroke(1.dp, Blue500),
-        backgroundColor = backgroundColor.value,
-        modifier = modifier
-            .size(20.dp)
-            .toggleable(value = isChecked.value, role = Role.Checkbox) {
-                isChecked.value = it
-
-                if (isChecked.value) {
-                    backgroundColor.value = Blue500
-                } else {
-                    backgroundColor.value = Color.White
+            if (isChosenMethod) {
+                ProgressButton(
+                    textId = R.string.payment_button,
+                    isProgressBarActive = false,
+                    enabled = true,
+                    modifier = Modifier
+                        .padding(bottom = 12.dp)
+                        .height(42.dp)
+                ) {
+                    onClick()
                 }
             }
-    ) {
-        if (isChecked.value) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "",
-                tint = Color.White
-            )
         }
     }
 }
 
-private fun DestinationsNavigator.backToMainScreen() =
-    this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
-        popUpTo(SearchJourneyScreenDestination) {
-            inclusive = true
-        }
-    }
+private enum class Payment {
+    BANK, KASPI
+}
