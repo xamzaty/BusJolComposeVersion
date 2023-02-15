@@ -42,6 +42,7 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.city_picker.Ci
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.PassengerQuantityScreen
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.utils.findActivity
 import kz.busjol.utils.setLocale
 import kz.busjol.utils.showSnackBar
 
@@ -165,6 +166,7 @@ private fun MainContent(
     if (state.language == null) {
         SelectLanguageAlertDialog(setShowDialog = { showAlert.value = it }) {
             viewModel.onEvent(SearchJourneyEvent.SetLanguage(it))
+            context.findActivity()?.recreate()
         }
     }
 

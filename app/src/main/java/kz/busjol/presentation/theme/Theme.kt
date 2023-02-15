@@ -34,6 +34,7 @@ fun BusJolComposeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+
 //    val colors = if (darkTheme) {
 //        DarkColorPalette
 //    } else {
@@ -50,7 +51,7 @@ fun BusJolComposeTheme(
     val systemUiController = rememberSystemUiController()
     if(darkTheme){
         systemUiController.setSystemBarsColor(
-            color = Color.Transparent
+            color = Color.White
         )
     }else{
         systemUiController.setSystemBarsColor(

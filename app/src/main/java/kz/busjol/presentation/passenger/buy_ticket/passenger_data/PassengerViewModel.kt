@@ -118,28 +118,28 @@ private fun mockData(): List<Booking> = listOf(
         arrivesTo = "Балхаш",
         departsAt = "2023",
         arrivesAt = "2023",
-        clientInfo = ""
+        clientInfo = "Khamzat"
     ),
 
     Booking(
         id = 1,
         qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        seatNumber = "1",
+        seatNumber = "2",
         departsFrom = "Алматы",
         arrivesTo = "Балхаш",
         departsAt = "2023",
         arrivesAt = "2023",
-        clientInfo = ""
+        clientInfo = "Danil"
     ),
 
     Booking(
         id = 1,
         qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        seatNumber = "1",
+        seatNumber = "3",
         departsFrom = "Алматы",
         arrivesTo = "Балхаш",
         departsAt = "2023",
         arrivesAt = "2023",
-        clientInfo = ""
+        clientInfo = "Alim"
     )
 )

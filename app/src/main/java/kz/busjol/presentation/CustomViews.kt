@@ -169,7 +169,7 @@ fun CustomAlertDialog(
     dismissButtonText: String = "Cancel",
     onConfirmButtonClicked: () -> Unit
 ) {
-    var showDialog by rememberSaveable { mutableStateOf(openDialog) }
+    var showDialog by remember { mutableStateOf(openDialog) }
 
     if (showDialog) {
 
@@ -283,7 +283,7 @@ fun CustomTextField(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(54.dp)
+                .height(58.dp)
         ) {
             TextField(
                 value = textValue,
@@ -371,7 +371,7 @@ fun MaskTextField(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier
             .fillMaxWidth()
-            .height(54.dp)
+            .height(58.dp)
     ) {
         TextField(
             value = textValue,
@@ -436,7 +436,7 @@ fun CustomTextFieldWithMask(
         shape = RoundedCornerShape(8.dp),
         modifier = modifier
             .fillMaxWidth()
-            .height(54.dp)
+            .height(58.dp)
     ) {
         TextField(
             value = textValue,

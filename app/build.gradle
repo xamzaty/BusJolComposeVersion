@@ -28,7 +28,7 @@ android {
 
     defaultConfig {
         applicationId "kz.busjol"
-        minSdk 21
+        minSdk 23
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -36,6 +36,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
+            vectorDrawables.useSupportLibrary true
+        }
+        aaptOptions {
+            additionalParameters "--no-version-vectors"
         }
     }
 
@@ -115,6 +119,8 @@ dependencies {
     implementation 'ru.tinkoff.decoro:decoro:1.5.1'
 
     implementation "com.google.accompanist:accompanist-pager:0.24.13-rc"
+
+    implementation("androidx.core:core-splashscreen:1.0.0")
 
     implementation "androidx.compose.material:material-icons-extended:$compose_ui_version"
 

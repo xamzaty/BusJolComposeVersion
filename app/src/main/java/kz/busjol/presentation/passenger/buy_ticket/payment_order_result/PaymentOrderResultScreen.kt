@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -35,6 +36,7 @@ import com.ramcosta.composedestinations.navigation.popUpTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
+import kz.busjol.domain.models.Booking
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.BackButton
 import kz.busjol.presentation.DashLine
@@ -56,6 +58,8 @@ fun PaymentOrderResultScreen(
 
     val pagerState = rememberPagerState()
 
+    val data = ticket.bookingList
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -64,14 +68,7 @@ fun PaymentOrderResultScreen(
             .verticalScroll(scrollState)
     ) {
 
-        val clientName = remember { "Khamzat Yerzhanov" }
-        val departureDate = remember { "19:10, 24 декабря" }
-        val arrivalDate = remember { "15:00, 25 декабря" }
-        val departureCity = remember { "Алматы" }
-        val arrivalCity = remember { "Балхаш" }
-        val departureStation = remember { "Автовокзал Сайран" }
-        val arrivalStation = remember { "Автовокзал Балхаш" }
-        val seatList = remember { mutableListOf(11,12) }
+        val currentPage = remember { mutableStateOf(pagerState.currentPage) }
 
         AppBar(title = stringResource(id = R.string.payment_order_result_title, "123123"), isCross = true) {
             scope.launch {
@@ -110,7 +107,9 @@ fun PaymentOrderResultScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Text(
-                        text = clientName, fontWeight = FontWeight.W700, fontSize = 11.sp
+                        text = data?.get(currentPage.value)?.clientInfo ?: "",
+                        fontWeight = FontWeight.W700,
+                        fontSize = 11.sp
                     )
                 }
 
@@ -130,7 +129,9 @@ fun PaymentOrderResultScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Text(
-                        text = seatList.toString(), fontWeight = FontWeight.W700, fontSize = 11.sp
+                        text = data?.get(currentPage.value)?.seatNumber ?: "",
+                        fontWeight = FontWeight.W700,
+                        fontSize = 11.sp
                     )
                 }
 
@@ -172,20 +173,20 @@ fun PaymentOrderResultScreen(
                 }) {
 
                     Text(
-                        text = departureDate,
+                        text = ticket.journey?.departureTime ?: "",
                         fontWeight = FontWeight.W700,
                         color = Color.Black,
                         fontSize = 13.sp
                     )
 
                     Text(
-                        text = departureCity,
+                        text = ticket.journey?.cityFrom?.name ?: "",
                         fontSize = 17.sp,
                         modifier = Modifier.padding(top = 8.dp)
                     )
 
                     Text(
-                        text = departureStation,
+                        text = ticket.journey?.stopName ?: "",
                         fontSize = 13.sp,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -197,20 +198,20 @@ fun PaymentOrderResultScreen(
                 }) {
 
                     Text(
-                        text = arrivalDate,
+                        text = ticket.journey?.arrivalTime ?: "",
                         fontWeight = FontWeight.W700,
                         color = Color.Black,
                         fontSize = 13.sp
                     )
 
                     Text(
-                        text = arrivalCity,
+                        text = ticket.journey?.cityTo?.name ?: "",
                         fontSize = 17.sp,
                         modifier = Modifier.padding(top = 8.dp)
                     )
 
                     Text(
-                        text = arrivalStation,
+                        text = "Автовокзал Балхаш",
                         fontSize = 13.sp,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -253,10 +254,10 @@ fun PaymentOrderResultScreen(
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                         bottom.linkTo(
-                            if (seatList.size == 1) parent.bottom
+                            if (data?.size == 1) parent.bottom
                             else counter.top
                         )
-                    }, count = seatList.size, state = pagerState
+                    }, count = data?.size ?: 1, state = pagerState
                 ) {
                     ticket.bookingList?.forEach {
                         Image(
@@ -268,9 +269,9 @@ fun PaymentOrderResultScreen(
                     }
                 }
 
-                if (seatList.size > 1) {
+                if ((data?.size ?: 1) > 1) {
                     CounterRow(
-                        totalPages = seatList.size,
+                        totalPages = data?.size ?: 1,
                         pagerState = pagerState,
                         modifier = Modifier.constrainAs(counter) {
                             top.linkTo(qrLazyRow.bottom, 19.dp)
@@ -292,7 +293,7 @@ fun PaymentOrderResultScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 29.dp)
-                .offset(y = 6.dp)
+                .offset(y = 8.dp)
         ) {
             ProgressButton(
                 textId = R.string.back_to_main_menu_button,
@@ -360,3 +361,17 @@ private fun CounterRow(
 @Throws(WriterException::class)
 private fun encodeAsBitmap(str: String?) =
     BarcodeEncoder().encodeBitmap(str, BarcodeFormat.QR_CODE, 450, 450).asImageBitmap()
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+private fun List<Booking>.seatNumber(pagerState: PagerState): String {
+    var number = ""
+    
+    this.forEachIndexed { index, booking ->  
+        if (pagerState.currentPage == index) {
+            number = booking.seatNumber
+        }
+    } 
+    
+    return number
+}

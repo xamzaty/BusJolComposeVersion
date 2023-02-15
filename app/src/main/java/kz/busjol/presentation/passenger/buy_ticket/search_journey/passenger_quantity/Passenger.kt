@@ -10,7 +10,7 @@ data class Passenger(
     val iin: String? = "",
     val lastName: String? = "",
     val firstName: String? = "",
-    val birthDate: String? = "",
+    val sex: Int = 0,
     val seatId: Int? = null
 ): Parcelable {
 

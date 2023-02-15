@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,7 @@ import kz.busjol.presentation.profile.ProfileEvent
 import kz.busjol.presentation.profile.ProfileScreenViewModel
 import kz.busjol.presentation.startAppDestination
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.utils.findActivity
 
 @Composable
 fun ChangeLanguageScreen(
@@ -41,6 +43,7 @@ fun ChangeLanguageScreen(
 ) {
     val state = viewModel.state
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     val isRussianSelected = remember { mutableStateOf(
         state.language?.value == "ru"
@@ -91,6 +94,7 @@ fun ChangeLanguageScreen(
                 isRussianSelected.value = false
                 viewModel.onEvent(ProfileEvent.SetLanguage(Language.KAZAKH))
                 navigator.backToMainScreen(state.userState)
+                context.findActivity()?.recreate()
             }
         }
 
@@ -102,6 +106,7 @@ fun ChangeLanguageScreen(
                 isRussianSelected.value = true
                 viewModel.onEvent(ProfileEvent.SetLanguage(Language.RUSSIAN))
                 navigator.backToMainScreen(state.userState)
+                context.findActivity()?.recreate()
             }
         }
     }

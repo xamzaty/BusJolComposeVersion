@@ -110,9 +110,13 @@ private fun MainContent(
 
     val formErrorText = remember { mutableStateOf("") }
 
-    val bookingElementList = mutableListOf<BookingElements>()
-    val isSetDataToList = remember { mutableStateOf(false) }
-    val isDataReadyToLoad = remember { mutableStateOf(false) }
+    val bookingElementList = rememberSaveable {
+        mutableListOf<BookingElements>()
+    }
+    val addBookingElement = remember {
+        mutableListOf<BookingElements>()
+    }
+    val isSetDataToList = rememberSaveable { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -153,22 +157,12 @@ private fun MainContent(
 
     if (isSetDataToList.value) {
         LaunchedEffect(isSetDataToList) {
-            viewModel.onEvent(
-                PassengerDataEvent.OnContinueButtonAction(
-                    BookingPost(
-                        bookingElements = bookingElementList,
-                        email = emailValue.value.trim(),
-                        phoneNumber = "+7${phoneValue.value.trim()}",
-                        phoneTimeAtCreating = currentDate.trim(),
-                        clientId = 0,
-                        segmentId = ticket.journey?.segmentId ?: 0
-                    )
-                )
-            )
+
         }
     }
 
     LazyColumn(
+        verticalArrangement = Arrangement.SpaceAround,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
@@ -255,14 +249,13 @@ private fun MainContent(
                     passenger = item,
                     seatId = item.seatId ?: 1,
                     focusManager = focusManager,
-                    isDataReadyToLoad = {
-                        isDataReadyToLoad.value = it
-                    },
                     errorText = {
                         formErrorText.value = it
                     },
                     bookingElements = {
-                        bookingElementList.addAll(it)
+                        coroutineScope.launch {
+                            bookingElementList.addAll(it)
+                        }
                     }
                 )
             }
@@ -408,7 +401,7 @@ private fun MainContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 29.dp)
-                        .offset(y = 6.dp)
+                        .offset(y = 8.dp)
                 ) {
                     ProgressButton(
                         textId = R.string.continue_button,
@@ -449,8 +442,23 @@ private fun MainContent(
                                 }
 
                                 else -> {
-                                    isSetDataToList.value = true
                                     keyboardController?.hide()
+                                    isSetDataToList.value = true
+                                    addBookingElement.addAll(bookingElementList)
+
+                                    viewModel.onEvent(
+                                        PassengerDataEvent.OnContinueButtonAction(
+                                            BookingPost(
+                                                bookingElements = bookingElementList,
+                                                email = emailValue.value.trim(),
+                                                phoneNumber = "+7${phoneValue.value.trim()}",
+                                                phoneTimeAtCreating = currentDate.trim(),
+                                                clientId = 0,
+                                                segmentId = ticket.journey?.segmentId ?: 0
+                                            )
+                                        )
+                                    )
+
                                 }
                             }
                         }
@@ -467,7 +475,6 @@ private fun PassengerRegistrationLayout(
     passenger: Passenger,
     seatId: Int,
     focusManager: FocusManager,
-    isDataReadyToLoad: (Boolean) -> Unit,
     errorText: (String) -> Unit,
     bookingElements: (List<BookingElements>) -> Unit,
 ) {
@@ -583,7 +590,6 @@ private fun PassengerRegistrationLayout(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 ),
                 keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next,
                     keyboardType = KeyboardType.Text
                 ),
                 modifier = Modifier.padding(top = 12.dp)
@@ -616,7 +622,6 @@ private fun PassengerRegistrationLayout(
             arrayList.add(bookingElement)
 
             bookingElements(arrayList)
-            isDataReadyToLoad(true)
         }
     }
 }

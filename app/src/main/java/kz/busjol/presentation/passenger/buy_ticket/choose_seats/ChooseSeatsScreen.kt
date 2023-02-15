@@ -10,12 +10,12 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -51,7 +51,6 @@ fun ChooseSeatsScreen(
 ) {
     val state = viewModel.state
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     val isButtonEnabled by remember {
         mutableStateOf(state.seatsQuantity == state.passengersQuantity)
@@ -68,11 +67,13 @@ fun ChooseSeatsScreen(
     }
 
     Scaffold(scaffoldState = scaffoldState) { padding ->
-        LazyColumn(horizontalAlignment = Alignment.CenterHorizontally,
+        LazyColumn(
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .background(GrayBackground),
+                .background(GrayBackground)
+                .padding(padding),
             content = {
 
                 stickyHeader {
@@ -123,7 +124,6 @@ fun ChooseSeatsScreen(
                         modifier = Modifier
                             .nestedScroll(rememberViewInteropNestedScrollConnection())
                             .fillMaxWidth()
-                            .defaultMinSize(minHeight = 450.dp)
                             .padding(top = 16.dp, start = 60.dp, end = 60.dp)
                     ) {
 
@@ -166,7 +166,7 @@ fun ChooseSeatsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 31.dp)
-                            .offset(y = 6.dp)
+                            .offset(y = 8.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(vertical = 16.dp, horizontal = 15.dp)
@@ -233,7 +233,7 @@ fun SeatItem(
     seats: Seats,
     viewModel: ChooseSeatsViewModel = hiltViewModel()
 ) {
-    val isChecked = remember { mutableStateOf(false) }
+    val isChecked = rememberSaveable { mutableStateOf(false) }
     val border = remember { mutableStateOf(BorderStroke(2.dp, Blue500)) }
     val backgroundColor = remember { mutableStateOf(Color.White) }
     val textColor = remember { mutableStateOf(Color.Black) }
@@ -316,7 +316,7 @@ private fun Modifier.seatModifier(index: Int) = when {
 }
 
 private fun List<Seats>.toNewPassengerList(list: List<Passenger>): List<Passenger> {
-    val convertedData:ArrayList<Passenger> = ArrayList()
+    val convertedData: ArrayList<Passenger> = ArrayList()
 
     if (this.size != list.size) {
         return convertedData
@@ -330,7 +330,6 @@ private fun List<Seats>.toNewPassengerList(list: List<Passenger>): List<Passenge
             iin = passenger.iin,
             lastName = passenger.lastName,
             firstName = passenger.firstName,
-            birthDate = passenger.birthDate,
             seatId = seat.id
         )
         convertedData.add(newPassenger)

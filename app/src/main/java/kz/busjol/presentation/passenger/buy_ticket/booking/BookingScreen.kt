@@ -3,6 +3,9 @@ package kz.busjol.presentation.passenger.buy_ticket.booking
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -316,7 +319,10 @@ private fun PaymentTypeLayout(
 
             Spacer(modifier = Modifier.padding(top = 12.dp))
 
-            if (isChosenMethod) {
+            AnimatedVisibility(
+                visible = isChosenMethod,
+                enter = fadeIn()
+            ) {
                 ProgressButton(
                     textId = R.string.payment_button,
                     isProgressBarActive = false,

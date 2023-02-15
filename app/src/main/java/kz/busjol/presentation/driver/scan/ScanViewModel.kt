@@ -47,9 +47,7 @@ class ScanViewModel @Inject constructor(
                         }
                         is Resource.Loading -> {
                             state = state.copy(
-                                isTicketValid = false,
-                                isLoading = true,
-                                error = null
+                                isLoading = result.isLoading,
                             )
                         }
                     }

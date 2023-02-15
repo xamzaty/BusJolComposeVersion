@@ -207,7 +207,7 @@ class SearchJourneyViewModel @Inject constructor(
                     when (result) {
                         is Resource.Success -> {
                             state = state.copy(
-                                journeyList = result.data.orEmpty(),
+                                journeyList = journeyMock,
                                 isButtonLoading = false,
                                 startNewDestination = true,
                                 error = null
@@ -225,7 +225,7 @@ class SearchJourneyViewModel @Inject constructor(
 
                         is Resource.Error -> {
                             state = state.copy(
-                                journeyList = null,
+                                journeyList = journeyMock,
                                 isButtonLoading = false,
                                 startNewDestination = false,
                                 error = result.message
