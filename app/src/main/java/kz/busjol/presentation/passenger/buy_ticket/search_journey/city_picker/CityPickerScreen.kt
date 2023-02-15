@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import kz.busjol.R
 import kz.busjol.domain.models.City
 import kz.busjol.presentation.BackButton
+import kz.busjol.presentation.CustomTextField
 import kz.busjol.presentation.Loader
 import kz.busjol.presentation.NotFoundView
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.SearchJourneyEvent
@@ -31,7 +32,7 @@ fun CityPickerScreen(
 ) {
     val state = viewModel.state
 
-    var text by remember { mutableStateOf(TextFieldValue("")) }
+    var text by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -47,17 +48,14 @@ fun CityPickerScreen(
                 onCloseBottomSheet()
             }
 
-            TextField(
-                value = text,
-                textStyle = MaterialTheme.typography.body1.copy(color = Color.Black),
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = Color.Black,
-                    disabledTextColor = Color.Transparent,
-                    backgroundColor = White,
-                ),
-                onValueChange = { cityValue ->
-                    text = cityValue
+            CustomTextField(
+                text = text,
+                onValueChange = {
+                    text = it
                 },
+                hintId = R.string.search_city_hint,
+                labelId = R.string.search_city_label,
+                iconId = R.drawable.search_24,
                 modifier = Modifier
                     .padding(start = 10.dp)
                     .weight(1f)
@@ -83,7 +81,7 @@ fun CityPickerScreen(
             LazyColumn {
                 item {
                     state.cityList
-                        .filter { it.name?.lowercase()!!.contains(text.text.lowercase()) }
+                        .filter { it.name?.lowercase()!!.contains(text.lowercase()) }
                         .forEach { city ->
 
                             CityItem(city, cityList = state.cityList) {

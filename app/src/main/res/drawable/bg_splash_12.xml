@@ -6,5 +6,7 @@
 
     <item
         android:gravity="center"
+        android:width="105dp"
+        android:height="20dp"
         android:drawable="@drawable/busjol"/>
 </layer-list>
