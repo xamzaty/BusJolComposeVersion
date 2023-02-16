@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kz.busjol.UserState
+import kz.busjol.data.remote.BookingElements
 import kz.busjol.data.remote.BookingPost
 import kz.busjol.domain.models.Booking
 import kz.busjol.domain.repository.BookingListRepository
@@ -27,6 +28,8 @@ class PassengerViewModel @Inject constructor(
     private var emailValue: String = ""
     private var phoneValue: String = ""
 
+    private val bookingElementList = hashMapOf<Int, BookingElements>()
+
     init {
         viewModelScope.launch {
             dataStoreRepository
@@ -45,7 +48,10 @@ class PassengerViewModel @Inject constructor(
     fun onEvent(event: PassengerDataEvent) {
         when (event) {
             is PassengerDataEvent.OnContinueButtonAction -> {
-                loadBookingList(event.bookingPost)
+                val newBookingPost = event.bookingPost.copy(
+                    bookingElements = bookingElementList.values.toList()
+                )
+                loadBookingList(newBookingPost)
             }
             is PassengerDataEvent.PassengerData -> {
                 state = state.copy(
@@ -61,6 +67,9 @@ class PassengerViewModel @Inject constructor(
                 state = state.copy(
                     setDataToList = true
                 )
+            }
+            is PassengerDataEvent.OnPassengerValueUpdate -> {
+                bookingElementList[event.id] = event.bookingPost
             }
         }
     }

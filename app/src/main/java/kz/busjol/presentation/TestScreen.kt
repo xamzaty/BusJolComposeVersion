@@ -5,10 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,16 +40,21 @@ import kz.busjol.utils.backToMainScreen
 @OptIn(ExperimentalPagerApi::class)
 @Destination
 @Composable
-fun TestScreen(
-    ticket: Ticket,
-    navigator: DestinationsNavigator
-) {
+fun TestScreen() {
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
     val pagerState = rememberPagerState()
 
+    val name = remember { mutableStateOf("") }
+
     val data = mockData()
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            name.value = data[page].clientInfo
+        }
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -66,7 +68,6 @@ fun TestScreen(
 
         AppBar(title = stringResource(id = R.string.payment_order_result_title, "123123"), isCross = true) {
             scope.launch {
-                navigator.backToMainScreen()
             }
         }
 
@@ -101,7 +102,7 @@ fun TestScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Text(
-                        text = data?.get(currentPage.value)?.clientInfo ?: "",
+                        text = name.value,
                         fontWeight = FontWeight.W700,
                         fontSize = 11.sp
                     )
@@ -167,20 +168,20 @@ fun TestScreen(
                 }) {
 
                     Text(
-                        text = ticket.journey?.departureTime ?: "",
+                        text = "",
                         fontWeight = FontWeight.W700,
                         color = Color.Black,
                         fontSize = 13.sp
                     )
 
                     Text(
-                        text = ticket.journey?.cityFrom?.name ?: "",
+                        text = "",
                         fontSize = 17.sp,
                         modifier = Modifier.padding(top = 8.dp)
                     )
 
                     Text(
-                        text = ticket.journey?.stopName ?: "",
+                        text =  "",
                         fontSize = 13.sp,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -192,15 +193,15 @@ fun TestScreen(
                 }) {
 
                     Text(
-                        text = ticket.journey?.arrivalTime ?: "",
+                        text = "",
                         fontWeight = FontWeight.W700,
                         color = Color.Black,
                         fontSize = 13.sp
                     )
 
                     Text(
-                        text = ticket.journey?.cityTo?.name ?: "",
                         fontSize = 17.sp,
+                        text = "",
                         modifier = Modifier.padding(top = 8.dp)
                     )
 
@@ -253,7 +254,7 @@ fun TestScreen(
                         )
                     }, count = data?.size ?: 1, state = pagerState
                 ) {
-                    ticket.bookingList?.forEach {
+                    mockData().forEach {
                         Image(
                             bitmap = encodeAsBitmap(it.qrCode),
                             contentDescription = "qr",
@@ -296,7 +297,7 @@ fun TestScreen(
                 modifier = Modifier.padding(vertical = 16.dp, horizontal = 15.dp)
             ) {
                 scope.launch {
-                    navigator.backToMainScreen()
+//                    navigator.backToMainScreen()
                 }
             }
         }

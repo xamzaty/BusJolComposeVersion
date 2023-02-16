@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
@@ -110,14 +111,6 @@ private fun MainContent(
 
     val formErrorText = remember { mutableStateOf("") }
 
-    val bookingElementList = rememberSaveable {
-        mutableListOf<BookingElements>()
-    }
-    val addBookingElement = remember {
-        mutableListOf<BookingElements>()
-    }
-    val isSetDataToList = rememberSaveable { mutableStateOf(false) }
-
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -152,12 +145,6 @@ private fun MainContent(
     if (state.error?.isNotEmpty() == true) {
         LaunchedEffect(scaffoldState.snackbarHostState) {
             scaffoldState.showSnackBar(this, state.error)
-        }
-    }
-
-    if (isSetDataToList.value) {
-        LaunchedEffect(isSetDataToList) {
-
         }
     }
 
@@ -252,11 +239,6 @@ private fun MainContent(
                     errorText = {
                         formErrorText.value = it
                     },
-                    bookingElements = {
-                        coroutineScope.launch {
-                            bookingElementList.addAll(it)
-                        }
-                    }
                 )
             }
 
@@ -443,13 +425,11 @@ private fun MainContent(
 
                                 else -> {
                                     keyboardController?.hide()
-                                    isSetDataToList.value = true
-                                    addBookingElement.addAll(bookingElementList)
 
                                     viewModel.onEvent(
                                         PassengerDataEvent.OnContinueButtonAction(
                                             BookingPost(
-                                                bookingElements = bookingElementList,
+                                                bookingElements = emptyList(),
                                                 email = emailValue.value.trim(),
                                                 phoneNumber = "+7${phoneValue.value.trim()}",
                                                 phoneTimeAtCreating = currentDate.trim(),
@@ -476,7 +456,7 @@ private fun PassengerRegistrationLayout(
     seatId: Int,
     focusManager: FocusManager,
     errorText: (String) -> Unit,
-    bookingElements: (List<BookingElements>) -> Unit,
+    viewModel: PassengerViewModel = hiltViewModel()
 ) {
     val passengerSex = rememberSaveable {
         mutableStateOf(0)
@@ -600,28 +580,28 @@ private fun PassengerRegistrationLayout(
                         lastNameValue.value.isEmpty() || iinValue.value.length < 12 -> {
                     errorText("Заполните все поля в анкете")
                 }
-                else -> errorText("")
+                else -> {
+                    errorText("")
+
+                    val bookingElement = BookingElements(
+                        iin = iinValue.value,
+                        firstName = firstNameValue.value.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase(Locale.ROOT)
+                            else it.toString()
+                        },
+                        lastName = lastNameValue.value.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase(Locale.ROOT)
+                            else it.toString()
+                        },
+                        sex = passengerSex.value,
+                        seatId = seatId
+                    )
+
+                    viewModel.onEvent(PassengerDataEvent.OnPassengerValueUpdate(
+                        bookingElement, count
+                    ))
+                }
             }
-
-            val arrayList = arrayListOf<BookingElements>()
-
-            val bookingElement = BookingElements(
-                iin = iinValue.value,
-                firstName = firstNameValue.value.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(Locale.ROOT)
-                    else it.toString()
-                },
-                lastName = lastNameValue.value.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(Locale.ROOT)
-                    else it.toString()
-                },
-                sex = passengerSex.value,
-                seatId = seatId
-            )
-
-            arrayList.add(bookingElement)
-
-            bookingElements(arrayList)
         }
     }
 }

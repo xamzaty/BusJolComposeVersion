@@ -6,10 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,6 +57,16 @@ fun PaymentOrderResultScreen(
 
     val data = ticket.bookingList
 
+    var name by remember { mutableStateOf("") }
+    var seatNumber by remember { mutableStateOf("") }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            name = data?.get(page)?.clientInfo ?: ""
+            seatNumber = data?.get(page)?.seatNumber ?: ""
+        }
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -107,7 +114,7 @@ fun PaymentOrderResultScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Text(
-                        text = data?.get(currentPage.value)?.clientInfo ?: "",
+                        text = name,
                         fontWeight = FontWeight.W700,
                         fontSize = 11.sp
                     )
@@ -129,7 +136,7 @@ fun PaymentOrderResultScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     Text(
-                        text = data?.get(currentPage.value)?.seatNumber ?: "",
+                        text = seatNumber,
                         fontWeight = FontWeight.W700,
                         fontSize = 11.sp
                     )
@@ -250,7 +257,7 @@ fun PaymentOrderResultScreen(
 
                 HorizontalPager(
                     modifier = Modifier.constrainAs(qrLazyRow) {
-                        top.linkTo(horizontalDivider.bottom)
+                        top.linkTo(horizontalDivider.bottom, 20.dp)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                         bottom.linkTo(
