@@ -24,9 +24,12 @@ import androidx.constraintlayout.compose.Dimension
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
+import kz.busjol.ext.reformatDateFromBackendOnlyTime
+import kz.busjol.ext.reformatDateMonthWithWords
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
+import kz.busjol.utils.timeLeft
 import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -95,7 +98,11 @@ fun JourneyDetailsScreen(
                 )
 
                 Text(
-                    text = stringResource(id = R.string.time_on_the_way, "13", "30"),
+                    text = stringResource(
+                        id = R.string.time_on_the_way,
+                        timeLeft(ticket.journey?.departureTime, ticket.journey?.arrivalTime).first ?: "",
+                        timeLeft(ticket.journey?.departureTime, ticket.journey?.arrivalTime).second ?: ""
+                    ),
                     color = GrayText,
                     fontWeight = FontWeight.W500,
                     fontSize = 12.sp,
@@ -134,14 +141,14 @@ fun JourneyDetailsScreen(
             ) {
 
                 Text(
-                    text = "09:00",
+                    text = ticket.journey?.departureTime?.reformatDateFromBackendOnlyTime() ?: "",
                     fontSize = 16.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.W500
                 )
 
                 Text(
-                    text = "12 декабря",
+                    text = ticket.journey?.departureTime?.reformatDateMonthWithWords() ?: "",
                     fontSize = 10.sp,
                     color = Color.Black,
                 )
@@ -157,14 +164,14 @@ fun JourneyDetailsScreen(
             ) {
 
                 Text(
-                    text = "14:20",
+                    text = ticket.journey?.arrivalTime?.reformatDateFromBackendOnlyTime() ?: "",
                     fontSize = 16.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.W500
                 )
 
                 Text(
-                    text = "13 декабря",
+                    text = ticket.journey?.arrivalTime?.reformatDateMonthWithWords() ?: "",
                     fontSize = 10.sp,
                     color = Color.Black,
                 )

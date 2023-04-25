@@ -2,12 +2,12 @@ package kz.busjol.presentation.passenger.login
 
 @kotlinx.serialization.Serializable
 data class TokenParseModel(
-    val id: String? = null,
-    val role: String? = null,
-    val nbf: Long? = null,
-    val exp: Long? = null,
-    val iat: Long? = null
+    val id: String,
+    val role: String,
+    val nbf: Long,
+    val exp: Long,
+    val iat: Long
 ) {
 
-    fun isDriver() = role?.contains("driver")
+    fun isDriver() = role.contains("driver")
 }

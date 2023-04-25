@@ -128,7 +128,7 @@ fun PassengerQuantityScreen(
         ProgressButton(
             textId = R.string.choose_button,
             modifier = Modifier.padding(top = 24.dp, start = 15.dp, end = 15.dp, bottom = 24.dp),
-            isProgressBarActive = false,
+            progressBarActiveState = false,
             enabled = true
         ) {
 

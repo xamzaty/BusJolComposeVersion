@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,6 +30,7 @@ import kz.busjol.R
 import kz.busjol.UserState
 import kz.busjol.domain.models.Journey
 import kz.busjol.presentation.ProgressButton
+import kz.busjol.presentation.PullRefreshBox
 import kz.busjol.presentation.destinations.LoginScreenDestination
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.BlueText
@@ -112,7 +110,7 @@ private fun UnregisteredSection(
 
         ProgressButton(
             textId = R.string.enter_button,
-            isProgressBarActive = false,
+            progressBarActiveState = false,
             enabled = true
         ) {
             coroutineScope.launch {
@@ -131,8 +129,6 @@ private fun RegisteredSection(
     viewModel: MyTicketsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
-
-    val pullRefreshState = rememberPullRefreshState(state.isRefreshing, { viewModel.refresh() })
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -169,7 +165,10 @@ private fun RegisteredSection(
                     .padding(top = 20.dp)
             )
         } else {
-            Box(Modifier.pullRefresh(pullRefreshState)) {
+            PullRefreshBox(
+                refreshing = state.isRefreshing,
+                modifier = Modifier.fillMaxSize()
+            ) {
                 LazyColumn(
                     contentPadding = PaddingValues(
                         top = 38.dp,
@@ -190,13 +189,6 @@ private fun RegisteredSection(
                     }
                 )
             }
-
-            PullRefreshIndicator(
-                refreshing = state.isRefreshing,
-                state = pullRefreshState,
-                contentColor = Blue500,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
         }
     }
 }

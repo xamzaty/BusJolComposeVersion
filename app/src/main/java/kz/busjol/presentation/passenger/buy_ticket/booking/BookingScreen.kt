@@ -1,9 +1,8 @@
 package kz.busjol.presentation.passenger.buy_ticket.booking
 
-import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.*
@@ -30,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.ext.formatWithCurrency
+import kz.busjol.ext.reformatFullDateFromBackend
 import kz.busjol.presentation.*
 import kz.busjol.presentation.destinations.PaymentOrderResultScreenDestination
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
@@ -38,7 +38,6 @@ import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
 import kz.busjol.utils.backToMainScreen
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Destination
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -59,15 +58,14 @@ fun BookingScreen(
 
     ModalBottomSheetLayout(
         sheetState = sheetState,
-        sheetContent =
-        {
+        sheetContent = {
             JourneyDetailsScreen(sheetState, coroutineScope, ticket)
-        }) {
+        }
+    ) {
         MainContent(sheetState, coroutineScope, ticket, navigator)
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun MainContent(
@@ -80,10 +78,20 @@ private fun MainContent(
     val state = viewModel.state
     val openDialog = remember { mutableStateOf(false) }
 
-    val isBankChosenPayment = remember { mutableStateOf(true) }
+    val selectedPaymentMethod = remember { mutableStateOf(Payment.BANK) }
 
-    LaunchedEffect(state.countdownTimerValue) {
-        if (state.countdownTimerValue == "00:00") {
+    fun handlePaymentSelected() {
+        coroutineScope.launch {
+            navigator.navigate(
+                PaymentOrderResultScreenDestination(
+                    ticket
+                )
+            )
+        }
+    }
+
+    LaunchedEffect(state.isTimeExpired) {
+        if (state.isTimeExpired) {
             navigator.backToMainScreen()
         }
     }
@@ -168,7 +176,7 @@ private fun MainContent(
                 ) {
 
                     Text(
-                        text = "Алматы - Балхаш",
+                        text = "${ticket.departureCity?.name} - ${ticket.arrivalCity?.name}",
                         fontSize = 17.sp,
                         fontWeight = FontWeight.W700,
                         color = Color.Black
@@ -187,7 +195,7 @@ private fun MainContent(
                 }
 
                 Text(
-                    text = ticket.journey?.departureTime ?: "",
+                    text = ticket.journey?.departureTime?.reformatFullDateFromBackend() ?: "",
                     color = GrayText,
                     modifier = Modifier.padding(
                         top = 4.dp,
@@ -223,43 +231,25 @@ private fun MainContent(
         PaymentTypeLayout(
             paymentMethod = Payment.BANK,
             modifier = Modifier.padding(top = 16.dp),
-            isChosenMethod = isBankChosenPayment.value,
-            chooseThisPayment = {
-                isBankChosenPayment.value = true
-            }
-        ) {
-            coroutineScope.launch {
-                navigator.navigate(
-                    PaymentOrderResultScreenDestination(
-                        ticket
-                    )
-                )
-            }
-        }
+            isChosenMethod = selectedPaymentMethod.value == Payment.BANK,
+            chooseThisPayment = { selectedPaymentMethod.value = Payment.BANK },
+            onClick = { handlePaymentSelected() }
+        )
 
         PaymentTypeLayout(
             paymentMethod = Payment.KASPI,
             modifier = Modifier.padding(top = 12.dp),
-            isChosenMethod = !isBankChosenPayment.value,
-            chooseThisPayment = {
-                isBankChosenPayment.value = false
-            }
-        ) {
-            coroutineScope.launch {
-                navigator.navigate(
-                    PaymentOrderResultScreenDestination(
-                        ticket
-                    )
-                )
-            }
-        }
+            isChosenMethod = selectedPaymentMethod.value == Payment.KASPI,
+            chooseThisPayment = { selectedPaymentMethod.value = Payment.KASPI },
+            onClick = { handlePaymentSelected() }
+        )
     }
 }
 
 @Composable
 private fun PaymentTypeLayout(
     modifier: Modifier = Modifier,
-    paymentMethod : Payment,
+    paymentMethod: Payment,
     isChosenMethod: Boolean,
     chooseThisPayment: (Boolean) -> Unit,
     onClick: () -> Unit
@@ -270,48 +260,47 @@ private fun PaymentTypeLayout(
         border = BorderStroke(1.dp, GrayBorder),
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp)
-            .clickable {
-                chooseThisPayment(isChosenMethod)
-            }
+            .padding(horizontal = 15.dp)
+            .clickable { chooseThisPayment(isChosenMethod) }
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                val iconResId = when (paymentMethod) {
+                    Payment.BANK -> R.drawable.bank_card
+                    Payment.KASPI -> R.drawable.kaspi_logo
+                }
 
                 Image(
-                    painter = painterResource(
-                        id = if (paymentMethod == Payment.BANK) R.drawable.bank_card
-                             else R.drawable.kaspi_logo
-                    ),
+                    painter = painterResource(id = iconResId),
                     contentDescription = "bank",
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier.size(24.dp)
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
+                val indicatorResId = if (isChosenMethod) R.drawable.is_chosen_circle else R.drawable.is_not_chosen_circle
 
                 Image(
-                    painter = painterResource(
-                        id = if (isChosenMethod) R.drawable.is_chosen_circle
-                             else R.drawable.is_not_chosen_circle
-                    ),
+                    painter = painterResource(id = indicatorResId),
                     contentDescription = "chosen_circle",
                     contentScale = ContentScale.Crop
                 )
             }
 
+            val textResId = when (paymentMethod) {
+                Payment.BANK -> R.string.with_bank_cards
+                Payment.KASPI -> R.string.with_kaspi
+            }
+
             Text(
-                text = stringResource(
-                    id = if (paymentMethod == Payment.BANK) R.string.with_bank_cards
-                         else R.string.with_kaspi),
+                text = stringResource(id = textResId),
                 modifier = Modifier.padding(top = 4.dp),
                 fontSize = 15.sp,
                 color = Color.Black
@@ -321,11 +310,12 @@ private fun PaymentTypeLayout(
 
             AnimatedVisibility(
                 visible = isChosenMethod,
-                enter = fadeIn()
+                enter = fadeIn(animationSpec = TweenSpec(durationMillis = 500)),
+                exit = fadeOut(animationSpec = TweenSpec(durationMillis = 500))
             ) {
                 ProgressButton(
                     textId = R.string.payment_button,
-                    isProgressBarActive = false,
+                    progressBarActiveState = false,
                     enabled = true,
                     modifier = Modifier
                         .padding(bottom = 12.dp)
@@ -337,6 +327,7 @@ private fun PaymentTypeLayout(
         }
     }
 }
+
 
 private enum class Payment {
     BANK, KASPI

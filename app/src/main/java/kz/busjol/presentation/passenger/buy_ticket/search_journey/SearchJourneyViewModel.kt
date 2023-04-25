@@ -30,99 +30,77 @@ class SearchJourneyViewModel @Inject constructor(
     var state by mutableStateOf(SearchJourneyState().mock())
         private set
 
-    private var fromCity by mutableStateOf(City())
-    private var toCity by mutableStateOf(City())
-
     init {
         getLanguage()
         loadCityList(true)
     }
 
     fun onEvent(event: SearchJourneyEvent) {
-        when(event) {
+        when (event) {
             is SearchJourneyEvent.SwapCities -> onSwapCities(event.fromCity, event.toCity)
             is SearchJourneyEvent.JourneyListSearch -> loadJourneyList(event.journeyPost)
             is SearchJourneyEvent.CityListClicked -> loadCityList(isInit = false)
             is SearchJourneyEvent.UpdateFromCityValue -> updateFromCityValue(event.city)
             is SearchJourneyEvent.UpdateToCityValue -> updateToCityValue(event.city)
             is SearchJourneyEvent.UpdateDateValue -> updateDateValue(event.date)
-            is SearchJourneyEvent.UpdatePassengersQuantityValue -> updatePassengersQuantityValue(event.passengersQuantity)
+            is SearchJourneyEvent.UpdatePassengersQuantityValue -> updatePassengersQuantityValue(
+                event.passengersQuantity
+            )
             is SearchJourneyEvent.NewDestinationStatus -> newDestinationStatus(event.isStarted)
             is SearchJourneyEvent.SetLanguage -> setLanguage(event.language)
         }
     }
 
-    private fun getLanguage() {
-        viewModelScope.launch {
-            dataStoreRepository
-                .getAppSettings()
-                .collect {
-                    state = state.copy(
-                        language = it.language
-                    )
-            }
-        }
+    private fun getLanguage() = viewModelScope.launch {
+        dataStoreRepository
+            .getAppSettings()
+            .collect { state = state.copy(language = it.language) }
     }
 
-    private fun setLanguage(language: Language) {
-        viewModelScope.launch {
-            dataStoreRepository.setLanguage(language)
-        }
+    private fun setLanguage(language: Language) = viewModelScope.launch {
+        dataStoreRepository.setLanguage(language)
     }
 
-    private fun loadCityList(isInit: Boolean) {
-        viewModelScope.launch {
-            cityRepository
-                .getCityList()
-                .collect { result ->
-                    when (result) {
-                        is Resource.Success -> {
-                            fromCity = result.data?.get(0) ?: City()
-                            toCity = result.data?.get(1) ?: City()
+    private fun loadCityList(isInit: Boolean) = viewModelScope.launch {
+        cityRepository
+            .getCityList()
+            .collect { result ->
+                when (result) {
+                    is Resource.Success -> {
+                        val fromCity = result.data?.get(0) ?: City()
+                        val toCity = result.data?.get(1) ?: City()
 
-                            state = if (isInit) {
-                                state.copy(
-                                    fromCity = fromCity,
-                                    toCity = toCity,
-                                    isLoading = false,
-                                    error = null
-                                )
-                            } else {
-                                state.copy(
-                                    cityList = result.data.orEmpty(),
-                                    isCityLoading = false,
-                                    error = null
-                                )
-                            }
-                        }
-
-                        is Resource.Error -> {
-                            state = if (isInit) {
-                                state.copy(
-                                    fromCity = null,
-                                    toCity = null,
-                                    isLoading = false,
-                                    error = result.message
-                                )
-                            } else {
-                                state.copy(
-                                    cityList = null,
-                                    isCityLoading = false,
-                                    error = result.message
-                                )
-                            }
-                        }
-
-                        is Resource.Loading -> {
-                            state = if (isInit) {
-                                state.copy(isLoading = result.isLoading)
-                            } else {
-                                state.copy(isCityLoading = result.isLoading)
-                            }
+                        state = if (isInit) {
+                            state.copy(
+                                fromCity = fromCity,
+                                toCity = toCity,
+                                isLoading = false,
+                                error = null
+                            )
+                        } else {
+                            state.copy(
+                                cityList = result.data.orEmpty(),
+                                isCityLoading = false,
+                                error = null
+                            )
                         }
                     }
+                    is Resource.Error -> {
+                        state = state.copy(
+                            cityList = null,
+                            isCityLoading = false,
+                            error = result.message,
+                            isLoading = !isInit
+                        )
+                    }
+                    is Resource.Loading -> {
+                        state = state.copy(
+                            isCityLoading = !isInit,
+                            isLoading = isInit
+                        )
+                    }
                 }
-        }
+            }
     }
 
     private fun onSwapCities(fromCity: City, toCity: City) {
@@ -135,110 +113,86 @@ class SearchJourneyViewModel @Inject constructor(
     }
 
     private fun updateFromCityValue(city: City) {
-        state = state.copy(
-            fromCity = city
-        )
+        state = state.copy(fromCity = city)
     }
 
     private fun updateToCityValue(city: City) {
-        state = state.copy(
-            toCity = city
-        )
+        state = state.copy(toCity = city)
     }
 
     private fun updateDateValue(arrivalDateValue: String) {
-        state = state.copy(
-            arrivalDate = arrivalDateValue
-        )
+        state = state.copy(arrivalDate = arrivalDateValue)
     }
 
     private fun updatePassengersQuantityValue(passengersQuantity: List<Passenger>) {
-        state = state.copy(
-            passengerQuantityList = passengersQuantity
-        )
+        state = state.copy(passengerQuantityList = passengersQuantity)
     }
 
     private fun newDestinationStatus(isStarted: Boolean) {
-        state = state.copy(
-            startNewDestination = isStarted
-        )
+        state = state.copy(startNewDestination = isStarted)
     }
 
-    private fun loadJourneyList(journeyPost: JourneyPost) {
-        viewModelScope.launch {
-            val allPassengers = journeyPost.adultAmount + journeyPost.childrenAmount + journeyPost.disabledAmount
-
-            println(allPassengers)
-
-            val journeyMock = listOf(
-                Journey(
+    private fun loadJourneyList(journeyPost: JourneyPost) = viewModelScope.launch {
+        val journeyMock = listOf(
+            Journey(
                 journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
-                amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
-                departureTime = "", numberOfFreePlaces = 10, numberOfPlaces = 100, segmentId = 1, stopName = "Сидячий"
+                amount = 3000,
+                arrivalTime = "2023-04-25T17:40:15.953Z",
+                cityFrom = City(0, "Алматы"),
+                cityTo = City(1, "Балхаш"),
+                departureTime = "2023-04-24T14:05:15.953Z",
+                numberOfFreePlaces = 10,
+                numberOfPlaces = 100,
+                segmentId = 1,
+                stopName = "Сидячий"
             ),
-                Journey(
-                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
-                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
-                    departureTime = "", numberOfFreePlaces = 5, numberOfPlaces = 100, segmentId = 1, stopName = "Лежачий"
-                ),
+            Journey(
+                journey = JourneyItem(2, "", 1, "", "", 1, 1, 1, "", 1),
+                amount = 3000,
+                arrivalTime = "2023-04-25T12:55:15.953Z",
+                cityFrom = City(0, "Алматы"),
+                cityTo = City(1, "Балхаш"),
+                departureTime = "2023-04-27T18:05:15.953Z",
+                numberOfFreePlaces = 5,
+                numberOfPlaces = 100,
+                segmentId = 1,
+                stopName = "Лежачий"
+            ),
+        )
 
-                Journey(
-                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
-                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
-                    departureTime = "", numberOfFreePlaces = 3, numberOfPlaces = 100, segmentId = 1, stopName = "Сидячий"
-                ),
+        journeyRepository
+            .getJourneyList(journeyPost)
+            .collect { result ->
+                when (result) {
+                    is Resource.Success -> {
+                        state = state.copy(
+                            journeyList = journeyMock,
+                            isButtonLoading = false,
+                            startNewDestination = true,
+                            error = null
+                        )
 
-                Journey(
-                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
-                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
-                    departureTime = "", numberOfFreePlaces = 2, numberOfPlaces = 100, segmentId = 1, stopName = "Сидячий"
-                ),
-
-                Journey(
-                    journey = JourneyItem(1, "", 1, "", "", 1, 1, 1, "", 1),
-                    amount = 3000, arrivalTime = "", cityFrom = City(0, "Алматы"), cityTo = City(1, "Балхаш"),
-                    departureTime = "", numberOfFreePlaces = 1, numberOfPlaces = 100, segmentId = 1, stopName = "Лежачий"
-                ),
-            )
-
-            journeyRepository
-                .getJourneyList(journeyPost)
-                .collect { result ->
-                    when (result) {
-                        is Resource.Success -> {
+                        if (result.data?.isEmpty() == true && BuildConfig.DEBUG) {
                             state = state.copy(
                                 journeyList = journeyMock,
                                 isButtonLoading = false,
                                 startNewDestination = true,
                                 error = null
                             )
-
-                            if (result.data?.isEmpty() == true && BuildConfig.DEBUG) {
-                                state = state.copy(
-                                    journeyList = journeyMock,
-                                    isButtonLoading = false,
-                                    startNewDestination = true,
-                                    error = null
-                                )
-                            }
-                        }
-
-                        is Resource.Error -> {
-                            state = state.copy(
-                                journeyList = journeyMock,
-                                isButtonLoading = false,
-                                startNewDestination = false,
-                                error = result.message
-                            )
-                        }
-
-                        is Resource.Loading -> {
-                            state = state.copy(
-                                isButtonLoading = result.isLoading
-                            )
                         }
                     }
+                    is Resource.Error -> {
+                        state = state.copy(
+                            journeyList = journeyMock,
+                            isButtonLoading = false,
+                            startNewDestination = false,
+                            error = result.message
+                        )
+                    }
+                    is Resource.Loading -> {
+                        state = state.copy(isButtonLoading = result.isLoading)
+                    }
                 }
-        }
+            }
     }
 }

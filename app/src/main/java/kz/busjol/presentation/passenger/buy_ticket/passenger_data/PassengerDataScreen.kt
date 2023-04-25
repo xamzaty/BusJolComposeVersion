@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +35,8 @@ import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.data.remote.BookingElements
 import kz.busjol.data.remote.BookingPost
+import kz.busjol.ext.isChildPassenger
+import kz.busjol.ext.reformatFullDateFromBackend
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.CustomTextField
 import kz.busjol.presentation.CustomTextFieldWithMask
@@ -121,7 +122,7 @@ private fun MainContent(
 
     DisposableEffect(state.setDataToList) {
         onDispose {
-            viewModel.onEvent(PassengerDataEvent.SetDataToListStatusFalse(false))
+//            viewModel.onEvent(PassengerDataEvent.SetDataToListStatusFalse(false))
         }
     }
 
@@ -184,7 +185,7 @@ private fun MainContent(
                     ) {
 
                         Text(
-                            text = stringResource(id = R.string.journey_number, "23"),
+                            text = stringResource(id = R.string.journey_number, ticket.journey?.journey?.routeId ?: ""),
                             fontSize = 11.sp,
                             color = Color.Black
                         )
@@ -218,7 +219,7 @@ private fun MainContent(
                         }
 
                         Text(
-                            text = ticket.journey?.departureTime ?: "",
+                            text = ticket.journey?.departureTime?.reformatFullDateFromBackend() ?: "",
                             color = GrayText,
                             modifier = Modifier.padding(top = 4.dp),
                             fontSize = 11.sp,
@@ -387,7 +388,7 @@ private fun MainContent(
                 ) {
                     ProgressButton(
                         textId = R.string.continue_button,
-                        isProgressBarActive = state.isLoading,
+                        progressBarActiveState = state.isLoading,
                         enabled = true,
                         modifier = Modifier.padding(vertical = 16.dp, horizontal = 15.dp)
                     ) {
@@ -577,8 +578,15 @@ private fun PassengerRegistrationLayout(
 
             when {
                 iinValue.value.isEmpty() || firstNameValue.value.isEmpty() ||
-                        lastNameValue.value.isEmpty() || iinValue.value.length < 12 -> {
+                        lastNameValue.value.isEmpty() -> {
                     errorText("Заполните все поля в анкете")
+                }
+                iinValue.value.length < 12 -> {
+                    errorText("Заполните поле с ИИН до конца")
+                }
+                iinValue.value.length == 12 && !iinValue.value.isChildPassenger()
+                        && passenger.type == Passenger.PassengerType.CHILD -> {
+                    errorText("Пассажиру с детским местом больше 15 лет, поменяйте тип билета на взрослый")
                 }
                 else -> {
                     errorText("")

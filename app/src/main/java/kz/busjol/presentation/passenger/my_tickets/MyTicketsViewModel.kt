@@ -22,6 +22,14 @@ class MyTicketsViewModel @Inject constructor(
         getDataStoreValues()
     }
 
+    fun onEvent(event: MyTicketsEvent) {
+        when (event) {
+            MyTicketsEvent.IsRefreshing -> {
+                state = state.copy(isRefreshing = true)
+            }
+        }
+    }
+
     fun refresh() {
         viewModelScope.launch {
             state = state.copy(isRefreshing = true)

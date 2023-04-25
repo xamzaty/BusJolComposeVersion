@@ -53,21 +53,6 @@ class PassengerViewModel @Inject constructor(
                 )
                 loadBookingList(newBookingPost)
             }
-            is PassengerDataEvent.PassengerData -> {
-                state = state.copy(
-                    setDataToList = true
-                )
-            }
-            is PassengerDataEvent.SetDataToListStatusFalse -> {
-                state = state.copy(
-                    setDataToList = false
-                )
-            }
-            is PassengerDataEvent.SetDataToListStatusTrue -> {
-                state = state.copy(
-                    setDataToList = true
-                )
-            }
             is PassengerDataEvent.OnPassengerValueUpdate -> {
                 bookingElementList[event.id] = event.bookingPost
             }
@@ -101,7 +86,7 @@ class PassengerViewModel @Inject constructor(
                         }
                         is Resource.Error -> {
                             state = state.copy(
-                                booking = mockData(),
+                                booking = null,
                                 isLoading = false,
                                 error = result.message,
                                 startNewDestination = true
@@ -117,38 +102,3 @@ class PassengerViewModel @Inject constructor(
         }
     }
 }
-
-private fun mockData(): List<Booking> = listOf(
-    Booking(
-        id = 1,
-        qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        seatNumber = "1",
-        departsFrom = "Алматы",
-        arrivesTo = "Балхаш",
-        departsAt = "2023",
-        arrivesAt = "2023",
-        clientInfo = "Khamzat"
-    ),
-
-    Booking(
-        id = 1,
-        qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        seatNumber = "2",
-        departsFrom = "Алматы",
-        arrivesTo = "Балхаш",
-        departsAt = "2023",
-        arrivesAt = "2023",
-        clientInfo = "Danil"
-    ),
-
-    Booking(
-        id = 1,
-        qrCode = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        seatNumber = "3",
-        departsFrom = "Алматы",
-        arrivesTo = "Балхаш",
-        departsAt = "2023",
-        arrivesAt = "2023",
-        clientInfo = "Alim"
-    )
-)

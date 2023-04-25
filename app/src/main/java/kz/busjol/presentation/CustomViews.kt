@@ -7,6 +7,9 @@ import android.text.Spanned
 import android.text.style.*
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
@@ -18,8 +21,12 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -28,7 +35,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
@@ -48,7 +54,6 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -234,6 +239,32 @@ fun NotFoundView(
 }
 
 @Composable
+@OptIn(ExperimentalMaterialApi::class)
+fun PullRefreshBox(
+    modifier: Modifier = Modifier,
+    refreshing: Boolean,
+    onRefresh: () -> Unit = {},
+    content: @Composable () -> Unit,
+) {
+    var isRefreshingWorkaround by remember { mutableStateOf(refreshing) }
+    LaunchedEffect(key1 = refreshing) {
+        isRefreshingWorkaround = refreshing
+    }
+    val state = rememberPullRefreshState(isRefreshingWorkaround, onRefresh)
+    Box(
+        modifier = modifier.pullRefresh(state),
+    ) {
+        content()
+        PullRefreshIndicator(
+            modifier = Modifier.align(Alignment.TopCenter),
+            refreshing = isRefreshingWorkaround,
+            state = state,
+            contentColor = Blue500
+        )
+    }
+}
+
+@Composable
 fun Loader(isDialogVisible: Boolean) {
     var showDialog by rememberSaveable { mutableStateOf(isDialogVisible) }
 
@@ -316,8 +347,14 @@ fun CustomTextField(
 
                         val description = if (passwordVisible) "Hide password" else "Show password"
 
-                        IconButton(onClick = {passwordVisible = !passwordVisible}){
-                            Icon(imageVector = image, description)
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = image, contentDescription = description)
+                        }
+                    }
+
+                    if (!isHiddenToggleVisible && textValue.isNotEmpty() && iconId == null) {
+                        IconButton(onClick = { textValue = ""; onValueChange("") }) {
+                            Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear text")
                         }
                     }
                 },
@@ -573,36 +610,43 @@ fun CustomSimpleTextField(
 fun ProgressButton(
     modifier: Modifier = Modifier,
     @StringRes textId: Int,
-    isProgressBarActive: Boolean = false,
+    progressBarActiveState: Boolean = false,
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    val alpha = remember {
-        mutableStateOf(
-            if (enabled) 1f else 0.6f
-        )
-    }
+    val backgroundColor = animateColorAsState(
+        targetValue = if (enabled) Blue500 else Color.Gray,
+        animationSpec = tween(durationMillis = 500)
+    )
+
+    val contentAlpha = animateFloatAsState(
+        targetValue = if (enabled) 1f else 0.6f,
+        animationSpec = tween(durationMillis = 500)
+    )
 
     Button(
-        onClick = { onClick() },
+        onClick = { if (enabled) onClick() },
         shape = RoundedCornerShape(8.dp),
-        enabled = enabled,
+        enabled = true,
         colors = ButtonDefaults.buttonColors(
-            disabledBackgroundColor = Blue500
+            backgroundColor = backgroundColor.value,
+            contentColor = White,
+            disabledBackgroundColor = Blue500,
+            disabledContentColor = White
         ),
         modifier = modifier
             .fillMaxWidth()
             .height(52.dp)
-            .alpha(alpha.value)
+            .alpha(contentAlpha.value)
     ) {
-        if (!isProgressBarActive) {
+        if (!progressBarActiveState) {
             Text(
                 text = stringResource(id = textId),
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 color = White,
                 modifier = Modifier
-                    .alpha(alpha.value)
+                    .alpha(contentAlpha.value)
             )
         } else {
             CircularProgressIndicator(
@@ -611,6 +655,7 @@ fun ProgressButton(
         }
     }
 }
+
 
 @Composable
 fun CustomOutlinedButton(

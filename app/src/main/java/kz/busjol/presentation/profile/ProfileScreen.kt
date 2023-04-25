@@ -237,7 +237,7 @@ private fun WeDoNotRecogniseYouLayout(
 
                 ProgressButton(
                     textId = R.string.enter_button,
-                    isProgressBarActive = false,
+                    progressBarActiveState = false,
                     enabled = true
                 ) {
                     scope.launch {

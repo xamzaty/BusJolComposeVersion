@@ -1,6 +1,8 @@
 package kz.busjol.presentation.passenger.buy_ticket.journey
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,7 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +45,8 @@ import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.BlueText
 import kz.busjol.presentation.theme.GrayBackground
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.utils.timeLeft
+import java.util.*
 
 @Destination
 @Composable
@@ -94,14 +97,12 @@ fun JourneyScreen(
         }
 
         if (ticket.journeyList.isNullOrEmpty()) {
-
             NotFoundView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 86.dp)
             )
         } else {
-
             RadioGroup(
                 listOfOptions = listOf(
                     stringResource(id = R.string.radio_button_all),
@@ -213,7 +214,11 @@ private fun JourneyItemView(
                 )
 
                 Text(
-                    text = stringResource(id = R.string.time_left, "13", "20"),
+                    text = stringResource(
+                        id = R.string.time_left,
+                        timeLeft(journey.departureTime, journey.arrivalTime).first ?: "",
+                        timeLeft(journey.departureTime, journey.arrivalTime).second ?: ""
+                    ),
                     color = BlueText,
                     fontSize = 10.sp
                 )
@@ -315,19 +320,25 @@ private fun JourneyItemView(
 private fun List<Journey>.filteredList(seatTypeIndex: Int?): List<Journey> {
     return if (seatTypeIndex == 0) this
     else {
+        val filterKey = seatTypeIndex!!.seatType().lowercase(Locale.getDefault())
         this.filter {
-            it.stopName?.lowercase()!!.contains(seatTypeIndex!!.seatType().lowercase())
+            it.stopName?.lowercase(Locale.getDefault())?.contains(filterKey) == true
         }
     }
 }
 
 @Composable
-private fun Int.seatType() = when (this) {
-    0 -> stringResource(id = R.string.radio_button_all)
-    1 -> stringResource(id = R.string.radio_button_seat)
-    2 -> stringResource(id = R.string.radio_button_lying)
-    else -> ""
+private fun Int.seatType(): String {
+    val stringId = when (this) {
+        0 -> R.string.radio_button_all
+        1 -> R.string.radio_button_seat
+        2 -> R.string.radio_button_lying
+        else -> null
+    }
+
+    return stringId?.let { stringResource(id = it) } ?: ""
 }
+
 
 @Composable
 fun RadioGroup(

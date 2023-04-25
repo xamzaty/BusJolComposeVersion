@@ -1,7 +1,7 @@
 package kz.busjol.data.repository
 
 import kotlinx.coroutines.flow.flow
-import kz.busjol.data.mappers.toBookingList
+import kz.busjol.data.mappers.toTicketInfoDomain
 import kz.busjol.data.remote.api.TicketsApi
 import kz.busjol.domain.repository.TicketsRepository
 import kz.busjol.domain.util.Resource
@@ -19,7 +19,7 @@ class TicketsRepositoryImpl @Inject constructor(
             try {
                 emit(
                     Resource.Success(
-                        data = ticketsApi.checkTicket(qrCode)
+                        data = ticketsApi.checkTicket(qrCode).toTicketInfoDomain()
                     )
                 )
             } catch (e: IOException) {

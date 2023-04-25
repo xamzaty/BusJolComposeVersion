@@ -20,19 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.popUpTo
 import kotlinx.coroutines.launch
 import kz.busjol.Language
 import kz.busjol.R
-import kz.busjol.UserState
-import kz.busjol.presentation.NavGraphs
-import kz.busjol.presentation.destinations.DirectionDestination
-import kz.busjol.presentation.destinations.DriverMainScreenDestination
-import kz.busjol.presentation.destinations.SearchJourneyScreenDestination
 import kz.busjol.presentation.profile.ProfileEvent
 import kz.busjol.presentation.profile.ProfileScreenViewModel
-import kz.busjol.presentation.startAppDestination
 import kz.busjol.presentation.theme.GrayBorder
+import kz.busjol.utils.backToMainScreen
 import kz.busjol.utils.findActivity
 
 @Composable
@@ -45,9 +39,7 @@ fun ChangeLanguageScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val isRussianSelected = remember { mutableStateOf(
-        state.language?.value == "ru"
-    )}
+    val selectedLanguage = remember { mutableStateOf(state.language) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -86,27 +78,17 @@ fun ChangeLanguageScreen(
             thickness = 1.dp
         )
 
-        LanguageLayout(
-            isLanguageSelected = !isRussianSelected.value,
-            isRussian = false
-        ) {
-            scope.launch {
-                isRussianSelected.value = false
-                viewModel.onEvent(ProfileEvent.SetLanguage(Language.KAZAKH))
-                navigator.backToMainScreen(state.userState)
-                context.findActivity()?.recreate()
-            }
-        }
-
-        LanguageLayout(
-            isLanguageSelected = isRussianSelected.value,
-            isRussian = true
-        ) {
-            scope.launch {
-                isRussianSelected.value = true
-                viewModel.onEvent(ProfileEvent.SetLanguage(Language.RUSSIAN))
-                navigator.backToMainScreen(state.userState)
-                context.findActivity()?.recreate()
+        Language.values().forEach { language ->
+            LanguageLayout(
+                language = language,
+                isSelected = selectedLanguage.value == language
+            ) {
+                scope.launch {
+                    selectedLanguage.value = language
+                    viewModel.onEvent(ProfileEvent.SetLanguage(language))
+                    navigator.backToMainScreen()
+                    context.findActivity()?.recreate()
+                }
             }
         }
     }
@@ -114,16 +96,19 @@ fun ChangeLanguageScreen(
 
 @Composable
 private fun LanguageLayout(
-    isLanguageSelected: Boolean,
-    isRussian: Boolean,
+    language: Language,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
     val textValue = remember {
-        if (isRussian) R.string.russian_language else R.string.kazakh_language
+        when (language) {
+            Language.RUSSIAN -> R.string.russian_language
+            Language.KAZAKH -> R.string.kazakh_language
+        }
     }
 
     val fontWeight = remember {
-        if (isLanguageSelected) FontWeight.W600 else FontWeight.W400
+        if (isSelected) FontWeight.W600 else FontWeight.W400
     }
 
     Column(
@@ -146,7 +131,7 @@ private fun LanguageLayout(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            if (isLanguageSelected) {
+            if (isSelected) {
                 Image(
                     painter = painterResource(id = R.drawable.isselected),
                     contentDescription = "isSelected"
@@ -162,17 +147,3 @@ private fun LanguageLayout(
         )
     }
 }
-
-private fun DestinationsNavigator.backToMainScreen(
-    userState: UserState?
-) = this.navigate(NavGraphs.root.startAppDestination as DirectionDestination) {
-        if (userState == UserState.DRIVER) {
-            popUpTo(SearchJourneyScreenDestination) {
-                inclusive = true
-            }
-        } else {
-            popUpTo(DriverMainScreenDestination) {
-                inclusive = true
-            }
-        }
-    }

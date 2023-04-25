@@ -40,7 +40,7 @@ private fun MainContent(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
-    val bottomBarState = rememberSaveable { (mutableStateOf(true)) }
+    val bottomBarState = rememberSaveable { mutableStateOf(true) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val data = viewModel.userState
 
@@ -49,17 +49,16 @@ private fun MainContent(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            BottomBar(
-                navController = navController,
-                bottomBarState = bottomBarState.value,
-                isPassengerMode =
-                data.userState == UserState.UNREGISTERED || data.userState == UserState.REGISTERED
-            )
+            if (bottomBarState.value) {
+                BottomBar(
+                    navController = navController,
+                    isPassengerMode =
+                    data.userState == UserState.UNREGISTERED || data.userState == UserState.REGISTERED
+                )
+            }
         }
     ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding)
-        ) {
+        Box(modifier = Modifier.padding(innerPadding)) {
             DestinationsNavHost(
                 navGraph = navGraph(data.userState != UserState.DRIVER),
                 navController = navController
@@ -73,13 +72,12 @@ private fun ShowBottomNavBar(
     navBackStackEntry: NavBackStackEntry?,
     bottomBarState: MutableState<Boolean>
 ) {
-    when (navBackStackEntry?.destination?.route) {
+    val visibleRoutes = setOf(
         "search_journey_screen", "my_tickets_screen", "contacts_screen", "profile_screen",
-        "driver_main_screen", "passenger_verification_screen" ->
-            bottomBarState.value = true
-        else ->
-            bottomBarState.value = false
-    }
+        "driver_main_screen", "passenger_verification_screen"
+    )
+
+    bottomBarState.value = navBackStackEntry?.destination?.route in visibleRoutes
 }
 
 private fun navGraph(isPassenger: Boolean) = NavGraph(

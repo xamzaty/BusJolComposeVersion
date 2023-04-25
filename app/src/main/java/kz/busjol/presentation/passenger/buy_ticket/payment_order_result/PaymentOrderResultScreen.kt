@@ -1,7 +1,6 @@
 package kz.busjol.presentation.passenger.buy_ticket.payment_order_result
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.stopScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -29,11 +28,11 @@ import com.google.zxing.WriterException
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.popUpTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kz.busjol.R
-import kz.busjol.domain.models.Booking
+import kz.busjol.ext.reformatDateFromBackendOnlyTime
+import kz.busjol.ext.reformatDateMonthWithWords
 import kz.busjol.presentation.AppBar
 import kz.busjol.presentation.BackButton
 import kz.busjol.presentation.DashLine
@@ -60,6 +59,8 @@ fun PaymentOrderResultScreen(
     var name by remember { mutableStateOf("") }
     var seatNumber by remember { mutableStateOf("") }
 
+    val journey = ticket.journey
+
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
             name = data?.get(page)?.clientInfo ?: ""
@@ -74,8 +75,6 @@ fun PaymentOrderResultScreen(
             .background(GrayBackground)
             .verticalScroll(scrollState)
     ) {
-
-        val currentPage = remember { mutableStateOf(pagerState.currentPage) }
 
         AppBar(title = stringResource(id = R.string.payment_order_result_title, "123123"), isCross = true) {
             scope.launch {
@@ -180,7 +179,8 @@ fun PaymentOrderResultScreen(
                 }) {
 
                     Text(
-                        text = ticket.journey?.departureTime ?: "",
+                        text =
+                        "${journey?.departureTime?.reformatDateFromBackendOnlyTime()}, ${journey?.departureTime?.reformatDateMonthWithWords()}",
                         fontWeight = FontWeight.W700,
                         color = Color.Black,
                         fontSize = 13.sp
@@ -205,7 +205,8 @@ fun PaymentOrderResultScreen(
                 }) {
 
                     Text(
-                        text = ticket.journey?.arrivalTime ?: "",
+                        text =
+                        "${journey?.arrivalTime?.reformatDateFromBackendOnlyTime()}, ${journey?.arrivalTime?.reformatDateMonthWithWords()}",
                         fontWeight = FontWeight.W700,
                         color = Color.Black,
                         fontSize = 13.sp
@@ -304,7 +305,7 @@ fun PaymentOrderResultScreen(
         ) {
             ProgressButton(
                 textId = R.string.back_to_main_menu_button,
-                isProgressBarActive = false,
+                progressBarActiveState = false,
                 enabled = true,
                 modifier = Modifier.padding(vertical = 16.dp, horizontal = 15.dp)
             ) {
@@ -368,17 +369,3 @@ private fun CounterRow(
 @Throws(WriterException::class)
 private fun encodeAsBitmap(str: String?) =
     BarcodeEncoder().encodeBitmap(str, BarcodeFormat.QR_CODE, 450, 450).asImageBitmap()
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-private fun List<Booking>.seatNumber(pagerState: PagerState): String {
-    var number = ""
-    
-    this.forEachIndexed { index, booking ->  
-        if (pagerState.currentPage == index) {
-            number = booking.seatNumber
-        }
-    } 
-    
-    return number
-}

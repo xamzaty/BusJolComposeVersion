@@ -29,6 +29,7 @@ class DriverMainViewModel @Inject constructor(
         when(event) {
             DriverMainEvent.IsRefreshing -> {
                 getAppSettings()
+                state = state.copy(isRefreshing = true)
             }
         }
     }
@@ -38,7 +39,7 @@ class DriverMainViewModel @Inject constructor(
             dataStoreRepository
                 .getAppSettings()
                 .collect { result ->
-                    getDriverJourneysList(result.userData?.id ?: "")
+                    getDriverJourneysList(result.userData?.id.orEmpty())
                 }
         }
     }
@@ -53,6 +54,7 @@ class DriverMainViewModel @Inject constructor(
                             state = state.copy(
                                 journeyList = result.data,
                                 isLoading = false,
+                                isRefreshing = false,
                                 error = null
                             )
                         }
@@ -60,6 +62,7 @@ class DriverMainViewModel @Inject constructor(
                             state = state.copy(
                                 journeyList = null,
                                 isLoading = false,
+                                isRefreshing = false,
                                 error = result.message
                             )
                         }

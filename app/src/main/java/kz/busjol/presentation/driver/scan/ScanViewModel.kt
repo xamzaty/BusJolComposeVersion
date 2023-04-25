@@ -33,6 +33,7 @@ class ScanViewModel @Inject constructor(
                     when(result) {
                         is Resource.Success -> {
                             state = state.copy(
+                                ticketInfo = result.data?.get(0),
                                 isTicketValid = true,
                                 isLoading = false,
                                 error = null
@@ -40,6 +41,7 @@ class ScanViewModel @Inject constructor(
                         }
                         is Resource.Error -> {
                             state = state.copy(
+                                ticketInfo = null,
                                 isTicketValid = false,
                                 isLoading = false,
                                 error = result.message

@@ -13,14 +13,12 @@ class QrCodeAnalyzer(
     private val onQrCodeScanned: (String) -> Unit
 ): ImageAnalysis.Analyzer {
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private val supportedImageFormats = listOf(
         ImageFormat.YUV_420_888,
         ImageFormat.YUV_422_888,
         ImageFormat.YUV_444_888,
     )
 
-    @RequiresApi(Build.VERSION_CODES.M)
     override fun analyze(image: ImageProxy) {
         if(image.format in supportedImageFormats) {
             val bytes = image.planes.first().buffer.toByteArray()

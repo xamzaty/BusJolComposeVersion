@@ -87,7 +87,7 @@ fun MyDataScreen() {
 
         ProgressButton(
             textId = R.string.continue_button,
-            isProgressBarActive = false,
+            progressBarActiveState = false,
             enabled = true,
             modifier = Modifier
                 .padding(start = 15.dp, top = 24.dp, end = 15.dp)

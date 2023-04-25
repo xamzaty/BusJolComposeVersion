@@ -26,10 +26,12 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.getValue
+import androidx.core.view.WindowInsetsControllerCompat
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 import kotlinx.coroutines.launch
 import kz.busjol.R
 import kz.busjol.data.remote.JourneyPost
@@ -44,46 +46,39 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quan
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.utils.findActivity
 import kz.busjol.utils.setLocale
+import kz.busjol.utils.setSoftInputMode
 import kz.busjol.utils.showSnackBar
 
-@Destination(start = true)
+@RootNavGraph(start = true)
+@Destination
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SearchJourneyScreen(
-    navigator: DestinationsNavigator
-) {
+fun SearchJourneyScreen(navigator: DestinationsNavigator) {
     val scope = rememberCoroutineScope()
     val scaffoldState = rememberScaffoldState()
     val bottomScaffoldState = rememberBottomSheetScaffoldState()
-    var currentBottomSheet: SearchJourneyBottomSheetScreen? by remember {
-        mutableStateOf(null)
-    }
+    var currentBottomSheet by remember { mutableStateOf<SearchJourneyBottomSheetScreen?>(null) }
 
     val closeSheet: () -> Unit = {
-        scope.launch {
-            bottomScaffoldState.bottomSheetState.collapse()
-        }
-    }
-
-    BackHandler(bottomScaffoldState.bottomSheetState.isExpanded) {
         scope.launch { bottomScaffoldState.bottomSheetState.collapse() }
     }
 
-    val openSheet: (SearchJourneyBottomSheetScreen) -> Unit = {
-        currentBottomSheet = it
+    val openSheet: (SearchJourneyBottomSheetScreen) -> Unit = { sheet ->
+        currentBottomSheet = sheet
         scope.launch { bottomScaffoldState.bottomSheetState.expand() }
-
     }
 
-    if (bottomScaffoldState.bottomSheetState.isCollapsed)
-        currentBottomSheet = null
+    if (bottomScaffoldState.bottomSheetState.isCollapsed) currentBottomSheet = null
 
-    BottomSheetScaffold(sheetPeekHeight = 0.dp, scaffoldState = bottomScaffoldState,
+    BackHandler(bottomScaffoldState.bottomSheetState.isExpanded, closeSheet)
+
+    BottomSheetScaffold(
+        sheetPeekHeight = 0.dp,
+        scaffoldState = bottomScaffoldState,
         sheetContent = {
-            currentBottomSheet?.let { currentSheet ->
-                SheetLayout(currentSheet, closeSheet)
-            }
-        }) { paddingValues ->
+            currentBottomSheet?.let { SheetLayout(it, closeSheet) }
+        }
+    ) { paddingValues ->
         Box(Modifier.padding(paddingValues)) {
             Scaffold(scaffoldState = scaffoldState) {
                 MainContent(
@@ -104,16 +99,12 @@ private fun SheetLayout(
     onCloseBottomSheet: () -> Unit
 ) {
     when (currentScreen) {
-        is SearchJourneyBottomSheetScreen.PassengersScreen -> PassengerQuantityScreen(
-            onCloseBottomSheet
-        )
-        is SearchJourneyBottomSheetScreen.CalendarScreen -> CalendarScreen(
-            onCloseBottomSheet
-        )
-        is SearchJourneyBottomSheetScreen.CityPickerScreen -> CityPickerScreen(
-            currentScreen.argument,
-            onCloseBottomSheet
-        )
+        is SearchJourneyBottomSheetScreen.PassengersScreen ->
+            PassengerQuantityScreen(onCloseBottomSheet)
+        is SearchJourneyBottomSheetScreen.CalendarScreen ->
+            CalendarScreen(onCloseBottomSheet)
+        is SearchJourneyBottomSheetScreen.CityPickerScreen ->
+            CityPickerScreen(currentScreen.argument, onCloseBottomSheet)
     }
 }
 
@@ -130,27 +121,24 @@ private fun MainContent(
 
     val context = LocalContext.current
 
-    val language = remember {
-        mutableStateOf(
-            state.language?.value
-        )
-    }
-
-    setLocale(LocalContext.current, language.value)
+    val language by remember { mutableStateOf(state.language?.value) }
+    setLocale(LocalContext.current, language)
 
     LaunchedEffect(state.startNewDestination) {
-        if (state.startNewDestination == true) {
-            scope.launch {
-                navigator.navigate(
-                    JourneyScreenDestination(
-                        ticket = Ticket(
-                            departureCity = state.fromCity,
-                            arrivalCity = state.toCity,
-                            passengerList = state.passengerQuantityList,
-                            journeyList = state.journeyList
+        state.startNewDestination?.let { startNewDestination ->
+            if (startNewDestination) {
+                scope.launch {
+                    navigator.navigate(
+                        JourneyScreenDestination(
+                            ticket = Ticket(
+                                departureCity = state.fromCity,
+                                arrivalCity = state.toCity,
+                                passengerList = state.passengerQuantityList,
+                                journeyList = state.journeyList
+                            )
                         )
                     )
-                )
+                }
             }
         }
     }
@@ -170,23 +158,13 @@ private fun MainContent(
         }
     }
 
-    val adultPassengerQuantity = remember {
-        state.passengerQuantityList?.filter {
-            it.type == Passenger.PassengerType.ADULT
-        }?.size
+    val passengerQuantities = remember {
+        state.passengerQuantityList?.groupBy { it.type }
     }
 
-    val childPassengerQuantity = remember {
-        state.passengerQuantityList?.filter {
-            it.type == Passenger.PassengerType.CHILD
-        }?.size
-    }
-
-    val disabledPassengerQuantity = remember {
-        state.passengerQuantityList?.filter {
-            it.type == Passenger.PassengerType.DISABLED
-        }?.size
-    }
+    val adultPassengerQuantity = passengerQuantities?.get(Passenger.PassengerType.ADULT)?.size
+    val childPassengerQuantity = passengerQuantities?.get(Passenger.PassengerType.CHILD)?.size
+    val disabledPassengerQuantity = passengerQuantities?.get(Passenger.PassengerType.DISABLED)?.size
 
     Column(
         modifier = modifier
@@ -307,7 +285,7 @@ private fun MainContent(
         ProgressButton(
             textId = R.string.search_button,
             modifier = Modifier.padding(top = 32.dp),
-            isProgressBarActive = state.isButtonLoading,
+            progressBarActiveState = state.isButtonLoading,
             enabled = true
         ) {
             scope.launch {
@@ -340,7 +318,7 @@ fun CitiesLayout(
     fromCitiesClick: () -> Unit,
     toCitiesClick: () -> Unit,
     swapButtonOnClick: () -> Unit,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Card(
         border = BorderStroke(1.dp, GrayBorder),
@@ -406,16 +384,16 @@ fun CitiesLayout(
 private fun CitiesTextField(
     value: String,
     @StringRes labelId: Int,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     TextField(
         value = value,
         onValueChange = {},
         enabled = false,
+        readOnly = true,
         colors = TextFieldDefaults.textFieldColors(
             textColor = Color.Gray,
-            disabledTextColor = Color.Transparent,
             backgroundColor = White,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
@@ -436,7 +414,7 @@ private fun CitiesTextField(
 
 @Composable
 private fun SwapCitiesButton(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     OutlinedButton(
@@ -447,22 +425,20 @@ private fun SwapCitiesButton(
     ) {
         Image(
             painter = painterResource(id = R.drawable.swap_cities),
-            contentDescription = "swapCities",
+            contentDescription = "swap",
             modifier = Modifier.fillMaxSize()
         )
     }
 }
 
+
 @Composable
-private fun Int.passengerText() = when (this) {
-    1, 21, 31, 41, 51, 61, 71, 81, 91, 101 ->
-        stringResource(id = R.string.passenger_type_one, this)
-    in 2..4, in 22..24, in 32..34, in 42..44, in 52..54,
-    in 62..64, in 72..74, in 82..84, in 92..94 ->
-        stringResource(id = R.string.passenger_type_two, this)
-    in 5..20, in 25..30, in 35..40, in 45..50, in 55..60,
-    in 65..70, in 75..80, in 85..90, in 95..100 ->
-        stringResource(id = R.string.passenger_type_three, this)
-    else ->
-        stringResource(id = R.string.passenger_type_one, this)
+private fun Int.passengerText(): String {
+    val stringResourceId = when {
+        this % 10 == 1 && this % 100 != 11 -> R.string.passenger_type_one
+        this % 10 in 2..4 && this % 100 !in 12..14 -> R.string.passenger_type_two
+        this % 10 == 0 || this % 10 in 5..9 || this % 100 in 11..14 -> R.string.passenger_type_three
+        else -> R.string.passenger_type_one
+    }
+    return stringResource(id = stringResourceId, this)
 }

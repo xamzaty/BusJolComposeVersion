@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +33,7 @@ fun CalendarScreen(
 
     Column(
         modifier = Modifier.fillMaxWidth()
-        ) {
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -64,16 +65,16 @@ fun CalendarScreen(
             thickness = 1.dp
         )
 
-        AndroidView( {
+        AndroidView( { factory ->
             CalendarView(
-                ContextThemeWrapper(it, R.style.Widget_CalendarView_Custom).apply {
+                ContextThemeWrapper(factory, R.style.Widget_CalendarView_Custom).apply {
                     firstDayOfWeekFromLocale()
                 }
             ).apply {
                 minDate = System.currentTimeMillis() - 1000
 
                 setOnDateChangeListener { _, year, month, dayOfMonth ->
-                    val date = "${dayOfMonth.dayDateValue()}.${month.monthDateValue()}.$year"
+                    val date = String.format("%02d.%02d.%d", dayOfMonth, month + 1, year)
 
                     viewModel.onEvent(SearchJourneyEvent.UpdateDateValue(date))
                     onCloseBottomSheet()
@@ -85,12 +86,3 @@ fun CalendarScreen(
     }
 }
 
-private fun Int.dayDateValue() = when (this.toString().length) {
-    1 -> "0${this}"
-    else -> "$this"
-}
-
-private fun Int.monthDateValue() = when (this.toString().length) {
-    1 -> "0${this+1}".replace("010", "10")
-    else -> "${this+1}"
-}

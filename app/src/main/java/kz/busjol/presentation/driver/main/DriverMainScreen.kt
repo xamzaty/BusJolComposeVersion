@@ -3,15 +3,11 @@ package kz.busjol.presentation.driver.main
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -25,86 +21,76 @@ import kz.busjol.R
 import kz.busjol.domain.models.Journey
 import kz.busjol.presentation.Loader
 import kz.busjol.presentation.NotFoundView
+import kz.busjol.presentation.PullRefreshBox
 import kz.busjol.presentation.theme.Blue500
 import kz.busjol.presentation.theme.GrayBorder
 import kz.busjol.presentation.theme.GrayText
 import kz.busjol.utils.showSnackBar
 
-@OptIn(ExperimentalMaterialApi::class)
 @Destination
 @Composable
 fun DriverMainScreen(
     viewModel: DriverMainViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val scaffoldState = rememberScaffoldState()
 
     LaunchedEffect(state.error) {
         if (state.error != null) {
             scaffoldState.showSnackBar(this, state.error)
         }
-     }
-    
+    }
+
     if (state.isLoading) {
         Loader(isDialogVisible = true)
     }
 
-    val pullRefreshState = rememberPullRefreshState(state.isRefreshing, {
-        viewModel.onEvent(
-            DriverMainEvent.IsRefreshing
-        )
-    })
-
     Scaffold(scaffoldState = scaffoldState) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .pullRefresh(pullRefreshState)
-                .padding(padding)
-        ) {
-            Text(
-                text = stringResource(id = R.string.app_name),
-                color = Color.Black,
-                fontWeight = FontWeight.W700,
-                fontSize = 20.sp,
-                modifier = Modifier.padding(start = 15.dp, top = 22.dp)
-            )
-
-            if (state.journeyList?.isEmpty() == true) {
-                NotFoundView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 86.dp)
+        PullRefreshBox(
+            refreshing = state.isRefreshing,
+            onRefresh = {
+                viewModel.onEvent(
+                    DriverMainEvent.IsRefreshing
                 )
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(
-                        top = 6.dp,
-                        start = 15.dp,
-                        end = 15.dp,
-                        bottom = 38.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 34.dp),
-                    content = {
-                        item {
-                            state.journeyList?.forEach { list ->
+            }
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            ) {
+                Text(
+                    text = stringResource(id = R.string.app_name),
+                    color = Color.Black,
+                    fontWeight = FontWeight.W700,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(start = 15.dp, top = 22.dp)
+                )
+
+                if (state.journeyList?.isEmpty() == true) {
+                    NotFoundView(
+                        modifier = Modifier
+                            .padding(top = 86.dp)
+                    )
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            top = 6.dp,
+                            start = 15.dp,
+                            end = 15.dp,
+                            bottom = 38.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier
+                            .padding(top = 34.dp),
+                        content = {
+                            items(state.journeyList ?: emptyList() ) { list ->
                                 DriverScheduleLayout(journey = list)
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
-
-            PullRefreshIndicator(
-                refreshing = state.isRefreshing,
-                state = pullRefreshState,
-                contentColor = Blue500,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-            )
         }
     }
 }
@@ -117,7 +103,6 @@ private fun DriverScheduleLayout(journey: Journey) {
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp)
     ) {
         ConstraintLayout(
             modifier = Modifier

@@ -1,5 +1,9 @@
 package kz.busjol.presentation.passenger.buy_ticket.choose_seats
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,9 +43,9 @@ import kz.busjol.presentation.passenger.buy_ticket.search_journey.Ticket
 import kz.busjol.presentation.passenger.buy_ticket.search_journey.passenger_quantity.Passenger
 import kz.busjol.presentation.theme.*
 import kz.busjol.utils.rememberViewInteropNestedScrollConnection
-import kz.busjol.utils.showSnackBar
 
 @OptIn(ExperimentalFoundationApi::class)
+@RequiresApi(Build.VERSION_CODES.N)
 @Destination
 @Composable
 fun ChooseSeatsScreen(
@@ -52,9 +56,7 @@ fun ChooseSeatsScreen(
     val state = viewModel.state
     val scope = rememberCoroutineScope()
 
-    val isButtonEnabled by remember {
-        mutableStateOf(state.seatsQuantity == state.passengersQuantity)
-    }
+    val isButtonEnabled = state.seatsQuantity == state.passengersQuantity
 
     val scaffoldState = rememberScaffoldState()
 
@@ -151,7 +153,8 @@ fun ChooseSeatsScreen(
                                 ticket.seatList?.forEachIndexed { index, seats ->
                                     SeatItem(
                                         seats = seats,
-                                        modifier = Modifier.seatModifier(index)
+                                        modifier = Modifier.seatModifier(index),
+                                        isButtonEnabled = isButtonEnabled
                                     )
                                 }
                             }
@@ -189,34 +192,29 @@ fun ChooseSeatsScreen(
                                 )
                             }
 
-                            val passengerList = state.seatList?.toNewPassengerList(ticket.passengerList ?: emptyList())
+                            val passengerList = state.seatList?.toNewPassengerList(
+                                ticket.passengerList ?: emptyList()
+                            )
 
                             ProgressButton(
                                 textId = R.string.continue_button,
-                                isProgressBarActive = false,
+                                progressBarActiveState = false,
                                 enabled = isButtonEnabled,
                                 modifier = Modifier.padding(top = 16.dp)
                             ) {
                                 scope.launch {
-                                    if (state.seatsQuantity != state.passengersQuantity) {
-                                        scaffoldState.showSnackBar(
-                                            this,
-                                            "Выберите нужное количество сидении"
-                                        )
-                                    } else {
-                                        navigator.navigate(
-                                            PassengerDataScreenDestination(
-                                                ticket = Ticket(
-                                                    departureCity = ticket.departureCity,
-                                                    arrivalCity = ticket.arrivalCity,
-                                                    date = ticket.date,
-                                                    passengerList = passengerList,
-                                                    journey = ticket.journey,
-                                                    chosenSeatsList = state.seatList
-                                                )
+                                    navigator.navigate(
+                                        PassengerDataScreenDestination(
+                                            ticket = Ticket(
+                                                departureCity = ticket.departureCity,
+                                                arrivalCity = ticket.arrivalCity,
+                                                date = ticket.date,
+                                                passengerList = passengerList,
+                                                journey = ticket.journey,
+                                                chosenSeatsList = state.seatList
                                             )
                                         )
-                                    }
+                                    )
                                 }
                             }
                         }
@@ -227,16 +225,25 @@ fun ChooseSeatsScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun SeatItem(
     modifier: Modifier = Modifier,
     seats: Seats,
-    viewModel: ChooseSeatsViewModel = hiltViewModel()
+    viewModel: ChooseSeatsViewModel = hiltViewModel(),
+    transitionDuration: Int = 300,
+    isButtonEnabled: Boolean
 ) {
     val isChecked = rememberSaveable { mutableStateOf(false) }
     val border = remember { mutableStateOf(BorderStroke(2.dp, Blue500)) }
-    val backgroundColor = remember { mutableStateOf(Color.White) }
-    val textColor = remember { mutableStateOf(Color.Black) }
+    val backgroundColor = animateColorAsState(
+        targetValue = if (isChecked.value) Blue500 else Color.White,
+        animationSpec = tween(durationMillis = transitionDuration)
+    )
+    val textColor = animateColorAsState(
+        targetValue = if (isChecked.value) Color.White else Color.Black,
+        animationSpec = tween(durationMillis = transitionDuration)
+    )
 
     Card(
         shape = RoundedCornerShape(4.dp),
@@ -246,19 +253,13 @@ fun SeatItem(
         modifier = modifier
             .size(40.dp)
             .toggleable(value = isChecked.value, role = Role.Checkbox) {
-                if (seats.isEmpty) {
+                if (seats.isEmpty && (!isButtonEnabled || isChecked.value)) {
                     isChecked.value = it
 
                     if (isChecked.value) {
                         viewModel.onEvent(ChooseSeatsEvent.AddItemToList(seats))
-                        border.value = BorderStroke(2.dp, Blue500)
-                        backgroundColor.value = Blue500
-                        textColor.value = Color.White
                     } else {
                         viewModel.onEvent(ChooseSeatsEvent.RemoveItem(seats))
-                        border.value = BorderStroke(2.dp, Blue500)
-                        backgroundColor.value = Color.White
-                        textColor.value = Color.Black
                     }
                 }
             },
@@ -282,58 +283,48 @@ private fun SmallDescriptionBox(
     isFreeSeat: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Card(shape = RoundedCornerShape(4.dp),
+    val backgroundColor = if (isFreeSeat) Color.White else GrayBackground
+    val borderStroke =
+        if (isFreeSeat) BorderStroke(1.dp, Blue500) else BorderStroke(0.dp, DarkGrayBackground)
+
+    Card(
+        shape = RoundedCornerShape(4.dp),
         elevation = 0.dp,
-        backgroundColor = if (isFreeSeat) Color.White else GrayBackground,
-        border = if (isFreeSeat) BorderStroke(1.dp, Blue500) else BorderStroke(
-            0.dp,
-            DarkGrayBackground
-        ),
-        modifier = modifier
-            .size(16.dp),
-        content = { })
+        backgroundColor = backgroundColor,
+        border = borderStroke,
+        modifier = modifier.size(16.dp)
+    ) { }
 }
 
-private fun Modifier.newSeatModifier(row: Int, column: Int) = when {
-    row == 1 && column == 1 -> this.padding(top = 24.dp)
-    row == 1 && column == 2 -> this.padding(start = 8.dp, top = 24.dp, end = 15.dp)
-    row == 1 && column == 3 -> this.padding(start = 20.dp, top = 24.dp)
-    row == 1 && column == 4 -> this.padding(start = 8.dp, top = 24.dp)
+private fun Modifier.seatModifier(index: Int): Modifier {
+    val columnIndex = index % 4
+    val rowIndex = index / 4
 
-    else -> this
-}
+    val topPadding = if (rowIndex == 0) 24.dp else 8.dp
+    val startPadding = when (columnIndex) {
+        1, 3 -> 8.dp
+        2 -> 20.dp
+        else -> 0.dp
+    }
+    val endPadding = if (columnIndex == 1) 15.dp else 0.dp
 
-private fun Modifier.seatModifier(index: Int) = when {
-    index == 0 -> this.padding(top = 24.dp)
-    index == 1 -> this.padding(start = 8.dp, top = 24.dp, end = 15.dp)
-    index == 2 -> this.padding(start = 20.dp, top = 24.dp)
-    index == 3 -> this.padding(start = 8.dp, top = 24.dp)
-    index % 4 == 0 -> this.padding(top = 8.dp)
-    index % 4 == 1 -> this.padding(start = 8.dp, top = 8.dp, end = 15.dp)
-    index % 4 == 2 -> this.padding(start = 20.dp, top = 8.dp)
-    index % 4 == 3 -> this.padding(start = 8.dp, top = 8.dp)
-    else -> this
+    return this.padding(top = topPadding, start = startPadding, end = endPadding)
 }
 
 private fun List<Seats>.toNewPassengerList(list: List<Passenger>): List<Passenger> {
-    val convertedData: ArrayList<Passenger> = ArrayList()
-
     if (this.size != list.size) {
-        return convertedData
+        return emptyList()
     }
 
-    this.forEachIndexed { index, seat ->
+    return this.mapIndexed { index, seat ->
         val passenger = list[index]
 
-        val newPassenger = Passenger(
+        Passenger(
             type = passenger.type,
             iin = passenger.iin,
             lastName = passenger.lastName,
             firstName = passenger.firstName,
             seatId = seat.id
         )
-        convertedData.add(newPassenger)
     }
-
-    return convertedData
 }

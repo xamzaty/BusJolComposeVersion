@@ -74,7 +74,7 @@ fun ContactsScreen() {
 
         ProgressButton(
             textId = R.string.call_button,
-            isProgressBarActive = false,
+            progressBarActiveState = false,
             enabled = true,
             modifier = Modifier.padding(top = 16.dp)
         ) {

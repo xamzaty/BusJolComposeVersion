@@ -15,15 +15,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kz.busjol.R
+import kz.busjol.domain.models.TicketInfo
+import kz.busjol.ext.showOnlyLetters
+import kz.busjol.ext.showOnlyNumbers
 import kz.busjol.presentation.AppBar
+import kz.busjol.presentation.destinations.DriverMainScreenDestination
 import kz.busjol.presentation.theme.GreenTicketIsValid
 import kz.busjol.presentation.theme.RedTicketIsInvalid
 
 @Destination
 @Composable
-fun PassengerVerificationScreen() {
-
+fun PassengerVerificationScreen(
+    ticketInfo: TicketInfo?,
+    navigator: DestinationsNavigator
+) {
     val isTicketValid = remember { true }
 
     val mainFrameBackgroundColor = remember {
@@ -38,15 +45,15 @@ fun PassengerVerificationScreen() {
         if (isTicketValid) R.drawable.ticket_valid else R.drawable.ticket_invalid
     }
 
-    val iinValue = remember { "960 717 300 890" }
-    val nameValue = remember { "Ержанов Хамзат Ержанулы" }
-    val routeValue = remember { "Алматы - Караганда" }
+    val iinValue = remember { ticketInfo?.clientInfo?.showOnlyNumbers().orEmpty() }
+    val nameValue = remember { ticketInfo?.clientInfo?.showOnlyLetters().orEmpty() }
+    val routeValue = remember { "${ticketInfo?.departsFrom} - ${ticketInfo?.arrivesTo}" }
 
     Column(
         Modifier.fillMaxSize()
     ) {
         AppBar(title = stringResource(id = R.string.scan_title)) {
-            
+            navigator.navigate(route = DriverMainScreenDestination.route)
         }
 
         Row(

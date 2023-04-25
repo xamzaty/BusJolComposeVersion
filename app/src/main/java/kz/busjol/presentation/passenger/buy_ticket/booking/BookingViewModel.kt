@@ -1,21 +1,14 @@
 package kz.busjol.presentation.passenger.buy_ticket.booking
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.os.CountDownTimer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class BookingViewModel @Inject constructor(): ViewModel() {
 
@@ -26,14 +19,10 @@ class BookingViewModel @Inject constructor(): ViewModel() {
         countDown()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun countDown() {
-        val expireDate = LocalDateTime.now().plusSeconds(600).toEpochSecond(ZoneOffset.UTC)
-        val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-        tickerFlow(expireDate - currentTime)
-            .onEach { secondsRemaining ->
-                val millis: Long = secondsRemaining * 1000
-
+        val countDownTimer = object : CountDownTimer(600000, 1000) {
+            override fun onTick(p0: Long) {
+                val millis: Long = p0
                 val hms = String.format(
                     "%02d:%02d",
                     (TimeUnit.MILLISECONDS.toMinutes(millis) -
@@ -47,13 +36,13 @@ class BookingViewModel @Inject constructor(): ViewModel() {
                     countdownTimerValue = hms
                 )
             }
-            .launchIn(viewModelScope)
-    }
 
-    private fun tickerFlow(start: Long, end: Long = 0L) = flow {
-        for (i in start downTo end) {
-            emit(i)
-            delay(1_000)
+            override fun onFinish() {
+                state = state.copy(
+                    isTimeExpired = true
+                )
+            }
         }
+        countDownTimer.start()
     }
 }
